@@ -29,7 +29,7 @@ function AppContent() {
   return (
     <View style={styles.container}>
       <NewAppScreen
-        templateFileName="App.tsxwdwwddw"
+        templateFileName="App.tsxwdwwddwdd"
         safeAreaInsets={safeAreaInsets}
       />
     </View>
