@@ -7,12 +7,20 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+  
+    "ios-local": "ENVFILE=.env.local react-native run-ios --mode Debug --scheme QatarEsportLocal",
+    "ios-production": "ENVFILE=.env.production react-native run-ios --mode Debug --scheme QatarEsportProduction",
+  
+    "android-local": "ENVFILE=.env.local react-native run-android",
+    "android-production": "ENVFILE=.env.production react-native run-android"
   },
+  
   "dependencies": {
+    "@react-native/new-app-screen": "0.82.1",
     "react": "19.1.1",
     "react-native": "0.82.1",
-    "@react-native/new-app-screen": "0.82.1",
+    "react-native-config": "^1.6.1",
     "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {
