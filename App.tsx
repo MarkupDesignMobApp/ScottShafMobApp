@@ -52,12 +52,14 @@
 
 import { View, Text } from 'react-native';
 import React from 'react';
-import RootNavigator from './src/navigation/RootNavigator';
-
+import RootNavigator from './src/navigation/stacks/RootNavigator';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export default function App() {
   return (
-    <View style={{ flex: 1 }}>
-      <RootNavigator />
-    </View>
+    <GestureHandlerRootView>
+      <View style={{ flex: 1 }}>
+        <RootNavigator />
+      </View>
+    </GestureHandlerRootView>
   );
 }

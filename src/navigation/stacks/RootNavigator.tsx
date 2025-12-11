@@ -4,12 +4,13 @@ import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 
 export default function RootNavigator() {
-//   const { isLoggedIn } = useAppSelector(state => state.auth);
+    const isLoggedIn  = true;
 
   return (
     <NavigationContainer>
-        <AuthNavigator/>
-      {/* {isLoggedIn ? <MainNavigator /> : <AuthNavigator />} */}
+    
+      {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 }
+0
