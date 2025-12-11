@@ -50,16 +50,19 @@
 //   );
 // }
 
-import { View, Text } from 'react-native';
 import React from 'react';
-import RootNavigator from './src/navigation/stacks/RootNavigator';
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Provider } from 'react-redux';
+import { store } from './src/app/store';
+import RootNavigator from './src/navigation/stacks/RootNavigator';
+
 export default function App() {
   return (
-    <GestureHandlerRootView>
-      <View style={{ flex: 1 }}>
+    <Provider store={store}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <RootNavigator />
-      </View>
-    </GestureHandlerRootView>
+      </GestureHandlerRootView>
+    </Provider>
   );
 }
