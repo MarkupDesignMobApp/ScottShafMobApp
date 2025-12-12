@@ -2,22 +2,20 @@ import { View, Text, Button } from 'react-native';
 import React from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { removeTokenFromKeychain } from '../../../app/keychain';
-import { logout } from '../../../features/auth/authSlice';
-import { useAppDispatch } from '../../../app/hooks';
+
 import { TokenService } from '../../../services/storage/keychain.services';
 export default function HomeScreen() {
-  const dispatch = useAppDispatch();
   //   async function Savetoken(){
   // await TokenService.save("EDEDE")
   //   }
   async function Gettoken() {
     let mytoken = await TokenService.get();
-    alert(mytoken)
+    // alert(mytoken);
   }
   async function Removetoken() {
-    dispatch(logout());
-    // await removeTokenFromKeychain();
+    await removeTokenFromKeychain(); // removes from Keychain + Redux
   }
+
   return (
     <SafeAreaProvider>
       <SafeAreaView

@@ -7,23 +7,41 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01EF36A789E94E509A01503F /* Ubuntu-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 51FE4090F02F452D9760DB20 /* Ubuntu-BoldItalic.ttf */; };
 		0C80B921A6F3F58F76C31292 /* libPods-QatarEsport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-QatarEsport.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		3A03BE001DD14EA6A68369E6 /* Ubuntu-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D1593BA09EDB4EA18D3B773B /* Ubuntu-Medium.ttf */; };
+		46C6E1ABC1D94B29A43690FA /* Ubuntu-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 85E6D7135D9B4C67AA33B20C /* Ubuntu-MediumItalic.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8DC3A341FA4D4EB69BF7C55A /* Ubuntu-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7279B399F7C14BDBAF007300 /* Ubuntu-Regular.ttf */; };
+		92A9729AF20D4C1E861E3316 /* Ubuntu-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 02F426B1D8A64EE1BA1F0731 /* Ubuntu-LightItalic.ttf */; };
+		9BDEA7E232AF4DA2A271BD34 /* Ubuntu-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B2299674FEDF44E2A8DE7211 /* Ubuntu-Bold.ttf */; };
+		A98AD7F74C644B4B9946C0EE /* Quicksand-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 273EC786950A4C48A93000A4 /* Quicksand-VariableFont_wght.ttf */; };
+		D45D4EBCD23E4555A6E03BBD /* Ubuntu-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5185914179147DD8A6E4727 /* Ubuntu-Italic.ttf */; };
 		DB76F8267E0A107489B54646 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		E5B5C950B7C94B9CB2BBC5F6 /* Ubuntu-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 244B0A2C597144D1B712485C /* Ubuntu-Light.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		02F426B1D8A64EE1BA1F0731 /* Ubuntu-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-LightItalic.ttf"; path = "../assets/fonts/Ubuntu-LightItalic.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* QatarEsport.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QatarEsport.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = QatarEsport/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = QatarEsport/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = QatarEsport/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		244B0A2C597144D1B712485C /* Ubuntu-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Light.ttf"; path = "../assets/fonts/Ubuntu-Light.ttf"; sourceTree = "<group>"; };
+		273EC786950A4C48A93000A4 /* Quicksand-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Quicksand-VariableFont_wght.ttf"; path = "../assets/fonts/Quicksand-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-QatarEsport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QatarEsport.debug.xcconfig"; path = "Target Support Files/Pods-QatarEsport/Pods-QatarEsport.debug.xcconfig"; sourceTree = "<group>"; };
+		51FE4090F02F452D9760DB20 /* Ubuntu-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-BoldItalic.ttf"; path = "../assets/fonts/Ubuntu-BoldItalic.ttf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-QatarEsport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QatarEsport.release.xcconfig"; path = "Target Support Files/Pods-QatarEsport/Pods-QatarEsport.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-QatarEsport.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-QatarEsport.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7279B399F7C14BDBAF007300 /* Ubuntu-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Regular.ttf"; path = "../assets/fonts/Ubuntu-Regular.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = QatarEsport/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = QatarEsport/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		85E6D7135D9B4C67AA33B20C /* Ubuntu-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-MediumItalic.ttf"; path = "../assets/fonts/Ubuntu-MediumItalic.ttf"; sourceTree = "<group>"; };
+		B2299674FEDF44E2A8DE7211 /* Ubuntu-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Bold.ttf"; path = "../assets/fonts/Ubuntu-Bold.ttf"; sourceTree = "<group>"; };
+		D1593BA09EDB4EA18D3B773B /* Ubuntu-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Medium.ttf"; path = "../assets/fonts/Ubuntu-Medium.ttf"; sourceTree = "<group>"; };
+		E5185914179147DD8A6E4727 /* Ubuntu-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Italic.ttf"; path = "../assets/fonts/Ubuntu-Italic.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -75,6 +93,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				BB76D2AB5D0945198F43AAFC /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -87,6 +106,22 @@
 				13B07F961A680F5B00A75B9A /* QatarEsport.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BB76D2AB5D0945198F43AAFC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				273EC786950A4C48A93000A4 /* Quicksand-VariableFont_wght.ttf */,
+				B2299674FEDF44E2A8DE7211 /* Ubuntu-Bold.ttf */,
+				51FE4090F02F452D9760DB20 /* Ubuntu-BoldItalic.ttf */,
+				E5185914179147DD8A6E4727 /* Ubuntu-Italic.ttf */,
+				244B0A2C597144D1B712485C /* Ubuntu-Light.ttf */,
+				02F426B1D8A64EE1BA1F0731 /* Ubuntu-LightItalic.ttf */,
+				D1593BA09EDB4EA18D3B773B /* Ubuntu-Medium.ttf */,
+				85E6D7135D9B4C67AA33B20C /* Ubuntu-MediumItalic.ttf */,
+				7279B399F7C14BDBAF007300 /* Ubuntu-Regular.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -161,6 +196,15 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				DB76F8267E0A107489B54646 /* PrivacyInfo.xcprivacy in Resources */,
+				A98AD7F74C644B4B9946C0EE /* Quicksand-VariableFont_wght.ttf in Resources */,
+				9BDEA7E232AF4DA2A271BD34 /* Ubuntu-Bold.ttf in Resources */,
+				01EF36A789E94E509A01503F /* Ubuntu-BoldItalic.ttf in Resources */,
+				D45D4EBCD23E4555A6E03BBD /* Ubuntu-Italic.ttf in Resources */,
+				E5B5C950B7C94B9CB2BBC5F6 /* Ubuntu-Light.ttf in Resources */,
+				92A9729AF20D4C1E861E3316 /* Ubuntu-LightItalic.ttf in Resources */,
+				3A03BE001DD14EA6A68369E6 /* Ubuntu-Medium.ttf in Resources */,
+				46C6E1ABC1D94B29A43690FA /* Ubuntu-MediumItalic.ttf in Resources */,
+				8DC3A341FA4D4EB69BF7C55A /* Ubuntu-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,7 +306,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = RT6R43NVBJ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = QatarEsport/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;

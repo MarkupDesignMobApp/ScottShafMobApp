@@ -3,22 +3,16 @@ import { store } from './store';
 import { setCredentials, logout } from '../features/auth/authSlice';
 import { TokenService } from '../services/storage/keychain.services';
 export const loadTokenFromKeychain = async () => {
-  const credentials = await TokenService.get();
+  const token = await TokenService.get();
 
-  if (credentials?.token) {
-    store.dispatch(
-      setCredentials({
-        token: credentials.token,
-        user: credentials.user,
-      }),
-    );
+  if (token) {
+    store.dispatch(setCredentials({ token }));
   }
 };
 
-export const saveTokenToKeychain = async (token: string, user: string) => {
-  //   await Keychain.setGenericPassword(token, JSON.stringify(user));
+export const saveTokenToKeychain = async (token: string) => {
   await TokenService.save(token);
-  store.dispatch(setCredentials({ token, user }));
+  store.dispatch(setCredentials({ token }));
 };
 
 export const removeTokenFromKeychain = async () => {
