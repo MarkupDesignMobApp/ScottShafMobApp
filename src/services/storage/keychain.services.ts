@@ -1,6 +1,6 @@
-import * as Keychain from "react-native-keychain";
+import * as Keychain from 'react-native-keychain';
 
-const TOKEN_KEY = "APP_AUTH_TOKEN";
+const TOKEN_KEY = 'APP_AUTH_TOKEN';
 
 export const TokenService = {
   async save(token: string): Promise<void> {
@@ -10,7 +10,7 @@ export const TokenService = {
         service: TOKEN_KEY,
       });
     } catch (error) {
-      console.error("Error saving token", error);
+      console.error('Error saving token', error);
     }
   },
 
@@ -25,7 +25,7 @@ export const TokenService = {
 
       return result.password;
     } catch (error) {
-      console.error("Error getting token", error);
+      console.error('Error getting token', error);
       return null;
     }
   },
@@ -34,7 +34,7 @@ export const TokenService = {
     try {
       await Keychain.resetGenericPassword({ service: TOKEN_KEY });
     } catch (error) {
-      console.error("Error removing token", error);
+      console.error('Error removing token', error);
     }
   },
 };

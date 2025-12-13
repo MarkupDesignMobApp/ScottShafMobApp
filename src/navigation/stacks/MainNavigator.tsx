@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MainStackParamList } from './types/navigation';
-import TabNavigator from './TabNavigator';
-import DrawerNavigator from './DrawerNavigator';
+import { MainStackParamList } from '../types/navigation';
+import { TabNavigator, DrawerNavigator } from '../index';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
