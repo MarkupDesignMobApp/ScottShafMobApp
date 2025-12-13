@@ -39,26 +39,28 @@ const styles = StyleSheet.create({
   button: {
     borderWidth: 0.5,
     borderColor: '#B9B9B9',
-    paddingHorizontal: responsiveScreenWidth(11.5),
+    
     paddingVertical: responsiveScreenHeight(0.8),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: responsiveScreenWidth(2),
+    width:responsiveScreenWidth(44),
+  
   },
   img: {
     width: '100%',
     height: '100%',
   },
   imgcontainer: {
-    width: responsiveScreenWidth(6),
-    height: responsiveHeight(4),
+    width: responsiveScreenWidth(7),
+    height: responsiveHeight(5),
   },
   text: {
     marginLeft: responsiveScreenWidth(2.25),
-    fontFamily: 'Ubuntu-Regular',
+    fontFamily: 'Quicksand-Regular',
     fontSize: responsiveFontSize(1.9),
-    fontWeight: '200',
+    
     letterSpacing:0.25
   },
 });

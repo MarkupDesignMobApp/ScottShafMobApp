@@ -2,8 +2,16 @@
   "migIndex": 1,
   "data": [
     {
-      "path": "assets/fonts/Quicksand-VariableFont_wght.ttf",
-      "sha1": "4ee75a4e8cdc8d7cb73c9d37859d5e96da254ecb"
+      "path": "assets/fonts/Quicksand-Bold.ttf",
+      "sha1": "7207094ca288c2deb3b77eaf0482bdc4b167166e"
+    },
+    {
+      "path": "assets/fonts/Quicksand-Light.ttf",
+      "sha1": "3a6578f2a7d2062ba51230b4cdd55cafebe8de1c"
+    },
+    {
+      "path": "assets/fonts/Quicksand-Regular.ttf",
+      "sha1": "e1d9e5a214878cbcaab1694a238df190b51fe2ae"
     },
     {
       "path": "assets/fonts/Ubuntu-Bold.ttf",
@@ -36,6 +44,18 @@
     {
       "path": "assets/fonts/Ubuntu-Regular.ttf",
       "sha1": "d4bf0c7dc189b7be2533a3c9b70082a5dd2b5414"
+    },
+    {
+      "path": "assets/fonts/samsungsharpsans-bold.ttf",
+      "sha1": "e80a7443b4a84cf708d44f6f47da037e37a2085c"
+    },
+    {
+      "path": "assets/fonts/samsungsharpsans-medium.ttf",
+      "sha1": "50f882f76789345b2a1f598e91c282de9a3f3835"
+    },
+    {
+      "path": "assets/fonts/samsungsharpsans.ttf",
+      "sha1": "aebffd7c2d58e0f4840ede901e16a54b5946777f"
     }
   ]
 }
