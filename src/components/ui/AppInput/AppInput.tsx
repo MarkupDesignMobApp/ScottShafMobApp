@@ -4,7 +4,7 @@ import { responsiveFontSize, responsiveScreenHeight, responsiveScreenWidth } fro
 
 interface Props {
   value: React.ReactNode;
-  onChangeText: (text: string) => void;
+  onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
   label?: React.ReactNode;
   prefix?: string; 

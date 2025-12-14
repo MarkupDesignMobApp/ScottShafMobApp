@@ -8,6 +8,7 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  Otp: undefined;
 };
 
 /**
@@ -58,6 +59,6 @@ export type RootParamList = {
  */
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootParamList {}
+    interface RootParamList extends RootParamList { }
   }
 }
