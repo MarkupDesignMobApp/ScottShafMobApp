@@ -12,8 +12,7 @@ export const styles = StyleSheet.create({
   innercontainer: {
     justifyContent: 'center',
 
-    paddingHorizontal:responsiveScreenWidth(4),
-    paddingTop: responsiveScreenHeight(12),
+    paddingHorizontal: responsiveScreenWidth(4),
   },
   img: {
     width: '100%',
@@ -36,26 +35,24 @@ export const styles = StyleSheet.create({
     color: '#000000',
   },
   heading2: {
-    color: '#00000',
+    color: '#8A8A8A',
     fontFamily: 'Quicksand-Regular',
     fontSize: responsiveFontSize(2),
-    width: responsiveScreenWidth(80),
-    textAlign: 'center',
-    lineHeight: responsiveScreenHeight(2.75),
-    paddingTop:responsiveScreenHeight(0.5)
-
   },
   headcontainer: {
     alignItems: 'center',
-    marginTop: responsiveScreenHeight(-2)
+    marginTop: responsiveScreenHeight(-2),
   },
   bottomtxt: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    alignSelf: 'center',
 
     marginVertical: responsiveHeight(3),
     padding: 2,
+    fontFamily: 'Quicksand-Regular',
+    color: '#000000',
+    fontSize: responsiveFontSize(1.85),
+    position: 'absolute',
+    bottom: responsiveScreenHeight(4),
   },
   bottomtxt2: {
     width: '40%',
@@ -63,7 +60,7 @@ export const styles = StyleSheet.create({
     color: 'black',
     fontFamily: 'Quicksand-Regular',
     fontSize: responsiveFontSize(2.15),
-    fontWeight: '400'
+    fontWeight: '400',
   },
   linestyle: {
     borderWidth: 0.5,
@@ -77,54 +74,42 @@ export const styles = StyleSheet.create({
 
     marginVertical: responsiveHeight(1),
     padding: 2,
-
   },
   prefix: {
-    position: 'absolute', paddingTop: responsiveScreenHeight(0.5),
+    position: 'absolute',
+    paddingTop: responsiveScreenHeight(0.5),
     right: responsiveScreenWidth(8),
-    color: "#AEAEAE",
-    width: responsiveScreenWidth(4),
-    height: responsiveHeight(4)
-  },
-
-  resendtxt: {
-
-    fontSize: responsiveFontSize(1.85),
-    letterSpacing: 0.5,
-    paddingHorizontal: responsiveScreenWidth(2)
-  },
-  icon: {
+    color: '#AEAEAE',
     width: responsiveScreenWidth(4),
     height: responsiveHeight(4),
-
   },
-  resendcontainer: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: "center",
-    paddingVertical: responsiveScreenHeight(1)
+  labeltxt: {
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveFontSize(2),
   },
-  otpInput: {
-    borderWidth: 1,
-    borderColor: '#C0C0C0',
-    width: responsiveScreenWidth(13.25),
-    height: responsiveScreenHeight(6.5),
-    borderRadius: responsiveScreenWidth(2),
-    textAlign: 'center',
-    fontSize: 20,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity:0.5,
-    shadowRadius: 15,
-  
+  prefix2: {
+    height: responsiveHeight(4),
+    width: responsiveScreenWidth(10),
+
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    left: responsiveScreenWidth(5),
+
+    fontSize: responsiveFontSize(12),
+    paddingVertical: responsiveScreenHeight(1.25),
+    fontFamily: 'Quicksand-Regular',
+    color: '#535353',
+    paddingLeft: responsiveScreenWidth(1),
   },
-  otpcontainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 20,
-    paddingHorizontal: responsiveScreenWidth(2),
-
-    backgroundColor: '#fff'
+  prefix2style: {
+    marginLeft: responsiveScreenWidth(10),
   },
-
-
+  codetxt: {
+    fontFamily: 'Quicksand-Regular',
+    // fontSize:15
+  },
+  inputcontainer: {
+    paddingBottom: responsiveScreenHeight(2),
+  },
 });
-

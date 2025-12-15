@@ -2494,6 +2494,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNInAppBrowser (3.7.0):
+    - React-Core
   - RNKeychain (10.0.0):
     - boost
     - DoubleConversion
@@ -2843,6 +2845,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -3008,6 +3011,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNInAppBrowser:
+    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNReanimated:
@@ -3096,6 +3101,7 @@ SPEC CHECKSUMS:
   ReactCommon: 804dc80944fa90b86800b43c871742ec005ca424
   RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
   RNGestureHandler: e1cf8ef3f11045536eed6bd4f132b003ef5f9a5f
+  RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
   RNKeychain: a2c134ab796272c3d605e035ab727591000b30f3
   RNReanimated: f1868b36f4b2b52a0ed00062cfda69506f75eaee
   RNScreens: d821082c6dd1cb397cc0c98b026eeafaa68be479
@@ -3105,4 +3111,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: c220ff968f653a01cc7e8429953f6257f5a5c648
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

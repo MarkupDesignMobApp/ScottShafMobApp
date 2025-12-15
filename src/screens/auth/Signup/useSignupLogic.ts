@@ -22,7 +22,7 @@ const COUNTRIES: Country[] = [
   { name: 'Brazil', code: '+55' },
 ];
 
-export const useLoginLogic = () => {
+export const useSignupLogic = () => {
   /* ================= API ================= */
   const [login, { isLoading, isError }] = useLoginMutation();
   const navigation = useNavigation();
@@ -31,7 +31,8 @@ export const useLoginLogic = () => {
   const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const phoneInputRef = useRef<TextInput>(null);
 
   /* ================= HANDLERS ================= */
@@ -51,7 +52,7 @@ export const useLoginLogic = () => {
   const handleLogin = async () => {
     navigation.navigate('Otp');
     // try {
-    //   NavigationActions.goToRegister();
+
     //   // const res = await login({
     //   //   email: country, // or phone, based on backend
     //   //   password: phone,
@@ -64,23 +65,20 @@ export const useLoginLogic = () => {
   };
 
   return {
-    /* UI state */
+    fullName,
+    setFullName,
+    email,
+    setEmail,
     country,
     countryCode,
     phone,
     modalVisible,
     phoneInputRef,
     countries: COUNTRIES.map(c => c.name),
-
-    /* setters */
     setPhone,
     setModalVisible,
-
-    /* actions */
     handleSelectCountry,
     handleLogin,
-
-    /* api flags */
     isLoading,
     isError,
   };

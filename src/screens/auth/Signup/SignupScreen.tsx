@@ -3,7 +3,7 @@ import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
-import { useLoginLogic } from './useLoginLogic';
+import { useSignupLogic } from './useSignupLogic';
 import Loader from '../../../components/ui/Loader/Loader';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -18,9 +18,9 @@ import {
   Keyboard,
   TouchableOpacity,
 } from 'react-native';
-import Social from '../../../components/ui/SocialButton/Button';
+
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
-export default function LoginScreen() {
+export default function SignupScreen() {
   const {
     country,
     countryCode,
@@ -33,7 +33,11 @@ export default function LoginScreen() {
     handleSelectCountry,
     handleLogin,
     isLoading,
-  } = useLoginLogic();
+    setEmail,
+    fullName,
+    setFullName,
+    email,
+  } = useSignupLogic();
   const navigation = useNavigation();
   return (
     <View style={styles.maincontainer}>
@@ -60,12 +64,6 @@ export default function LoginScreen() {
               source={require('../../../../assets/image/blur.png')}
             />
           </View>
-          <View style={styles.headcontainer}>
-            <Text style={{ ...styles.heading }}>Welcome Back!</Text>
-            <Text style={{ ...styles.heading2 }}>
-              We'll send you a verification code
-            </Text>
-          </View>
         </ImageBackground>
       </View>
 
@@ -88,13 +86,76 @@ export default function LoginScreen() {
               <Loader visible={isLoading} color="blue" />
 
               <View style={styles.innercontainer}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.inputcontainer}>
+                  <AppInput
+                    keyboardType="default"
+                    label={
+                      <Text style={styles.labeltxt}>
+                        Full Name{' '}
+                        <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                      </Text>
+                    }
+                    placeholder="e.g. Saroha sans"
+                    value={fullName}
+                    onChangeText={setFullName}
+                  />
+
+                  <AppInput
+                    keyboardType="email-address"
+                    label={
+                      <Text style={styles.labeltxt}>
+                        Email ID{' '}
+                        <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                      </Text>
+                    }
+                    placeholder="e.g. sarohasans@gmail.com"
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+
+                  {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={styles.prefix}>
                     <Image
                       style={{ width: '100%', height: '100%' }}
                       resizeMode="contain"
                       source={require('../../../../assets/image/arrow-down.png')}
                     />
+                  </View>
+                </View> */}
+                  <View pointerEvents="none">
+                    <AppInput
+                      label={
+                        <Text style={{ ...styles.labeltxt }}>
+                          Country
+                          <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                        </Text>
+                      }
+                      value={country}
+                    />
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={styles.prefix2}>
+                      <Text style={styles.codetxt}>{countryCode}</Text>
+                    </View>
+
+                    <View style={{ width: '100%' }}>
+                      <AppInput
+                        label={
+                          <Text style={{ ...styles.labeltxt }}>
+                            Phone Number{' '}
+                            <Text style={{ color: 'red', fontSize: 18 }}>
+                              *
+                            </Text>
+                          </Text>
+                        }
+                        value={phone}
+                        autofocus={true}
+                        onChangeText={setPhone}
+                        inputStyle={styles.prefix2style}
+                        keyboardType="phone-pad"
+                        ref={phoneInputRef}
+                      />
+                    </View>
                   </View>
                   <TouchableOpacity
                     style={{ width: '100%' }}
@@ -103,74 +164,9 @@ export default function LoginScreen() {
                       Keyboard.dismiss();
                       setTimeout(() => setModalVisible(true), 100);
                     }}
-                  >
-                    <View pointerEvents="none">
-                      <AppInput
-                        label={
-                          <Text style={{ ...styles.labeltxt }}>
-                            Country
-                            <Text style={{ color: 'red', fontSize: 18 }}>
-                              *
-                            </Text>
-                          </Text>
-                        }
-                        value={country}
-
-                        // onPress={() => {
-                        //   Keyboard.dismiss();
-                        //   setModalVisible(true);
-                        // }}
-                      />
-                    </View>
-                  </TouchableOpacity>
+                  ></TouchableOpacity>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={styles.prefix2}>
-                    <Text style={styles.codetxt}>{countryCode}</Text>
-                  </View>
-                  <View style={{ width: '100%' }}>
-                    <AppInput
-                      label={
-                        <Text style={{ ...styles.labeltxt }}>
-                          Phone Number{' '}
-                          <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                        </Text>
-                      }
-                      value={phone}
-                      onChangeText={setPhone}
-                      inputStyle={styles.prefix2style}
-                      keyboardType="phone-pad"
-                      ref={phoneInputRef}
-                    />
-                  </View>
-                </View>
-
-                <AppButton title="Sent OTP" onPress={handleLogin} />
-                <View
-                  style={{
-                    ...styles.bottomtxt,
-                  }}
-                >
-                  <View style={styles.linestyle}></View>
-                  <Text style={styles.bottomtxt2}>or sign in with</Text>
-                  <View style={styles.linestyle}></View>
-                </View>
-
-                <View
-                  style={{
-                    ...styles.bottomtxt3,
-                  }}
-                >
-                  <Social
-                    title="Google"
-                    source={require('../../../../assets/image/google.png')}
-                  />
-
-                  <Social
-                    title="Apple"
-                    source={require('../../../../assets/image/apple.png')}
-                  />
-                </View>
+                <AppButton title="Save And Continue" onPress={handleLogin} />
               </View>
             </SafeAreaView>
           </ScrollView>
@@ -182,6 +178,16 @@ export default function LoginScreen() {
         onClose={() => setModalVisible(false)}
         onSelectCountry={handleSelectCountry}
       />
+      <Text style={styles.bottomtxt}>
+        Already have an account?
+        <Text
+          onPress={() => navigation.navigate('Login')}
+          style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
+        >
+          {' '}
+          Sign In
+        </Text>
+      </Text>
     </View>
   );
 }
