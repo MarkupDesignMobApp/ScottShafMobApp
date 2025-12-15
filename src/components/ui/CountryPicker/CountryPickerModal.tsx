@@ -1,5 +1,12 @@
 import React from 'react';
-import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 
 interface CountryPickerModalProps {
   visible: boolean;
@@ -15,13 +22,13 @@ const CountryPickerModal: React.FC<CountryPickerModalProps> = ({
   countries,
 }) => {
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal  statusBarTranslucent={true} onRequestClose={onClose} visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.header}>Select Country</Text>
           <FlatList
             data={countries}
-            keyExtractor={(item) => item}
+            keyExtractor={item => item}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.item}

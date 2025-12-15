@@ -50,7 +50,7 @@ export const useLoginLogic = () => {
   const handleLogin = async () => {
     try {
       const res = await login({
-        email: country,      // or phone, based on backend
+        email: country, // or phone, based on backend
         password: phone,
       }).unwrap();
 

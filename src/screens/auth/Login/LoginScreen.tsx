@@ -5,7 +5,18 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
 import { useLoginLogic } from './useLoginLogic';
 import Loader from '../../../components/ui/Loader/Loader';
-import { Image, View, StatusBar, ImageBackground, Text, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+  Image,
+  View,
+  StatusBar,
+  ImageBackground,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Keyboard,
+  TouchableOpacity,
+} from 'react-native';
 import Social from '../../../components/ui/SocialButton/Button';
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
 export default function LoginScreen() {
@@ -22,10 +33,6 @@ export default function LoginScreen() {
     handleLogin,
     isLoading,
   } = useLoginLogic();
-
-
-
-
 
   return (
     <View style={styles.maincontainer}>
@@ -64,62 +71,81 @@ export default function LoginScreen() {
       <SafeAreaProvider>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? -10 : 20} // adjust if you have header
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
         >
-
           <ScrollView
             bounces={false}
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-             <Loader visible={isLoading} color="blue" />
+            <SafeAreaView
+              edges={['top', 'left', 'right']}
+              style={styles.safeArea}
+            >
+              <Loader visible={isLoading} color="blue" />
 
               <View style={styles.innercontainer}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={styles.prefix}>
-                    <Image style={{ width: '100%', height: '100%' }} resizeMode='contain' source={require("../../../../assets/image/arrow-down.png")} />
+                    <Image
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="contain"
+                      source={require('../../../../assets/image/arrow-down.png')}
+                    />
+                  </View>
+                  <TouchableOpacity
+                    style={{ width: '100%' }}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setTimeout(() => setModalVisible(true), 100);
+                    }}
+                  >
+                    <View pointerEvents="none">
+                      <AppInput
+                        label={
+                          <Text style={{ ...styles.labeltxt }}>
+                            Country
+                            <Text style={{ color: 'red', fontSize: 18 }}>
+                              *
+                            </Text>
+                          </Text>
+                        }
+                        value={country}
+
+                        // onPress={() => {
+                        //   Keyboard.dismiss();
+                        //   setModalVisible(true);
+                        // }}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={styles.prefix2}>
+                    <Text style={styles.codetxt}>{countryCode}</Text>
                   </View>
                   <View style={{ width: '100%' }}>
                     <AppInput
                       label={
                         <Text style={{ ...styles.labeltxt }}>
-                          Country<Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                          Phone Number{' '}
+                          <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
                         </Text>
                       }
-                      value={country}
-
-                      editable={false}
-
-                      onPress={() => setModalVisible(true)}
-                    />
-                  </View>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={styles.prefix2}>
-                    <Text>{countryCode}</Text>
-                  </View>
-                  <View style={{ width: '100%' }}>
-                    <AppInput
-
-                      label={<Text style={{ ...styles.labeltxt }}>Phone Number <Text style={{ color: 'red', fontSize: 18 }}>*</Text></Text>}
                       value={phone}
                       autofocus={true}
                       onChangeText={setPhone}
                       inputStyle={styles.prefix2style}
                       keyboardType="phone-pad"
                       ref={phoneInputRef}
-
                     />
                   </View>
                 </View>
 
-                <AppButton
-                  title="Sent OTP"
-                  onPress={handleLogin}
-                />
+                <AppButton title="Sent OTP" onPress={handleLogin} />
                 <View
                   style={{
                     ...styles.bottomtxt,
@@ -146,7 +172,6 @@ export default function LoginScreen() {
                   />
                 </View>
               </View>
-
             </SafeAreaView>
           </ScrollView>
         </KeyboardAvoidingView>
