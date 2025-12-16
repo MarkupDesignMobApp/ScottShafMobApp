@@ -25,7 +25,13 @@ export type TabParamList = {
   Profile: undefined;
   CampaignAnalytics: undefined;
   OfferDetail: undefined;
-  FeaturedLists : undefined;
+  FeaturedLists: undefined;
+  inviteScreen: undefined;
+  inviteScreen: undefined;
+  ListDetailScreen: undefined;
+  BrowseCatalogScreen: undefined;
+  CreateListScreen: undefined;
+  AddCustomItem: undefined;
 };
 
 /**
@@ -46,6 +52,7 @@ export type DrawerParamList = {
 export type MainStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList> | undefined;
   Drawer: NavigatorScreenParams<DrawerParamList> | undefined;
+  
 };
 
 /**
@@ -66,6 +73,6 @@ export type RootParamList = {
  */
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootParamList {}
+    interface RootParamList extends RootParamList { }
   }
 }
