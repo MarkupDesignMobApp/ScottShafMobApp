@@ -50,7 +50,7 @@ export default function SignupScreen() {
         <ImageBackground
           resizeMode="contain"
           style={styles.img}
-          source={require('../../../../assets/image/loginbanner.png')}
+          source={require('../../../../assets/image/women.png')}
         >
           <View
             style={{
@@ -149,7 +149,7 @@ export default function SignupScreen() {
                           </Text>
                         }
                         value={phone}
-                        autofocus={true}
+                        // autofocus={true}
                         onChangeText={setPhone}
                         inputStyle={styles.prefix2style}
                         keyboardType="phone-pad"

@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import {
+  responsiveFontSize,
   responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
@@ -10,7 +11,7 @@ export const styles = StyleSheet.create({
   },
   innercontainer: {
     paddingHorizontal: responsiveScreenWidth(4),
-    paddingTop: responsiveScreenHeight(4),
+    paddingTop: responsiveScreenHeight(0),
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -26,15 +27,15 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Regular',
     textDecorationLine: 'underline',
     fontSize: responsiveScreenFontSize(2),
-    position: 'absolute',
+    marginTop: responsiveScreenHeight(1.5),
     alignSelf: 'center',
-    bottom: responsiveScreenHeight(5),
+    paddingBottom: responsiveScreenHeight(4),
   },
   targetcontainer: {
     borderWidth: 1,
     paddingHorizontal: responsiveScreenWidth(4),
     paddingVertical: responsiveScreenHeight(2),
-    borderColor: '#00C4FA',
+    borderColor: '#0180FE',
     borderRadius: responsiveScreenWidth(4),
     marginTop: responsiveScreenHeight(3),
     backgroundColor: '#EFFCFF',
@@ -51,38 +52,73 @@ export const styles = StyleSheet.create({
   },
   privacytxt2: {
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.65),
-    paddingTop: responsiveScreenHeight(1),
+    fontSize: responsiveScreenFontSize(1.68),
+    paddingTop: responsiveScreenHeight(2),
     color: '#000000',
   },
-  listcontainer:{
-    borderWidth:1,
-    paddingHorizontal:responsiveScreenWidth(4),
-    paddingVertical:responsiveScreenHeight(1),
-    borderRadius:responsiveScreenWidth(2),
-    borderColor:'#0180FE',
-    flexDirection:"row",
-    alignItems:"center",
-    marginBottom:responsiveScreenHeight(2)
+  listcontainer: {
+    borderWidth: 1,
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(1),
+    borderRadius: responsiveScreenWidth(2),
+    borderColor: '#0180FE',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: responsiveScreenHeight(2),
   },
-  icon:{
-    height:responsiveScreenHeight(5),
-    width:responsiveScreenWidth(5)
+  icon: {
+    height: responsiveScreenHeight(5),
+    width: responsiveScreenWidth(5),
   },
-  headcontainer:{
-   paddingHorizontal:responsiveScreenWidth(4)
+  headcontainer: {
+    paddingHorizontal: responsiveScreenWidth(4),
   },
-  listheadtxt:{
-    fontFamily:"Quicksand-Medium",
-    fontSize:responsiveScreenFontSize(1.9),
-    color:"#000000"
+  listheadtxt: {
+    fontFamily: 'Quicksand-Medium',
+    fontSize: responsiveScreenFontSize(1.9),
+    color: '#000000',
   },
-  listsubheadtxt:{
-    paddingTop:responsiveScreenHeight(0.75),
-    fontFamily:'Quicksand-Regular',
-    fontSize:responsiveScreenFontSize(1.75)
+  listsubheadtxt: {
+    paddingTop: responsiveScreenHeight(0.75),
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveScreenFontSize(1.75),
   },
-  listmaincontainer:{
-    paddingTop:responsiveScreenHeight(2)
-  }
+  listmaincontainer: {
+    paddingTop: responsiveScreenHeight(2),
+  },
+  list2container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: responsiveScreenHeight(0.75),
+  },
+  listitem: {
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveScreenFontSize(1.75),
+  },
+  listitem2: {
+    fontFamily: 'Quicksand-Medium',
+    color: '#FF04D7',
+    fontSize: responsiveScreenFontSize(1.75),
+  },
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: responsiveScreenWidth(4),
+    backgroundColor: '#fff',
+    paddingVertical: responsiveScreenHeight(4),
+  },
+  btncontainer: {
+    paddingTop: responsiveScreenHeight(3),
+  },
+  fixedBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingTop: responsiveScreenHeight(2),
+    // paddingBottom: responsiveScreenHeight(3),
+
+    // borderTopColor: '#EAEAEA',
+  },
 });

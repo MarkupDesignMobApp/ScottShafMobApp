@@ -171,6 +171,16 @@ export default function LoginScreen() {
                     source={require('../../../../assets/image/apple.png')}
                   />
                 </View>
+                <Text style={styles.bottomtxt4}>
+                  Don't have an account?
+                  <Text
+                    onPress={() => navigation.navigate('Signup')}
+                    style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
+                  >
+                    {' '}
+                    Sign Up
+                  </Text>
+                </Text>
               </View>
             </SafeAreaView>
           </ScrollView>

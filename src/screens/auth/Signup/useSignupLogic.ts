@@ -50,7 +50,8 @@ export const useSignupLogic = () => {
   };
 
   const handleLogin = async () => {
-    navigation.navigate('Otp');
+    navigation.navigate('TermCondition');
+    
     // try {
 
     //   // const res = await login({
