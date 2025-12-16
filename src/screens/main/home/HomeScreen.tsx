@@ -26,7 +26,7 @@ export default function HomeScreen() {
         {/* <Button onPress={Savetoken} title="SaveValue" />
 
         <Button onPress={Gettoken} title="GetValue" /> */}
-        <Button onPress={Removetoken} title="RemoveValue" />
+        <Button onPress={Removetoken} title="Log Out" />
 
         <Button onPress={Gettoken} title="GetValue" />
       </SafeAreaView>

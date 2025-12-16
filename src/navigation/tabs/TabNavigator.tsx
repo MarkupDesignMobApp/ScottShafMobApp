@@ -8,21 +8,23 @@ import CreateListScreen from '../../screens/main/List/CreateList';
 import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
 import ListDetailScreen from '../../screens/main/List/AddItems';
 import inviteScreen from '../../screens/main/Invite&Refer/inviteScreen';
+import ListPublishedScreen from '../../screens/main/List/ListPublish';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export default function TabNavigator() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }} initialRouteName='Home'>
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Profile" component={Profile} />
+      {/* <Tab.Screen name="Profile" component={Profile} /> */}
       <Tab.Screen name="CampaignAnalytics" component={CampaignAnalytics} />
       <Tab.Screen name="OfferDetail" component={OfferDetail} />
       <Tab.Screen name="FeaturedLists" component={FeaturedLists} />
-      <Tab.Screen name="inviteScreen" component={inviteScreen} />
-      <Tab.Screen name="ListDetailScreen" component={ListDetailScreen} />
+      {/* <Tab.Screen name="inviteScreen" component={inviteScreen} /> */}
+      {/* <Tab.Screen name="ListDetailScreen" component={ListDetailScreen} /> */}
       <Tab.Screen name="BrowseCatalogScreen" component={BrowseCatalogScreen} />
-      <Tab.Screen name="CreateListScreen" component={CreateListScreen} />
+      {/* <Tab.Screen name="CreateListScreen" component={CreateListScreen} />
       <Tab.Screen name="AddCustomItem" component={AddCustomItem} />
+      <Tab.Screen name="ListPublishedScreen" component={ListPublishedScreen} /> */}
 
     </Tab.Navigator>
   );

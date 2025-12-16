@@ -59,7 +59,7 @@ export default function ListDetailScreen() {
       {!item.placeholder && item.reactions && (
         <View style={styles.reactionRow}>
           <View style={{ flexDirection: 'row' }}>
-            <Image source={require('../../../../assets/image/women.png')} style={{ width: 25, height: 25, right: 5 }} />
+            <Image source={require('../../../../assets/image/women1.png')} style={{ width: 25, height: 25, right: 5 }} />
             {!item.placeholder && (
               <Text style={styles.subText}>{item.status}</Text>
             )}
@@ -96,7 +96,7 @@ export default function ListDetailScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <Image source={require('../../../../assets/image/men.png')} style={{ width: 25, height: 25 }} />
-                <Image source={require('../../../../assets/image/women.png')} style={{ width: 25, height: 25, right: 5 }} />
+                <Image source={require('../../../../assets/image/women1.png')} style={{ width: 25, height: 25, right: 5 }} />
               </View>
               <Text style={styles.typing}>Emma is typing…</Text>
             </View>
@@ -121,7 +121,7 @@ export default function ListDetailScreen() {
             {Activity.map(a => (
               <View key={a.id} style={styles.activityRow}>
                 <View style={{ flexDirection: 'row', }}>
-                  <Image source={require('../../../../assets/image/women.png')} style={{ width: 25, height: 25, right: 5 }} />
+                  <Image source={require('../../../../assets/image/women1.png')} style={{ width: 25, height: 25, right: 5 }} />
                   <Text style={styles.activityText}>{a.text}</Text>
                 </View>
                 <Text style={styles.time}>{a.time}</Text>
@@ -212,5 +212,5 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   activityText: { color: "#333", width: '85%' },
-  time: { color: "#999", fontSize: 12 , },
+  time: { color: "#999", fontSize: 12, },
 });

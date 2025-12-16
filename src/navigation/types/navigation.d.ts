@@ -36,6 +36,7 @@ export type TabParamList = {
   BrowseCatalogScreen: undefined;
   CreateListScreen: undefined;
   AddCustomItem: undefined;
+  ListPublishedScreen: undefined
 };
 
 /**

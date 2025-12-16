@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -62,7 +62,7 @@ export default function CampaignAnalytics() {
 
 
   return (
-    <SafeAreaProvider >
+    <SafeAreaProvider>
       <SafeAreaView
         edges={['top', 'left', 'right']}
         style={{ flex: 1, paddingHorizontal: 16 }}
@@ -80,67 +80,69 @@ export default function CampaignAnalytics() {
         <Text style={styles.brandText}>Brand Name Coffee – 20% Off</Text>
 
         {/* Stats Cards */}
-        <View style={styles.statsWrapper}>
-          {statsCards.map((item, index) => (
-            <View
-              key={item.id}
-              style={[
-                styles.card,
-                item.borderStyle,
-                index % 2 === 0 && styles.cardMarginRight,
-              ]}
-            >
-              <Text style={styles.cardLabel}>{item.label}</Text>
-              <Text style={styles.cardValue}>{item.value}</Text>
-              <Text style={styles.cardSub}>{item.sub}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Engagement */}
-
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Engagement Over Time</Text>
-          <View style={styles.chartRow}>
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
-              <View key={day} style={styles.chartItem}>
-                <View
-                  style={[
-                    styles.bar,
-                    { height: i === 2 ? 70 : 45 + i * 2, backgroundColor: i === 2 ? '#3B82F6' : '#C7D2FE' },
-                  ]}
-                />
-                <Text style={styles.chartLabel}>{day}</Text>
+        <ScrollView>
+          <View style={styles.statsWrapper}>
+            {statsCards.map((item, index) => (
+              <View
+                key={item.id}
+                style={[
+                  styles.card,
+                  item.borderStyle,
+                  index % 2 === 0 && styles.cardMarginRight,
+                ]}
+              >
+                <Text style={styles.cardLabel}>{item.label}</Text>
+                <Text style={styles.cardValue}>{item.value}</Text>
+                <Text style={styles.cardSub}>{item.sub}</Text>
               </View>
             ))}
           </View>
-        </View>
 
-        {/* Segment Performance */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Segment Performance</Text>
+          {/* Engagement */}
 
-          {segmentPerformance.map(item => (
-            <View key={item.id} style={styles.legendRow}>
-              <View style={item.dotStyle} />
-              <Text style={styles.legendText}>{item.label}</Text>
-              <Text style={styles.legendValue}>{item.value}</Text>
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Engagement Over Time</Text>
+            <View style={styles.chartRow}>
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                <View key={day} style={styles.chartItem}>
+                  <View
+                    style={[
+                      styles.bar,
+                      { height: i === 2 ? 70 : 45 + i * 2, backgroundColor: i === 2 ? '#3B82F6' : '#C7D2FE' },
+                    ]}
+                  />
+                  <Text style={styles.chartLabel}>{day}</Text>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </View>
 
-        {/* Recent Activity */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          {/* Segment Performance */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Segment Performance</Text>
 
-          {segmentPerformance.map(item => (
-            <View key={item.id} style={styles.legendRow}>
-              <View style={item.dotStyle} />
-              <Text style={styles.legendText}>{item.label}</Text>
-              <Text style={styles.legendValue}>{item.value}</Text>
-            </View>
-          ))}
-        </View>
+            {segmentPerformance.map(item => (
+              <View key={item.id} style={styles.legendRow}>
+                <View style={item.dotStyle} />
+                <Text style={styles.legendText}>{item.label}</Text>
+                <Text style={styles.legendValue}>{item.value}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Recent Activity */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
+
+            {segmentPerformance.map(item => (
+              <View key={item.id} style={styles.legendRow}>
+                <View style={item.dotStyle} />
+                <Text style={styles.legendText}>{item.label}</Text>
+                <Text style={styles.legendValue}>{item.value}</Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
   )
