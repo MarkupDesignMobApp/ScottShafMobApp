@@ -2,6 +2,7 @@ import * as Keychain from 'react-native-keychain';
 import { store } from './store';
 import { setCredentials, logout } from '../features/auth/authSlice';
 import { TokenService } from '../services/storage/keychain.services';
+
 export const loadTokenFromKeychain = async () => {
   const token = await TokenService.get();
 

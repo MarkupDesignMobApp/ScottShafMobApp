@@ -19,6 +19,9 @@ export type AuthStackParamList = {
 export type TabParamList = {
   Home: undefined;
   Profile: undefined;
+  CampaignAnalytics: undefined;
+  OfferDetail: undefined;
+  FeaturedLists : undefined;
 };
 
 /**

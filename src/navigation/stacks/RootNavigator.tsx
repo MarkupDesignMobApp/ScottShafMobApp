@@ -23,7 +23,7 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {token ? <MainNavigator /> : <AuthNavigator />}
+      {!token ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 }
