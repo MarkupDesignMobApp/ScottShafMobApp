@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
   innercontainer: {
     justifyContent: 'center',
 
-    paddingHorizontal: 16,
+    paddingHorizontal:responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(9),
   },
   img: {

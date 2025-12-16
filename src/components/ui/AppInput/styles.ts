@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { responsiveScreenFontSize } from 'react-native-responsive-dimensions';
 
 export const styles = StyleSheet.create({
   container: {
@@ -12,8 +13,8 @@ export const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 12,
+    // padding: 12,
     borderRadius: 8,
-    fontSize: 15,
+    fontSize:responsiveScreenFontSize(2)
   },
 });

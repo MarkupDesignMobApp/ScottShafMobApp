@@ -1,6 +1,5 @@
 import React, {
   useState,
-  useEffect,
   useRef,
   forwardRef,
   useImperativeHandle,
@@ -21,10 +20,11 @@ import {
 } from 'react-native-responsive-dimensions';
 
 interface Props {
-  value: React.ReactNode;
+  value: string;
   onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
-  label?: React.ReactNode;
+  label?: string;
+  placeholder?: string;
   prefix?: string;
   editable?: boolean;
   onPress?: () => void;
@@ -40,6 +40,7 @@ export const AppInput = forwardRef<TextInput, Props>(
       onChangeText,
       secureTextEntry,
       label,
+      placeholder,
       prefix,
       editable,
       onPress,
@@ -50,60 +51,46 @@ export const AppInput = forwardRef<TextInput, Props>(
     ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
-    const animatedIsFocused = useRef(new Animated.Value(value ? 1 : 0)).current;
+    const [showPlaceholder, setShowPlaceholder] = useState(!value);
 
     const internalRef = useRef<TextInput>(null);
     useImperativeHandle(ref, () => ({
       focus: () => internalRef.current?.focus(),
     }));
 
-    useEffect(() => {
-      Animated.timing(animatedIsFocused, {
-        toValue: isFocused || value ? 1 : 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    }, [isFocused, value]);
+    const handleFocus = () => {
+      setIsFocused(true);
+      setShowPlaceholder(false); // hide placeholder on focus
+    };
 
-    // Handle change to enforce prefix if provided
+    const handleBlur = () => {
+      setIsFocused(false);
+      if (!value) setShowPlaceholder(true); // show placeholder if input is empty
+    };
+
     const handleChange = (text: string) => {
-      if (prefix) {
-        // Ensure prefix is always at the start
-        if (!text.startsWith(prefix)) {
-          text = prefix;
-        }
+      if (prefix && !text.startsWith(prefix)) {
+        text = prefix;
       }
-      onChangeText(text);
+      onChangeText?.(text);
     };
 
     const labelStyle = {
       position: 'absolute',
       left: responsiveScreenWidth(6),
-      top: animatedIsFocused.interpolate({
-        inputRange: [0, 1],
-        outputRange: [18, -10],
-      }),
-      fontSize: animatedIsFocused.interpolate({
-        inputRange: [0, 1],
-        outputRange: [responsiveFontSize(1.75), responsiveFontSize(1.85)],
-      }),
-      color: animatedIsFocused.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['#888', '#000000'],
-      }),
+      top: -10,
+      fontSize: responsiveFontSize(1.85),
+      color: '#000',
       backgroundColor: '#fff',
       paddingLeft: responsiveScreenWidth(1.5),
       paddingRight: responsiveScreenWidth(1.75),
     };
 
-    const borderColor = animatedIsFocused.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['#ccc', '#AEAEAE'],
-    });
+    const borderColor = isFocused ? '#AEAEAE' : '#ccc';
 
     return (
       <View style={styles.container}>
-        <Animated.View style={[styles.inputContainer, { borderColor }]}>
+        <View style={[styles.inputContainer, { borderColor }]}>
           {label && <Animated.Text style={labelStyle}>{label}</Animated.Text>}
 
           <TextInput
@@ -113,16 +100,15 @@ export const AppInput = forwardRef<TextInput, Props>(
             value={value}
             onChangeText={handleChange}
             secureTextEntry={secureTextEntry}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             onPressIn={onPress}
-            placeholder=""
-            placeholderTextColor="red"
+            placeholder={showPlaceholder ? placeholder : ''}
+            placeholderTextColor="#999"
             autoFocus={autofocus}
             keyboardType={keyboardType}
-            
           />
-        </Animated.View>
+        </View>
       </View>
     );
   },
@@ -136,15 +122,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: responsiveScreenWidth(30),
     paddingHorizontal: responsiveScreenWidth(6.5),
-    paddingTop: responsiveScreenHeight(1.5),
+    paddingVertical:responsiveScreenHeight(1.75),
     paddingBottom: responsiveScreenHeight(1),
   },
   input: {
     fontSize: responsiveFontSize(2),
-    paddingVertical: responsiveScreenHeight(1.25),
+    paddingVertical: responsiveScreenHeight(0.75),
     fontFamily: 'Quicksand-Regular',
     color: '#535353',
     paddingLeft: responsiveScreenWidth(1),
-    
   },
 });

@@ -125,27 +125,25 @@ export function navigateIfReady<T extends keyof RootParamList>(
 // SHORTCUTS (YOU CAN ADD MORE)
 // ----------------------------------------------------------
 export const NavigationActions = {
-  goToLogin: () => navigate('AuthStack', { screen: 'Login' }),
+  // --------------------------
+  // AuthStack screens
+  // --------------------------
+  // goToLogin: () => navigateAuth('Login'),
+  // goToOtp: () => navigateAuth('Otp'),
+  // goToRegister: () => navigateAuth('Register'),
+  // goToSplash: () => navigateAuth('Splash'),
 
-  goToRegister: () => navigate('AuthStack', { screen: 'Register' }),
+  // --------------------------
+  // MainStack screens
+  // --------------------------
+  // goToTabs: () => navigateMain('Tabs'),
+  // goToHome: () => navigateMain('Tabs', { screen: 'Home' }),
+  // goToProfile: () => navigateMain('Tabs', { screen: 'Profile' }),
+  // goToDrawer: () => navigateMain('Drawer'),
 
-  goToHome: () =>
-    navigate('MainStack', {
-      screen: 'Tabs',
-      params: { screen: 'Home' },
-    }),
-
-  goToProfile: () =>
-    navigate('MainStack', {
-      screen: 'Tabs',
-      params: { screen: 'Profile' },
-    }),
-
-  goToTabs: () => navigate('MainStack', { screen: 'Tabs' }),
-
-  goToDrawer: () => navigate('MainStack', { screen: 'Drawer' }),
-
+  // --------------------------
+  // Reset Navigation (after login/logout)
+  // --------------------------
+  loginSuccessAndGoMain: () => resetTo('MainStack', { screen: 'Tabs', params: { screen: 'Home' } }),
   logoutAndGoAuth: () => resetTo('AuthStack', { screen: 'Login' }),
-
-  loginSuccessAndGoMain: () => resetTo('MainStack', { screen: 'Tabs' }),
 };
