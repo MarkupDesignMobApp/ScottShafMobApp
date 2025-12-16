@@ -1,5 +1,4 @@
-// src/storage/AppStorage.ts
-import { createAsyncStorage } from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type StorageValue = string | null;
 
@@ -16,39 +15,56 @@ export interface IAppStorage {
   clear(): Promise<void>;
 }
 
-// Create your scoped storage (completely isolated)
-const storage = createAsyncStorage("app-storage");
+// Optional prefix to avoid key collision
+const PREFIX = 'APP_';
+
+const withPrefix = (key: string) => `${PREFIX}${key}`;
 
 export const AppStorage: IAppStorage = {
   async setItem(key, value) {
-    return storage.setItem(key, value);
+    await AsyncStorage.setItem(withPrefix(key), value);
   },
 
   async getItem(key) {
-    return storage.getItem(key);
+    return AsyncStorage.getItem(withPrefix(key));
   },
 
   async removeItem(key) {
-    return storage.removeItem(key);
+    await AsyncStorage.removeItem(withPrefix(key));
   },
 
   async setMany(items) {
-    return storage.setMany(items);
+    const pairs = Object.entries(items).map(([key, value]) => [
+      withPrefix(key),
+      value,
+    ]);
+    await AsyncStorage.multiSet(pairs);
   },
 
   async getMany(keys) {
-    return storage.getMany(keys);
+    const prefixedKeys = keys.map(withPrefix);
+    const result = await AsyncStorage.multiGet(prefixedKeys);
+
+    return result.reduce<Record<string, StorageValue>>((acc, [key, value]) => {
+      acc[key.replace(PREFIX, '')] = value;
+      return acc;
+    }, {});
   },
 
   async removeMany(keys) {
-    return storage.removeMany(keys);
+    const prefixedKeys = keys.map(withPrefix);
+    await AsyncStorage.multiRemove(prefixedKeys);
   },
 
   async getAllKeys() {
-    return storage.getAllKeys();
+    const keys = await AsyncStorage.getAllKeys();
+    return keys
+      .filter(key => key.startsWith(PREFIX))
+      .map(key => key.replace(PREFIX, ''));
   },
 
   async clear() {
-    return storage.clear();
+    const keys = await this.getAllKeys();
+    await this.removeMany(keys);
   },
 };

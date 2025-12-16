@@ -8,13 +8,17 @@ import {
   SocialAuth,
   Signup,
   Privacy,
+  TermCondition,
+  IntrestPick,
+  About,
 } from '../../screens';
+
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export default function AuthNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Otp"
+      initialRouteName="Socialauth"
       screenOptions={{ headerShown: false }}
     >
       {/* <Stack.Screen name="Splash" component={Splash} /> */}
@@ -24,6 +28,9 @@ export default function AuthNavigator() {
       <Stack.Screen name="Socialauth" component={SocialAuth} />
       <Stack.Screen name="Signup" component={Signup} />
       <Stack.Screen name="Privacy" component={Privacy} />
+      <Stack.Screen name="TermCondition" component={TermCondition} />
+      <Stack.Screen name="Intrestpick" component={IntrestPick} />
+      <Stack.Screen name="About" component={About} />
     </Stack.Navigator>
   );
 }

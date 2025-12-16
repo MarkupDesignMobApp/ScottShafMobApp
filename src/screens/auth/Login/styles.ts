@@ -73,6 +73,17 @@ export const styles = StyleSheet.create({
     marginVertical: responsiveHeight(1),
     padding: 2,
   },
+  bottomtxt4:{
+     alignSelf: 'center',
+
+    marginVertical: responsiveHeight(3),
+    padding: 2,
+    fontFamily: 'Quicksand-Regular',
+    color: '#000000',
+    fontSize: responsiveFontSize(1.85),
+    position: 'absolute',
+    bottom: responsiveScreenHeight(-10),
+  },
   prefix: {
     position: 'absolute',
     paddingTop: responsiveScreenHeight(0.5),

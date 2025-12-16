@@ -4,7 +4,9 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
 import Button from '../../../components/ui/SocialButton/Button';
 import { OpenLinkInApp } from '../../../components/ui/Browser/browser';
+import { useNavigation } from '@react-navigation/native';
 export default function SocialLoginScreen() {
+  const navigation=useNavigation()
   return (
     <SafeAreaProvider>
       <StatusBar
@@ -53,6 +55,7 @@ export default function SocialLoginScreen() {
               <View style={styles.linestyle}></View>
             </View>
             <Button
+            onPress={()=>navigation.navigate("Signup")}
               source={require('../../../../assets/image/user.png')}
               title="Create new Account"
               buttonStyle={styles.btn}

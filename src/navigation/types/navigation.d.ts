@@ -13,6 +13,10 @@ export type AuthStackParamList = {
   Socialauth: undefined;
   Signup: undefined;
   Privacy: undefined;
+  Onbaord: undefined;
+  TermCondition: undefined;
+  Intrestpick: undefined;
+  About: undefined;
 };
 
 /**

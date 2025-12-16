@@ -14,6 +14,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
+import { saveTokenToKeychain } from '../../../app/keychain';
 import { useOtpLogic } from './useOtpLogic';
 
 export default function OtpScreen() {
@@ -29,15 +30,28 @@ export default function OtpScreen() {
     submitOtp,
   } = useOtpLogic();
 
-  const onVerify = () => {
+  const onVerify = async () => {
     const otpCode = submitOtp();
     if (!otpCode) return;
-    // alert(`OTP Verified: ${otpCode}`);
+    try {
+      // const res = await login({
+      //   email: country, // or phone, based on backend
+      //   password: phone,
+      // }).unwrap();
+
+      await saveTokenToKeychain("123456");
+    } catch (error) {
+      console.log('Login failed:', error);
+    }
   };
 
   return (
     <View style={styles.maincontainer}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
 
       {/* HEADER */}
       <View style={styles.imgcontainer}>
