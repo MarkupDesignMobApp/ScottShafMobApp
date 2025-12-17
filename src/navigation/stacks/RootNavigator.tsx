@@ -14,13 +14,14 @@ export default function RootNavigator() {
   const token = useAppSelector(state => state.auth.token);
 
   const [isReady, setIsReady] = useState(false);
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
-    null,
-  );
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
     const init = async () => {
-      await loadTokenFromKeychain();
+      await Promise.all([
+        loadTokenFromKeychain(),
+        new Promise(resolve => setTimeout(resolve, 800)),
+      ]);
 
       const seen = await AppStorage.getItem(ONBOARDING_KEY);
       setHasSeenOnboarding(seen === 'true');
@@ -30,18 +31,6 @@ export default function RootNavigator() {
 
     init();
   }, []);
-
-  // 🔁 Re-check onboarding flag when app resumes / re-renders
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      const seen = await AppStorage.getItem(ONBOARDING_KEY);
-      setHasSeenOnboarding(seen === 'true');
-    };
-
-    if (isReady) {
-      checkOnboarding();
-    }
-  }, [isReady]);
 
   if (!isReady || hasSeenOnboarding === null) {
     return <Splashscreen />;
