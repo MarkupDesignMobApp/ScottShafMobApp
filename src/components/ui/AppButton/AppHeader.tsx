@@ -21,7 +21,7 @@ interface AppHeaderProps {
   containerStyle?: ViewStyle;
 }
 
-const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 : 56;
+const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 : responsiveScreenHeight(8);
 
 const AppHeader: React.FC<AppHeaderProps> = ({
   title,

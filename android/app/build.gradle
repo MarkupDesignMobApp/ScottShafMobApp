@@ -127,3 +127,46 @@ dependencies {
         implementation jscFlavor 
     }
 }
+
+// FIX: Add explicit dependency to resolve implicit dependency warning
+afterEvaluate {
+    // This ensures the generateCodegenArtifactsFromSchema task runs before releaseSourcesJar
+    def generateCodegenTask = project.tasks.findByName('generateCodegenArtifactsFromSchema')
+    def releaseSourcesJarTask = project.tasks.findByName('releaseSourcesJar')
+    
+    if (generateCodegenTask != null && releaseSourcesJarTask != null) {
+        releaseSourcesJarTask.dependsOn(generateCodegenTask)
+    }
+    
+    // Also fix it for other build types if needed
+    def debugSourcesJarTask = project.tasks.findByName('debugSourcesJar')
+    if (generateCodegenTask != null && debugSourcesJarTask != null) {
+        debugSourcesJarTask.dependsOn(generateCodegenTask)
+    }
+}
+
+// Alternative: More comprehensive fix for all modules
+gradle.projectsEvaluated {
+    // This will apply the fix to the react-native-gesture-handler module specifically
+    try {
+        def gestureHandlerProject = rootProject.project(':react-native-gesture-handler')
+        gestureHandlerProject.afterEvaluate {
+            def gestureGenerateCodegen = gestureHandlerProject.tasks.findByName('generateCodegenArtifactsFromSchema')
+            def gestureReleaseSourcesJar = gestureHandlerProject.tasks.findByName('releaseSourcesJar')
+            
+            if (gestureGenerateCodegen != null && gestureReleaseSourcesJar != null) {
+                gestureReleaseSourcesJar.dependsOn(gestureGenerateCodegen)
+                println("Fixed: Added explicit dependency from releaseSourcesJar to generateCodegenArtifactsFromSchema")
+            }
+            
+            // Fix for debug as well
+            def gestureDebugSourcesJar = gestureHandlerProject.tasks.findByName('debugSourcesJar')
+            if (gestureGenerateCodegen != null && gestureDebugSourcesJar != null) {
+                gestureDebugSourcesJar.dependsOn(gestureGenerateCodegen)
+                println("Fixed: Added explicit dependency from debugSourcesJar to generateCodegenArtifactsFromSchema")
+            }
+        }
+    } catch (Exception e) {
+        println("Note: Could not configure react-native-gesture-handler project: ${e.message}")
+    }
+}
