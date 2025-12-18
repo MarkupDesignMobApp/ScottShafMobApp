@@ -11,7 +11,7 @@ export default function SocialLoginScreen() {
     <SafeAreaProvider>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#ffffff"
+        backgroundColor="#ffff"
         translucent={false}
       />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
