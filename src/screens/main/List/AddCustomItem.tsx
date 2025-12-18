@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     Switch,
     Image,
+    StatusBar,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -28,10 +29,12 @@ export default function AddCustomItem() {
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <StatusBar hidden={false} barStyle='dark-content' backgroundColor='#000' />
             <AppHeader
                 title="Add Custom Item"
                 leftImage={require('../../../../assets/image/left-icon.png')}
             />
+
             <View style={styles.container}>
 
                 {/* FORM */}
@@ -67,8 +70,6 @@ export default function AddCustomItem() {
                     </Text>
 
                 </View>
-
-
 
                 {/* BUTTON */}
                 <AppButton title="Create Group List" onPress={() => { }} />

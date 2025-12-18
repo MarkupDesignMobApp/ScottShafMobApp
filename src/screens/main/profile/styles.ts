@@ -101,7 +101,7 @@ export const styles = StyleSheet.create({
     height: responsiveScreenWidth(25),
     width: responsiveScreenWidth(25),
     borderRadius: responsiveScreenWidth(12.5),
-    marginTop: responsiveScreenHeight(3),
+    marginTop: responsiveScreenHeight(2),
     marginBottom: responsiveScreenHeight(5),
   },
   camcontainer: {
@@ -113,12 +113,12 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F6FBFF',
-    right:10,
-    bottom:-12,
-    borderColor:"#0180FE"
+    right: 10,
+    bottom: -12,
+    borderColor: "#0180FE"
   },
   cammaincontainer: {
-    width:responsiveScreenHeight(1.5),
-    height:responsiveScreenHeight(1.5)
+    width: responsiveScreenHeight(1.5),
+    height: responsiveScreenHeight(1.5)
   },
 });

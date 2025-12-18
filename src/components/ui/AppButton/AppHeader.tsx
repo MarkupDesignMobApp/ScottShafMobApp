@@ -40,7 +40,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         styles.container,
         {
           paddingTop: Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight,
-          height: HEADER_HEIGHT + (Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight || 0),
+          height: HEADER_HEIGHT + (Platform.OS === 'ios' ? insets.top :  0),
         },
         containerStyle,
       ]}

@@ -48,7 +48,7 @@ export default function ProfileScreen() {
       <View style={styles.listmaincontainer}>
         {Data.map((item, index) => (
           <Pressable
-            onPress={() => navigation.getParent()?.navigate('EditProfile')}
+            onPress={() => navigation.getParent()?.navigate(item.navigate)}
             style={styles.listcontainer}
             key={item.id}
           >
