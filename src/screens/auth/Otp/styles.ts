@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet,StatusBar } from 'react-native';
 import {
   responsiveScreenHeight,
   responsiveHeight,
@@ -13,15 +13,18 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
 
     paddingHorizontal:responsiveScreenWidth(4),
-    paddingTop: responsiveScreenHeight(12),
+    paddingTop: responsiveScreenHeight(2),
   },
   img: {
     width: '100%',
     height: '100%',
   },
   imgcontainer: {
-    height: responsiveScreenHeight(30.5),
+    height: responsiveScreenHeight(37),
     width: responsiveScreenWidth(100),
+    marginTop: Platform.OS === 'android'
+    ? -(StatusBar.currentHeight ?? 0)
+    : -30,
   },
   maincontainer: {
     flex: 1,
@@ -47,7 +50,7 @@ export const styles = StyleSheet.create({
   },
   headcontainer: {
     alignItems: 'center',
-    marginTop: responsiveScreenHeight(-2)
+    // marginTop: responsiveScreenHeight(-2)
   },
   bottomtxt: {
     flexDirection: 'row',

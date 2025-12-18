@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
+import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 export default function SignupScreen() {
   const {
     country,
@@ -71,7 +72,7 @@ export default function SignupScreen() {
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ?responsiveScreenHeight(30) : 0}
         >
           <ScrollView
             bounces={false}
@@ -122,23 +123,43 @@ export default function SignupScreen() {
                     />
                   </View>
                 </View> */}
-                  <View pointerEvents="none">
-                    <AppInput
-                      label={
-                        <Text style={{ ...styles.labeltxt }}>
-                          Country
-                          <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                        </Text>
-                      }
-                      value={country}
-                    />
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+         <TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => {
+    Keyboard.dismiss();
+    setTimeout(() => setModalVisible(true), 150);
+  }}
+>
+  <View style={{ position: 'relative' }}>
+    {/* Input (non-editable) */}
+    <View pointerEvents="none">
+      <AppInput
+        label={
+          <Text style={styles.labeltxt}>
+            Country <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+          </Text>
+        }
+        value={country}
+      />
+    </View>
+
+    {/* Arrow icon */}
+    <Image
+      source={require('../../../../assets/image/arrow-down.png')}
+      style={styles.countryArrow}
+      resizeMode="contain"
+    />
+  </View>
+</TouchableOpacity>
+
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                     <View style={styles.prefix2}>
                       <Text style={styles.codetxt}>{countryCode}</Text>
+                      
                     </View>
 
-                    <View style={{ width: '100%' }}>
+                    <View style={{ width: '100%', }}>
                       <AppInput
                         label={
                           <Text style={{ ...styles.labeltxt }}>
@@ -155,7 +176,9 @@ export default function SignupScreen() {
                         keyboardType="phone-pad"
                         ref={phoneInputRef}
                       />
+                     
                     </View>
+                    
                   </View>
                   <TouchableOpacity
                     style={{ width: '100%' }}
@@ -167,6 +190,16 @@ export default function SignupScreen() {
                   ></TouchableOpacity>
                 </View>
                 <AppButton title="Save And Continue" onPress={handleLogin} />
+                <Text style={styles.bottomtxt}>
+        Already have an account?
+        <Text
+          onPress={() => navigation.navigate('Login')}
+          style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
+        >
+          {' '}
+          Sign In
+        </Text>
+      </Text>
               </View>
             </SafeAreaView>
           </ScrollView>
@@ -178,16 +211,7 @@ export default function SignupScreen() {
         onClose={() => setModalVisible(false)}
         onSelectCountry={handleSelectCountry}
       />
-      <Text style={styles.bottomtxt}>
-        Already have an account?
-        <Text
-          onPress={() => navigation.navigate('Login')}
-          style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
-        >
-          {' '}
-          Sign In
-        </Text>
-      </Text>
+     
     </View>
   );
 }

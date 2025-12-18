@@ -1,25 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { AppInput } from '../../../components/ui/AppInput/AppInput';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { styles } from './styles';
-import { useLoginLogic } from './useLoginLogic';
-import Loader from '../../../components/ui/Loader/Loader';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react';
 import {
-  Image,
   View,
+  Text,
+  Image,
   StatusBar,
   ImageBackground,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Keyboard,
   TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+
+import { styles } from './styles';
+import { useLoginLogic } from './useLoginLogic';
+
+import { AppButton } from '../../../components/ui/AppButton/AppButton';
+import { AppInput } from '../../../components/ui/AppInput/AppInput';
+import Loader from '../../../components/ui/Loader/Loader';
 import Social from '../../../components/ui/SocialButton/Button';
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
+
 export default function LoginScreen() {
   const {
     country,
@@ -34,158 +37,153 @@ export default function LoginScreen() {
     handleLogin,
     isLoading,
   } = useLoginLogic();
+
   const navigation = useNavigation();
+
+  /** ---------- SCROLL CONTENT ---------- */
+  const Content = () => (
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 160 }}
+    >
+      <View style={styles.headcontainer}>
+        <Text style={styles.heading}>Welcome Back!</Text>
+        <Text style={styles.heading2}>
+          We&apos;ll send you a verification code
+        </Text>
+      </View>
+      <SafeAreaView style={{ flex: 1 }}>
+        <Loader visible={isLoading} color="blue" />
+
+        <View style={styles.innercontainer}>
+          {/* Country */}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.prefix}>
+              <Image
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="contain"
+                source={require('../../../../assets/image/arrow-down.png')}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={{ width: '100%' }}
+              activeOpacity={0.8}
+              onPress={() => {
+                Keyboard.dismiss();
+                setTimeout(() => setModalVisible(true), 150);
+              }}
+            >
+              <View pointerEvents="none">
+                <AppInput
+                  label={
+                    <Text style={styles.labeltxt}>
+                      Country <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                  }
+                  value={country}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Phone */}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.prefix2}>
+              <Text style={styles.codetxt}>{countryCode}</Text>
+            </View>
+
+            <View style={{ width: '100%', }}>
+              <AppInput
+                label={
+                  <Text style={{ ...styles.labeltxt }}>
+                    Phone Number{' '}
+                    <Text style={{ color: 'red', fontSize: 18 }}>
+                      *
+                    </Text>
+                  </Text>
+                }
+                value={phone}
+                // autofocus={true}
+                onChangeText={setPhone}
+                inputStyle={styles.prefix2style}
+                keyboardType="phone-pad"
+                ref={phoneInputRef}
+              />
+
+            </View>
+          </View>
+
+          <AppButton title="Send OTP" onPress={handleLogin} />
+
+          {/* OR */}
+          <View style={styles.bottomtxt}>
+            <View style={styles.linestyle} />
+            <Text style={styles.bottomtxt2}>or sign in with</Text>
+            <View style={styles.linestyle} />
+          </View>
+
+          {/* Social */}
+          <View style={styles.bottomtxt3}>
+            <Social
+              title="Google"
+              source={require('../../../../assets/image/google.png')}
+            />
+            <Social
+              title="Apple"
+              source={require('../../../../assets/image/apple.png')}
+            />
+          </View>
+
+          {/* Signup */}
+          <Text style={styles.bottomtxt4}>
+            Don&apos;t have an account?
+            <Text
+              onPress={() => navigation.navigate('Signup')}
+              style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
+            >
+              {' '}
+              Sign Up
+            </Text>
+          </Text>
+        </View>
+      </SafeAreaView>
+    </ScrollView>
+  );
+
   return (
     <View style={styles.maincontainer}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="dark-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+
+      {/* Banner */}
       <View style={styles.imgcontainer}>
         <ImageBackground
           resizeMode="contain"
           style={styles.img}
           source={require('../../../../assets/image/loginbanner.png')}
         >
-          <View
-            style={{
-              height: '100%',
-              width: '100%',
-            }}
-          >
-            <Image
-              resizeMode="cover"
-              style={styles.img}
-              source={require('../../../../assets/image/blur.png')}
-            />
-          </View>
-          <View style={styles.headcontainer}>
-            <Text style={{ ...styles.heading }}>Welcome Back!</Text>
-            <Text style={{ ...styles.heading2 }}>
-              We'll send you a verification code
-            </Text>
-          </View>
+          <Image
+            resizeMode="cover"
+            style={styles.img}
+            source={require('../../../../assets/image/blur.png')}
+          />
+
         </ImageBackground>
       </View>
 
+      {/* Content */}
       <SafeAreaProvider>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-        >
-          <ScrollView
-            bounces={false}
-            contentContainerStyle={{ flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <SafeAreaView
-              edges={['top', 'left', 'right']}
-              style={styles.safeArea}
-            >
-              <Loader visible={isLoading} color="blue" />
-
-              <View style={styles.innercontainer}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={styles.prefix}>
-                    <Image
-                      style={{ width: '100%', height: '100%' }}
-                      resizeMode="contain"
-                      source={require('../../../../assets/image/arrow-down.png')}
-                    />
-                  </View>
-                  <TouchableOpacity
-                    style={{ width: '100%' }}
-                    activeOpacity={0.8}
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      setTimeout(() => setModalVisible(true), 100);
-                    }}
-                  >
-                    <View pointerEvents="none">
-                      <AppInput
-                        label={
-                          <Text style={{ ...styles.labeltxt }}>
-                            Country
-                            <Text style={{ color: 'red', fontSize: 18 }}>
-                              *
-                            </Text>
-                          </Text>
-                        }
-                        value={country}
-
-                        // onPress={() => {
-                        //   Keyboard.dismiss();
-                        //   setModalVisible(true);
-                        // }}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={styles.prefix2}>
-                    <Text style={styles.codetxt}>{countryCode}</Text>
-                  </View>
-                  <View style={{ width: '100%' }}>
-                    <AppInput
-                      label={
-                        <Text style={{ ...styles.labeltxt }}>
-                          Phone Number{' '}
-                          <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                        </Text>
-                      }
-                      value={phone}
-                      onChangeText={setPhone}
-                      inputStyle={styles.prefix2style}
-                      keyboardType="phone-pad"
-                      ref={phoneInputRef}
-                    />
-                  </View>
-                </View>
-
-                <AppButton title="Sent OTP" onPress={handleLogin} />
-                <View
-                  style={{
-                    ...styles.bottomtxt,
-                  }}
-                >
-                  <View style={styles.linestyle}></View>
-                  <Text style={styles.bottomtxt2}>or sign in with</Text>
-                  <View style={styles.linestyle}></View>
-                </View>
-
-                <View
-                  style={{
-                    ...styles.bottomtxt3,
-                  }}
-                >
-                  <Social
-                    title="Google"
-                    source={require('../../../../assets/image/google.png')}
-                  />
-
-                  <Social
-                    title="Apple"
-                    source={require('../../../../assets/image/apple.png')}
-                  />
-                </View>
-                <Text style={styles.bottomtxt4}>
-                  Don't have an account?
-                  <Text
-                    onPress={() => navigation.navigate('Signup')}
-                    style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
-                  >
-                    {' '}
-                    Sign Up
-                  </Text>
-                </Text>
-              </View>
-            </SafeAreaView>
-          </ScrollView>
-        </KeyboardAvoidingView>
+        {Platform.OS === 'ios' ? (
+          <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+            <Content />
+          </KeyboardAvoidingView>
+        ) : (
+          <Content />
+        )}
       </SafeAreaProvider>
+
+      {/* Country Picker */}
       <CountryPickerModal
         visible={modalVisible}
         countries={countries}

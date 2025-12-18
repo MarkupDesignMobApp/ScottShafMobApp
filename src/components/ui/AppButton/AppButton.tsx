@@ -18,7 +18,7 @@ interface Props {
   Textcolor?: string;
 }
 
-export const AppButton = ({ title, onPress, disabled, image, style, Textcolor }: Props) => {
+export const AppButton = ({ title, onPress, disabled, image, style, Textcolor='#FFF' }: Props) => {
   return (
     <TouchableOpacity
       style={[styles.button, disabled && styles.disabled, style]}

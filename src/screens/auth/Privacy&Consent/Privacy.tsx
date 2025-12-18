@@ -5,11 +5,11 @@ import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { Switch } from 'react-native-paper';
 import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
-import { useNavigation } from '@react-navigation/native';
+
 import { OpenLinkInApp } from '../../../components/ui/Browser/browser';
-const Privacy = () => {
+const Privacy = ({navigation}) => {
   const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-  const navigation =useNavigation()
+  
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
 
   const Data = [
@@ -69,6 +69,7 @@ const Privacy = () => {
     <View style={styles.container}>
       {/* 🔒 Fixed Header */}
       <AppHeader
+      onLeftPress={()=>navigation.goBack()}
         title="Privacy & Consent"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />

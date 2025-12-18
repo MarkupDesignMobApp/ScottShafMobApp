@@ -5,7 +5,7 @@ import { responsiveFontSize, responsiveHeight, responsiveScreenHeight, responsiv
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 
-export default function EditProfile() {
+export default function EditProfile({navigation}) {
 
   const [categories, setCategories] = React.useState([
     { name: 'Travel', code: 'Travel' },

@@ -7,7 +7,7 @@ import {
 
 export const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#00C4FA',
+    backgroundColor: '#0180FE',
     paddingVertical: responsiveHeight(2.5),
     paddingHorizontal: responsiveScreenWidth(6),
     borderRadius: responsiveScreenWidth(30),
@@ -32,5 +32,6 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontSize: responsiveFontSize(1.85),
     fontFamily: 'Ubuntu-Regular', // fixed typo
+    
   },
 });

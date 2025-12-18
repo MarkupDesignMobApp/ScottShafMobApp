@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     alignSelf: 'center',
-    bottom: responsiveScreenHeight(10),
+    bottom: responsiveScreenHeight(8),
   },
   container: {
     padding: 16,
@@ -79,7 +79,7 @@ export const styles = StyleSheet.create({
   btntitle: {
     fontFamily: 'Ubuntu-Regular',
     color: '#000000',
-    fontSize: responsiveScreenFontSize(2.25),
+    fontSize: responsiveScreenFontSize(2),
   },
   selectedCard: {
     backgroundColor: '#FFFBFE',
@@ -113,6 +113,6 @@ export const styles = StyleSheet.create({
   bottomtxt:{
     color:'#000000',
     fontFamily:'Ubuntu-Medium',
-    fontSize:responsiveScreenFontSize(2.25)
+    fontSize:responsiveScreenFontSize(2)
   }
 });

@@ -8,14 +8,11 @@ import {
   ViewStyle,
   Image,
   ImageSourcePropType,
-  StatusBar,
 } from 'react-native';
 import {
   responsiveScreenFontSize,
-  responsiveScreenHeight,
-  responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AppHeaderProps {
   title: string;
@@ -26,7 +23,7 @@ interface AppHeaderProps {
   containerStyle?: ViewStyle;
 }
 
-const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 : responsiveScreenHeight(8);
+const HEADER_HEIGHT = 56;
 
 const AppHeader: React.FC<AppHeaderProps> = ({
   title,
@@ -36,68 +33,55 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onRightPress,
   containerStyle,
 }) => {
-  const insets = useSafeAreaInsets();
-
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight,
-          height: HEADER_HEIGHT + (Platform.OS === 'ios' ? insets.top :  0),
-        },
-        containerStyle,
-      ]}
-    >
-      {/* Left */}
-      <View style={styles.sideContainer}>
-        {leftImage && (
-          <TouchableOpacity
-            style={styles.imgcontainer}
-            onPress={onLeftPress}
-            hitSlop={10}
-          >
-            <Image
-              resizeMode="contain"
-              source={leftImage}
-              style={styles.icon}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
+      <View style={[styles.container, containerStyle]}>
+        {/* Left */}
+        <View style={styles.sideContainer}>
+          {leftImage && (
+            <TouchableOpacity
+              onPress={onLeftPress}
+              hitSlop={10}
+              style={styles.iconWrapper}
+            >
+              <Image source={leftImage} style={styles.icon} />
+            </TouchableOpacity>
+          )}
+        </View>
 
-      {/* Center */}
-      <View style={styles.titleContainer}>
-        <Text numberOfLines={1} style={styles.title}>
-          {title}
-        </Text>
-      </View>
+        {/* Center */}
+        <View style={styles.titleContainer}>
+          <Text numberOfLines={1} style={styles.title}>
+            {title}
+          </Text>
+        </View>
 
-      {/* Right */}
-      <View style={styles.sideContainer}>
-        {rightImage && (
-          <TouchableOpacity
-            style={styles.imgcontainer}
-            onPress={onRightPress}
-            hitSlop={10}
-          >
-            <Image
-              resizeMode="contain"
-              source={rightImage}
-              style={styles.icon}
-            />
-          </TouchableOpacity>
-        )}
+        {/* Right */}
+        <View style={styles.sideContainer}>
+          {rightImage && (
+            <TouchableOpacity
+              onPress={onRightPress}
+              hitSlop={10}
+              style={styles.iconWrapper}
+            >
+              <Image source={rightImage} style={styles.icon} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default AppHeader;
 
+
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: '#FFFFFF',
+  },
   container: {
-    width: '100%',
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
@@ -111,21 +95,24 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: responsiveScreenFontSize(2),
     fontWeight: Platform.OS === 'ios' ? '600' : '500',
-    color: '#000000',
+    color: '#000',
     fontFamily: 'samsungsharpsans',
+  },
+  iconWrapper: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   icon: {
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
-  },
-  imgcontainer: {
-    width: responsiveScreenWidth(6),
-    height: responsiveScreenHeight(6),
   },
 });

@@ -16,7 +16,7 @@ import { styles } from './styles';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { saveTokenToKeychain } from '../../../app/keychain';
 import { useOtpLogic } from './useOtpLogic';
-
+import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 export default function OtpScreen() {
   const {
     otp,
@@ -65,6 +65,18 @@ export default function OtpScreen() {
             style={styles.img}
             source={require('../../../../assets/image/blur.png')}
           />
+          
+        </ImageBackground>
+      </View>
+
+      {/* BODY */}
+      <SafeAreaProvider>
+      <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ?responsiveScreenHeight(30) : 0}
+        >
+          <ScrollView keyboardShouldPersistTaps="handled">
           <View style={styles.headcontainer}>
             <Text style={styles.heading}>OTP Verification</Text>
             <Text style={styles.heading2}>
@@ -74,16 +86,6 @@ export default function OtpScreen() {
               </Text>
             </Text>
           </View>
-        </ImageBackground>
-      </View>
-
-      {/* BODY */}
-      <SafeAreaProvider>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <ScrollView keyboardShouldPersistTaps="handled">
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.innercontainer}>
                 {/* OTP INPUTS */}

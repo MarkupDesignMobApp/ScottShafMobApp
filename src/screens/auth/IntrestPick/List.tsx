@@ -102,7 +102,7 @@ const TwoColumnList = () => {
 
             <Text style={styles.bottomtxt}>
               Minimum:{' '}
-              <Text style={{ color: '#0180FE', fontSize: 20 }}>
+              <Text style={{ color: '#0180FE',  }}>
                 {MIN_SELECTION.toString().padStart(2, '0')}
               </Text>
             </Text>

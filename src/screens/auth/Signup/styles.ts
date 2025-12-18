@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet, } from 'react-native';
 import {
   responsiveScreenHeight,
   responsiveHeight,
@@ -10,18 +10,24 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   innercontainer: {
-    justifyContent: 'center',
-
+    flex: 1,
     paddingHorizontal: responsiveScreenWidth(4),
+    justifyContent: 'space-between',
   },
   img: {
     width: '100%',
     height: '100%',
   },
   imgcontainer: {
-    height: responsiveScreenHeight(30.5),
+    height: responsiveScreenHeight(37),
     width: responsiveScreenWidth(100),
+  
+    // ✅ KEY FIX
+     marginTop: Platform.OS === 'android'
+      ?-(StatusBar.currentHeight ?? 0)
+      : -30,
   },
+  
   maincontainer: {
     flex: 1,
     backgroundColor: '#fff',
@@ -45,15 +51,14 @@ export const styles = StyleSheet.create({
   },
   bottomtxt: {
     alignSelf: 'center',
-
-    marginVertical: responsiveHeight(3),
-    padding: 2,
+    marginTop: responsiveScreenHeight(2),
+    marginBottom: responsiveScreenHeight(10),
+    padding: responsiveHeight(0.5),
     fontFamily: 'Quicksand-Regular',
     color: '#000000',
     fontSize: responsiveFontSize(1.85),
-    position: 'absolute',
-    bottom: responsiveScreenHeight(4),
   },
+  
   bottomtxt2: {
     width: '40%',
     textAlign: 'center',
@@ -88,27 +93,44 @@ export const styles = StyleSheet.create({
     fontSize: responsiveFontSize(2),
   },
   prefix2: {
-    height: responsiveHeight(4),
-    width: responsiveScreenWidth(10),
-
     position: 'absolute',
+    left: responsiveScreenWidth(4),
+    height: responsiveHeight(4),          // ✅ match input height
+    minWidth: responsiveScreenWidth(14),
     alignItems: 'center',
-    justifyContent: 'center',
-    left: responsiveScreenWidth(5),
+    justifyContent: 'center',  
+    borderRightWidth:1  , 
+    borderRightColor:'lightgrey'         // ✅ vertical center
 
-    fontSize: responsiveFontSize(12),
-    paddingVertical: responsiveScreenHeight(1.25),
-    fontFamily: 'Quicksand-Regular',
-    color: '#535353',
-    paddingLeft: responsiveScreenWidth(1),
   },
+  
+  
   prefix2style: {
-    marginLeft: responsiveScreenWidth(10),
+    marginLeft: responsiveScreenWidth(16), // ✅ matches prefix width
+    
   },
+  
   codetxt: {
     fontFamily: 'Quicksand-Regular',
-    // fontSize:15
+    fontSize: responsiveFontSize(1.9),
+    lineHeight: responsiveFontSize(1.5),  // ✅ forces vertical centering
+    textAlignVertical: 'center',
+    paddingTop:responsiveScreenHeight(0.85),
+    color:'#535353'
+
   },
+  countryArrow: {
+    position: 'absolute',
+    right: responsiveScreenWidth(4),
+    top: responsiveScreenHeight(4), // aligns with input center
+    width: responsiveScreenWidth(4),
+    height: responsiveHeight(2),
+    tintColor: '#AEAEAE', // optional
+    
+  },
+  
+  
+  
   inputcontainer: {
     paddingBottom: responsiveScreenHeight(2),
   },

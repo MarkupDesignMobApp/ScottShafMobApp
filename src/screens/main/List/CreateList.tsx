@@ -15,12 +15,12 @@ import {
 } from "react-native";
 import { AppButton } from "../../../components/ui/AppButton/AppButton";
 import { AppInput } from "../../../components/ui/AppInput/AppInput";
-import { useNavigation } from "@react-navigation/native";
+
 import { responsiveFontSize, responsiveHeight, responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from "react-native-responsive-dimensions";
 import AppHeader from "../../../components/ui/AppButton/AppHeader";
 
 
-export default function CreateListScreen() {
+export default function CreateListScreen({navigation}) {
     const [categories, setCategories] = useState([
         { name: 'Apple', code: 'apple' },
         { name: 'Banana', code: 'banana' }
@@ -30,12 +30,13 @@ export default function CreateListScreen() {
     const [isSwitchOn, setIsSwitchOn] = React.useState(false);
     const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
     const selectedLabel = selected ? categories.find(c => c.code === selected)?.name ?? '' : '';
-    const navigation = useNavigation();
+   
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <StatusBar hidden={false} barStyle='dark-content' />
             <AppHeader
+            onLeftPress={()=>navigation.goBack()}
                 title="Create List"
                 leftImage={require('../../../../assets/image/left-icon.png')}
             />
