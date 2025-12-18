@@ -134,7 +134,6 @@ const styles = StyleSheet.create({
         color: '#000000',
         width: responsiveScreenWidth(75)
     },
-
     input: {
         height: 52,
         borderRadius: 26,

@@ -18,6 +18,7 @@ import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
 import ListDetailScreen from '../../screens/main/List/AddItems';
 import inviteScreen from '../../screens/main/Invite&Refer/inviteScreen';
 import ListPublishedScreen from '../../screens/main/List/ListPublish';
+import ProfileQuestion from '../../screens/main/feature/ProfileQuestion';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const getTabIcon = (routeName: string, focused: boolean) => {
@@ -74,6 +75,7 @@ export default function TabNavigator() {
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
       <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen name="ProfileQuestion" component={ProfileQuestion} />
     </Tab.Navigator>
   );
 }

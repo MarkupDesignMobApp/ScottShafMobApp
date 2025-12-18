@@ -7,7 +7,7 @@ import {
 
 export const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#3478f6',
+    backgroundColor: '#00C4FA',
     paddingVertical: responsiveHeight(2.5),
     paddingHorizontal: responsiveScreenWidth(6),
     borderRadius: responsiveScreenWidth(30),
