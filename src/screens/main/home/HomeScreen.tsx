@@ -155,8 +155,8 @@ export default function HomeScreen() {
         </View>
 
         {/* <ImageCarousel /> */}
-        {/* <Button onPress={Removetoken} title="RemoveValue" />
-        <Button onPress={Gettoken} title="GetValue" /> */}
+        <Button onPress={Removetoken} title="RemoveValue" />
+        <Button onPress={Gettoken} title="GetValue" />
       </SafeAreaView>
     </SafeAreaProvider>
   );

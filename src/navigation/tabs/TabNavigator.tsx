@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image } from 'react-native';
 import { TabParamList } from '../types/navigation';
-import { Profile, Home, FeaturedLists } from '../../screens';
+import { Profile, Home, FeaturedLists,CreateList, MyList} from '../../screens';
 import CampaignAnalytics from '../../screens/main/campaign/CampaignAnalytics';
 import OfferDetail from '../../screens/main/offers/OfferDetail';
 import AddCustomItem from '../../screens/main/List/AddCustomItem';
@@ -56,16 +56,16 @@ export default function TabNavigator() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          fontFamily:"Ubunty-Regular",
-          marginTop:4
+          fontFamily: 'Ubuntu-Regular',
+          marginTop: 4,
         },
         tabBarIcon: ({ focused }) => getTabIcon(route.name, focused),
       })}
     >
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Discover" component={Profile} />
-      <Tab.Screen name="Create" component={Home} />
-      <Tab.Screen name="MyLists" component={Profile} />
+      <Tab.Screen name="Create" component={CreateList} />
+      <Tab.Screen name="MyLists" component={MyList} />
       <Tab.Screen name="Profile" component={Home} />
     </Tab.Navigator>
   );
