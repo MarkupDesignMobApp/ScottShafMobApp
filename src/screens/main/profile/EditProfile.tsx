@@ -3,10 +3,11 @@ import React from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { styles } from './styles';
 
-export default function EditProfile() {
+export default function EditProfile({navigation}) {
   return (
     <View>
       <AppHeader
+      onLeftPress={()=>navigation.goBack()}
         title="Edit Profile"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
@@ -17,7 +18,7 @@ export default function EditProfile() {
             style={styles.img}
             source={require('../../../../assets/image/women1.png')}
           />
-          <Pressable onPress={()=>alert("efef")} style={styles.camcontainer}>
+          <Pressable onPress={() => alert('efef')} style={styles.camcontainer}>
             <View style={styles.cammaincontainer}>
               <Image
                 resizeMode="contain"

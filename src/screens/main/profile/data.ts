@@ -15,7 +15,7 @@ export const Data = [
     id: '3',
     icon: require('../../../../assets/image/bell.png'),
     title: 'Notifications',
-    navigate: 'EditProfile',
+    navigate: 'Notification',
   },
   {
     id: '4',

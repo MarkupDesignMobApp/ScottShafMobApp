@@ -16,6 +16,8 @@ import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
+import ImageCarousel2 from './MyCarousel2';
+import ImageCarousel3 from './MyCarousel3';
 export default function HomeScreen() {
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
@@ -155,6 +157,20 @@ export default function HomeScreen() {
               </Text>
             </View>
             <ImageCarousel />
+
+            <View style={styles.cardheading}>
+              <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
+                Sponsored Campaign
+              </Text>
+            </View>
+            <ImageCarousel2 />
+
+            <View style={styles.cardheading}>
+              <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
+                Recommended For You
+              </Text>
+            </View>
+            <ImageCarousel3 />
           </ScrollView>
         </View>
 

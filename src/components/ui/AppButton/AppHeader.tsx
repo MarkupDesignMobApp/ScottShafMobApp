@@ -10,7 +10,11 @@ import {
   ImageSourcePropType,
   StatusBar,
 } from 'react-native';
-import { responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from 'react-native-responsive-dimensions';
+import {
+  responsiveScreenFontSize,
+  responsiveScreenHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AppHeaderProps {
@@ -39,8 +43,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       style={[
         styles.container,
         {
-          paddingTop: Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight,
-          height: HEADER_HEIGHT + (Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight || 0),
+          paddingTop:
+            Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight,
+          height:
+            HEADER_HEIGHT +
+            (Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight || 0),
         },
         containerStyle,
       ]}
@@ -48,8 +55,16 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       {/* Left */}
       <View style={styles.sideContainer}>
         {leftImage && (
-          <TouchableOpacity style={styles.imgcontainer} onPress={onLeftPress} hitSlop={10}>
-            <Image resizeMode='contain' source={leftImage} style={styles.icon} />
+          <TouchableOpacity
+            style={styles.imgcontainer}
+            onPress={onLeftPress}
+            hitSlop={10}
+          >
+            <Image
+              resizeMode="contain"
+              source={leftImage}
+              style={styles.icon}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -64,8 +79,16 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       {/* Right */}
       <View style={styles.sideContainer}>
         {rightImage && (
-          <TouchableOpacity style={styles.imgcontainer} onPress={onRightPress} hitSlop={10}>
-            <Image resizeMode='contain' source={rightImage} style={styles.icon} />
+          <TouchableOpacity
+            style={styles.imgcontainer}
+            onPress={onRightPress}
+            hitSlop={10}
+          >
+            <Image
+              resizeMode="contain"
+              source={rightImage}
+              style={styles.icon}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -106,6 +129,6 @@ const styles = StyleSheet.create({
   },
   imgcontainer: {
     width: responsiveScreenWidth(6),
-    height: responsiveScreenHeight(6)
-  }
+    height: responsiveScreenHeight(6),
+  },
 });
