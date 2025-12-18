@@ -66,7 +66,7 @@ export default function TabNavigator() {
       <Tab.Screen name="Discover" component={Profile} />
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
-      <Tab.Screen name="Profile" component={Home} />
+      <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
 }

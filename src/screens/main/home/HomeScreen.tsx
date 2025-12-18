@@ -81,7 +81,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.imgcontainer}>
           <Image
-          tintColor={'#fff'}
+            tintColor={'#fff'}
             resizeMode="contain"
             style={styles.img}
             source={require('../../../../assets/image/bell.png')}
@@ -120,7 +120,7 @@ export default function HomeScreen() {
         </View>
         <View style={{ ...styles.checkmaincontainer }}>
           <ScrollView
-          showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             scrollEventThrottle={16}
             contentContainerStyle={styles.innerscrollcontainer}
           >
@@ -147,16 +147,20 @@ export default function HomeScreen() {
               />
             </View>
             <View style={styles.cardheading}>
-              <Text style={{...styles.cardheadingtxt,fontWeight:"500"}}>Featured Lists</Text>
-               <Text style={{...styles.cardheadingtxt,color:"#0180FE"}}>See All</Text>
+              <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
+                Featured Lists
+              </Text>
+              <Text style={{ ...styles.cardheadingtxt, color: '#0180FE' }}>
+                See All
+              </Text>
             </View>
             <ImageCarousel />
           </ScrollView>
         </View>
 
         {/* <ImageCarousel /> */}
-        <Button onPress={Removetoken} title="RemoveValue" />
-        <Button onPress={Gettoken} title="GetValue" />
+        {/* <Button onPress={Removetoken} title="RemoveValue" />
+        <Button onPress={Gettoken} title="GetValue" /> */}
       </SafeAreaView>
     </SafeAreaProvider>
   );

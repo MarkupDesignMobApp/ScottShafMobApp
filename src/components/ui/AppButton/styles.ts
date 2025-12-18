@@ -4,10 +4,12 @@ import {
   responsiveHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
+
 export const styles = StyleSheet.create({
   button: {
     backgroundColor: '#3478f6',
-    padding: responsiveHeight(2.5),
+    paddingVertical: responsiveHeight(2.5),
+    paddingHorizontal: responsiveScreenWidth(6),
     borderRadius: responsiveScreenWidth(30),
     alignItems: 'center',
     marginTop: 10,
@@ -15,13 +17,20 @@ export const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5,
   },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    width: responsiveScreenWidth(5),
+    height: responsiveScreenWidth(5),
+    marginRight: responsiveScreenWidth(2),
+    resizeMode: 'contain',
+  },
   label: {
     color: '#fff',
     fontSize: responsiveFontSize(1.85),
-
-    fontFamily: 'Ubuntu-Reguular',
-  },
-  container: {
-    color: 'green',
+    fontFamily: 'Ubuntu-Regular', // fixed typo
   },
 });
