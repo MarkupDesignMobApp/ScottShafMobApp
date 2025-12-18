@@ -1,32 +1,38 @@
-export const Data=[
-    {
-        id:"1",
-        icon:require("../../../../assets/image/user.png"),
-        title:"My Profile"
-    },
-      {
-        id:"2",
-        icon:require("../../../../assets/image/user.png"),
-        title:"Privacy & Consent"
-    },
-      {
-        id:"3",
-        icon:require("../../../../assets/image/user.png"),
-        title:"Notifications"
-    },
-      {
-        id:"4",
-        icon:require("../../../../assets/image/user.png"),
-        title:"Campaign Analytics"
-    },
-      {
-        id:"5",
-        icon:require("../../../../assets/image/user.png"),
-        title:"Request Data Export"
-    },
-      {
-        id:"6",
-        icon:require("../../../../assets/image/user.png"),
-        title:"Request Account Deletion"
-    },
-]
+export const Data = [
+  {
+    id: '1',
+    icon: require('../../../../assets/image/user3.png'),
+    title: 'My Profile',
+    navigate: 'EditProfile',
+  },
+  {
+    id: '2',
+    icon: require('../../../../assets/image/privacy.png'),
+    title: 'Privacy & Consent',
+    navigate: 'EditProfile',
+  },
+  {
+    id: '3',
+    icon: require('../../../../assets/image/bell.png'),
+    title: 'Notifications',
+    navigate: 'EditProfile',
+  },
+  {
+    id: '4',
+    icon: require('../../../../assets/image/campaign.png'),
+    title: 'Campaign Analytics',
+    navigate: 'EditProfile',
+  },
+  {
+    id: '5',
+    icon: require('../../../../assets/image/Request.png'),
+    title: 'Request Data Export',
+    navigate: 'EditProfile',
+  },
+  {
+    id: '6',
+    icon: require('../../../../assets/image/delete.png'),
+    title: 'Request Account Deletion',
+    navigate: 'EditProfile',
+  },
+];

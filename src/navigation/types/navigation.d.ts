@@ -61,6 +61,7 @@ export type DrawerParamList = {
 export type MainStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList> | undefined;
   Drawer: NavigatorScreenParams<DrawerParamList> | undefined;
+  EditProfile:undefined;
   
 };
 

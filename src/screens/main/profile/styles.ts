@@ -73,7 +73,52 @@ export const styles = StyleSheet.create({
     paddingTop: responsiveScreenHeight(2),
     paddingBottom: responsiveScreenHeight(12),
     marginHorizontal: responsiveScreenWidth(4),
-    paddingHorizontal: responsiveScreenWidth(4),
+    // paddingHorizontal: responsiveScreenWidth(4),
     borderColor: '#707070',
+  },
+  circleview: {
+    height: responsiveScreenWidth(2),
+    width: responsiveScreenWidth(2),
+    borderRadius: responsiveScreenWidth(1),
+    backgroundColor: '#00C4FA',
+    marginHorizontal: responsiveScreenWidth(4),
+  },
+  termcontainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+
+    alignSelf: 'center',
+    paddingTop: responsiveScreenHeight(3),
+    paddingBottom: responsiveScreenHeight(1),
+  },
+  term: {
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveScreenFontSize(1.75),
+    color: '#000000',
+  },
+  profile: {
+    alignSelf: 'center',
+    height: responsiveScreenWidth(25),
+    width: responsiveScreenWidth(25),
+    borderRadius: responsiveScreenWidth(12.5),
+    marginTop: responsiveScreenHeight(3),
+    marginBottom: responsiveScreenHeight(5),
+  },
+  camcontainer: {
+    borderWidth: 1,
+    height: responsiveScreenWidth(8),
+    width: responsiveScreenWidth(8),
+    borderRadius: responsiveScreenWidth(4),
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F6FBFF',
+    right:10,
+    bottom:-12,
+    borderColor:"#0180FE"
+  },
+  cammaincontainer: {
+    width:responsiveScreenHeight(1.5),
+    height:responsiveScreenHeight(1.5)
   },
 });

@@ -15,12 +15,7 @@ interface Props {
   image?: ImageSourcePropType; // optional image
 }
 
-export const AppButton = ({
-  title,
-  onPress,
-  disabled,
-  image,
-}: Props) => {
+export const AppButton = ({ title, onPress, disabled, image }: Props) => {
   return (
     <TouchableOpacity
       style={[styles.button, disabled && styles.disabled]}
@@ -29,7 +24,14 @@ export const AppButton = ({
       activeOpacity={0.7}
     >
       <View style={styles.content}>
-        {image && <Image source={image} style={styles.image} />}
+        {image && (
+          <Image
+            resizeMode="contain"
+            tintColor={'#fff'}
+            source={image}
+            style={styles.image}
+          />
+        )}
         <Text style={styles.label}>{title}</Text>
       </View>
     </TouchableOpacity>
