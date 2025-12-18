@@ -6,28 +6,43 @@ import {
     TextInput,
     TouchableOpacity,
     Switch,
+    Keyboard,
+    Image,
+    Modal,
+    ScrollView,
+    Pressable,
+    StatusBar,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import DropDownPicker from 'react-native-dropdown-picker';
+import { AppButton } from "../../../components/ui/AppButton/AppButton";
+import { AppInput } from "../../../components/ui/AppInput/AppInput";
+import { useLoginLogic } from "../../auth/Login/useLoginLogic";
+import { useNavigation } from "@react-navigation/native";
+import { responsiveFontSize, responsiveHeight, responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from "react-native-responsive-dimensions";
 
 
 
 
 export default function CreateListScreen() {
-    const [title, setTitle] = useState("");
-    const [category, setCategory] = useState("Select Category");
-    const [listType, setListType] = useState("Select the top from list");
     const [isGroup, setIsGroup] = useState(true);
-
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
-    const [items, setItems] = useState([
-        { label: 'Apple', value: 'apple' },
-        { label: 'Banana', value: 'banana' }
+    const [categories, setCategories] = useState([
+        { name: 'Apple', code: 'apple' },
+        { name: 'Banana', code: 'banana' }
     ]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selected, setSelected] = useState<string | null>(null);
+    const [isSwitchOn, setIsSwitchOn] = React.useState(false);
+    const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
+    const selectedLabel = selected ? categories.find(c => c.code === selected)?.name ?? '' : '';
+    const navigation = useNavigation();
 
     return (
         <SafeAreaProvider>
+            <StatusBar
+                backgroundColor="#00C4FA" // ✅ Android
+                barStyle="light-content" // ✅ iOS text color
+            />
             <SafeAreaView
                 edges={['top', 'left', 'right']}
                 style={{ flex: 1, backgroundColor: '#fff' }}
@@ -41,7 +56,7 @@ export default function CreateListScreen() {
                     {/* FORM */}
                     <View style={styles.form}>
                         {/* LIST TITLE */}
-                        <View style={styles.fieldWrapper}>
+                        <View style={[styles.fieldWrapper]}>
                             <Text style={styles.floatingLabel}>List Title</Text>
                             <TextInput
                                 placeholder="e.g. Top 5 coffee shops in NYC"
@@ -50,50 +65,89 @@ export default function CreateListScreen() {
                             />
                         </View>
 
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
+                            <View style={styles.prefix}>
+                                <Image
+                                    style={{ width: '100%', height: '100%' }}
+                                    resizeMode="contain"
+                                    source={require('../../../../assets/image/arrow-down.png')}
+                                />
+                            </View>
 
-
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.floatingLabel}>Category *</Text>
-                            <DropDownPicker
-                                open={open}
-                                value={value}
-                                items={items}
-                                setOpen={setOpen}
-                                setValue={setValue}
-                                setItems={setItems}
-                                style={styles.input}
-                            />
+                            <TouchableOpacity
+                                style={{ width: '100%' }}
+                                activeOpacity={0.8}
+                                onPress={() => {
+                                    Keyboard.dismiss();
+                                    setTimeout(() => setModalVisible(true), 100);
+                                }}
+                            >
+                                <AppInput
+                                    label={
+                                        <Text style={{ ...styles.labeltxt }}>
+                                            Category
+                                            <Text style={{ color: 'red', fontSize: 18 }}>
+                                                *
+                                            </Text>
+                                        </Text>
+                                    }
+                                    value={selectedLabel}
+                                    editable={false}
+                                />
+                            </TouchableOpacity>
                         </View>
 
                         {/* GROUP TOGGLE */}
-                        <View style={styles.groupBox}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.groupTitle}>Make it a group list?</Text>
-                                <Text style={styles.groupDesc}>
-                                    Let friends collaborate & add their own picks to your list.
-                                </Text>
+                        <View style={styles.targetcontainer}>
+                            <View style={styles.switchcontainer}>
+                                <Text style={styles.switchtxt}>Make it a group list?</Text>
+                                <Switch
+                                    color="#FF04D7"
+                                    value={isSwitchOn}
+                                    onValueChange={onToggleSwitch}
+                                />
                             </View>
-                            <Switch value={isGroup} onValueChange={setIsGroup} />
+
+                            <Text style={styles.privacytxt2}>
+                                Let friends collaborate & add their own picks to your list.
+                            </Text>
+
                         </View>
 
-                        {/* LIST TYPE */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.floatingLabel}>List Type *</Text>
-                            <DropDownPicker
-                                open={open}
-                                value={value}
-                                items={items}
-                                setOpen={setOpen}
-                                setValue={setValue}
-                                setItems={setItems}
-                                style={styles.input}
-                            />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
+                            <View style={styles.prefix}>
+                                <Image
+                                    style={{ width: '100%', height: '100%' }}
+                                    resizeMode="contain"
+                                    source={require('../../../../assets/image/arrow-down.png')}
+                                />
+                            </View>
+                            <TouchableOpacity
+                                style={{ width: '100%' }}
+                                activeOpacity={0.8}
+                                onPress={() => {
+                                    Keyboard.dismiss();
+                                    setTimeout(() => setModalVisible(true), 100);
+                                }}
+                            >
+                                <AppInput
+                                    label={
+                                        <Text style={{ ...styles.labeltxt }}>
+                                            List Type
+                                            <Text style={{ color: 'red', fontSize: 18 }}>
+                                                *
+                                            </Text>
+                                        </Text>
+                                    }
+                                    value={selectedLabel}
+                                    editable={false}
+                                />
+                            </TouchableOpacity>
                         </View>
 
                         {/* BUTTON */}
-                        <TouchableOpacity style={styles.button}>
-                            <Text style={styles.buttonText}>Create Group List</Text>
-                        </TouchableOpacity>
+
+                        <AppButton title="Create Group List" onPress={() => { }} />
 
                         {/* INVITED */}
                         <View style={styles.invitedBox}>
@@ -111,6 +165,25 @@ export default function CreateListScreen() {
                         </View>
                     </View>
                 </View>
+
+                {/* Simple modal selector for categories */}
+                {modalVisible && (
+                    <Modal transparent animationType="fade" visible={modalVisible}>
+                        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Select Category</Text>
+                                <ScrollView>
+                                    {categories.map(item => (
+                                        <TouchableOpacity key={item.code} style={styles.modalItem} onPress={() => { setSelected(item.code); setModalVisible(false); }}>
+                                            <Text style={styles.modalItemText}>{item.name}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        </Pressable>
+                    </Modal>
+                )}
+
             </SafeAreaView>
         </SafeAreaProvider>
     );
@@ -129,11 +202,48 @@ const styles = StyleSheet.create({
 
     form: { padding: 16 },
 
-    label: { fontSize: 13, color: "#555", marginBottom: 6 },
 
     fieldWrapper: {
-        marginBottom: 18,
+        marginTop: responsiveScreenHeight(2),
         zIndex: 10,
+    },
+    prefix: {
+        position: 'absolute',
+        paddingTop: responsiveScreenHeight(0.5),
+        right: responsiveScreenWidth(8),
+        color: '#AEAEAE',
+        width: responsiveScreenWidth(4),
+        height: responsiveHeight(4),
+    },
+    labeltxt: {
+        fontFamily: 'Quicksand-Regular',
+        fontSize: responsiveFontSize(2),
+    },
+
+    targetcontainer: {
+        borderWidth: 1,
+        paddingHorizontal: responsiveScreenWidth(4),
+        paddingVertical: responsiveScreenHeight(2),
+        borderColor: '#0180FE',
+        borderRadius: responsiveScreenWidth(4),
+        marginTop: responsiveScreenHeight(1),
+        backgroundColor: '#EFFCFF',
+    },
+    switchcontainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    switchtxt: {
+        fontFamily: 'samsungsharpsans-medium',
+        fontSize: responsiveScreenFontSize(1.9),
+        letterSpacing: 0.5,
+    },
+    privacytxt2: {
+        fontFamily: 'Quicksand-Regular',
+        fontSize: responsiveScreenFontSize(1.68),
+        paddingTop: responsiveScreenHeight(2),
+        color: '#000000',
     },
 
     floatingLabel: {
@@ -159,49 +269,13 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
 
-    dropdown: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: "#fff",
-        borderRadius: 24,
-        paddingHorizontal: 16,
-        height: 48,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-    },
-    dropdownText: { color: "#999" },
-    arrow: { color: "#999" },
-
-    groupBox: {
-        flexDirection: "row",
-        backgroundColor: "#F0FAFF",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#BFE7FF",
-    },
-    groupTitle: { color: "#1DA1F2", fontWeight: "600" },
-    groupDesc: { color: "#666", fontSize: 12, marginTop: 4 },
-
-    button: {
-        backgroundColor: "#1DA1F2",
-        height: 52,
-        borderRadius: 26,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 24,
-    },
-    buttonText: { color: "#fff", fontWeight: "600" },
-
     invitedBox: {
         backgroundColor: "#fff",
         borderRadius: 16,
         padding: 14,
         borderWidth: 1,
         borderColor: "#CFE9FF",
+        marginTop: responsiveScreenHeight(3),
     },
     invitedTitle: { fontSize: 13, color: "#1DA1F2", marginBottom: 10 },
 
@@ -218,4 +292,20 @@ const styles = StyleSheet.create({
     },
     chipText: { marginRight: 6 },
     close: { color: "#999" },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        width: '80%',
+        maxHeight: '60%',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 12,
+    },
+    modalTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
+    modalItem: { paddingVertical: 12, borderBottomWidth: 1, borderColor: '#eee' },
+    modalItemText: { fontSize: 14 },
 });
