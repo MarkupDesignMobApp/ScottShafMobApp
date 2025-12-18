@@ -20,6 +20,7 @@ import { AppInput } from "../../../components/ui/AppInput/AppInput";
 import { useLoginLogic } from "../../auth/Login/useLoginLogic";
 import { useNavigation } from "@react-navigation/native";
 import { responsiveFontSize, responsiveHeight, responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from "react-native-responsive-dimensions";
+import AppHeader from "../../../components/ui/AppButton/AppHeader";
 
 
 
@@ -38,154 +39,145 @@ export default function CreateListScreen() {
     const navigation = useNavigation();
 
     return (
-        <SafeAreaProvider>
-            <StatusBar
-                backgroundColor="#00C4FA" // ✅ Android
-                barStyle="light-content" // ✅ iOS text color
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <AppHeader
+                title="Create List"
+                leftImage={require('../../../../assets/image/left-icon.png')}
             />
-            <SafeAreaView
-                edges={['top', 'left', 'right']}
-                style={{ flex: 1, backgroundColor: '#fff' }}
-            >
-                <View style={styles.container}>
-                    {/* HEADER */}
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>Create List</Text>
+            <View style={styles.container}>
+
+                {/* FORM */}
+                <View style={styles.form}>
+                    {/* LIST TITLE */}
+                    <View style={[styles.fieldWrapper]}>
+                        <Text style={styles.floatingLabel}>List Title</Text>
+                        <TextInput
+                            placeholder="e.g. Top 5 coffee shops in NYC"
+                            placeholderTextColor="#B5B5B5"
+                            style={styles.input}
+                        />
                     </View>
 
-                    {/* FORM */}
-                    <View style={styles.form}>
-                        {/* LIST TITLE */}
-                        <View style={[styles.fieldWrapper]}>
-                            <Text style={styles.floatingLabel}>List Title</Text>
-                            <TextInput
-                                placeholder="e.g. Top 5 coffee shops in NYC"
-                                placeholderTextColor="#B5B5B5"
-                                style={styles.input}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
+                        <View style={styles.prefix}>
+                            <Image
+                                style={{ width: '100%', height: '100%' }}
+                                resizeMode="contain"
+                                source={require('../../../../assets/image/arrow-down.png')}
                             />
                         </View>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
-                            <View style={styles.prefix}>
-                                <Image
-                                    style={{ width: '100%', height: '100%' }}
-                                    resizeMode="contain"
-                                    source={require('../../../../assets/image/arrow-down.png')}
-                                />
-                            </View>
-
-                            <TouchableOpacity
-                                style={{ width: '100%' }}
-                                activeOpacity={0.8}
-                                onPress={() => {
-                                    Keyboard.dismiss();
-                                    setTimeout(() => setModalVisible(true), 100);
-                                }}
-                            >
-                                <AppInput
-                                    label={
-                                        <Text style={{ ...styles.labeltxt }}>
-                                            Category
-                                            <Text style={{ color: 'red', fontSize: 18 }}>
-                                                *
-                                            </Text>
+                        <TouchableOpacity
+                            style={{ width: '100%' }}
+                            activeOpacity={0.8}
+                            onPress={() => {
+                                Keyboard.dismiss();
+                                setTimeout(() => setModalVisible(true), 100);
+                            }}
+                        >
+                            <AppInput
+                                label={
+                                    <Text style={{ ...styles.labeltxt }}>
+                                        Category
+                                        <Text style={{ color: 'red', fontSize: 18 }}>
+                                            *
                                         </Text>
-                                    }
-                                    value={selectedLabel}
-                                    editable={false}
-                                />
-                            </TouchableOpacity>
+                                    </Text>
+                                }
+                                value={selectedLabel}
+                                editable={false}
+                            />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* GROUP TOGGLE */}
+                    <View style={styles.targetcontainer}>
+                        <View style={styles.switchcontainer}>
+                            <Text style={styles.switchtxt}>Make it a group list?</Text>
+                            <Switch
+                                color="#FF04D7"
+                                value={isSwitchOn}
+                                onValueChange={onToggleSwitch}
+                            />
                         </View>
 
-                        {/* GROUP TOGGLE */}
-                        <View style={styles.targetcontainer}>
-                            <View style={styles.switchcontainer}>
-                                <Text style={styles.switchtxt}>Make it a group list?</Text>
-                                <Switch
-                                    color="#FF04D7"
-                                    value={isSwitchOn}
-                                    onValueChange={onToggleSwitch}
-                                />
-                            </View>
+                        <Text style={styles.privacytxt2}>
+                            Let friends collaborate & add their own picks to your list.
+                        </Text>
 
-                            <Text style={styles.privacytxt2}>
-                                Let friends collaborate & add their own picks to your list.
-                            </Text>
+                    </View>
 
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
+                        <View style={styles.prefix}>
+                            <Image
+                                style={{ width: '100%', height: '100%' }}
+                                resizeMode="contain"
+                                source={require('../../../../assets/image/arrow-down.png')}
+                            />
                         </View>
-
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
-                            <View style={styles.prefix}>
-                                <Image
-                                    style={{ width: '100%', height: '100%' }}
-                                    resizeMode="contain"
-                                    source={require('../../../../assets/image/arrow-down.png')}
-                                />
-                            </View>
-                            <TouchableOpacity
-                                style={{ width: '100%' }}
-                                activeOpacity={0.8}
-                                onPress={() => {
-                                    Keyboard.dismiss();
-                                    setTimeout(() => setModalVisible(true), 100);
-                                }}
-                            >
-                                <AppInput
-                                    label={
-                                        <Text style={{ ...styles.labeltxt }}>
-                                            List Type
-                                            <Text style={{ color: 'red', fontSize: 18 }}>
-                                                *
-                                            </Text>
+                        <TouchableOpacity
+                            style={{ width: '100%' }}
+                            activeOpacity={0.8}
+                            onPress={() => {
+                                Keyboard.dismiss();
+                                setTimeout(() => setModalVisible(true), 100);
+                            }}
+                        >
+                            <AppInput
+                                label={
+                                    <Text style={{ ...styles.labeltxt }}>
+                                        List Type
+                                        <Text style={{ color: 'red', fontSize: 18 }}>
+                                            *
                                         </Text>
-                                    }
-                                    value={selectedLabel}
-                                    editable={false}
-                                />
-                            </TouchableOpacity>
-                        </View>
+                                    </Text>
+                                }
+                                value={selectedLabel}
+                                editable={false}
+                            />
+                        </TouchableOpacity>
+                    </View>
 
-                        {/* BUTTON */}
+                    {/* BUTTON */}
 
-                        <AppButton title="Create Group List" onPress={() => { }} />
+                    <AppButton title="Create Group List" onPress={() => { }} />
 
-                        {/* INVITED */}
-                        <View style={styles.invitedBox}>
-                            <Text style={styles.invitedTitle}>Invited (2)</Text>
-                            <View style={styles.invitedRow}>
-                                <View style={styles.chip}>
-                                    <Text style={styles.chipText}>Sarah M.</Text>
-                                    <Text style={styles.close}>✕</Text>
-                                </View>
-                                <View style={styles.chip}>
-                                    <Text style={styles.chipText}>Alex K.</Text>
-                                    <Text style={styles.close}>✕</Text>
-                                </View>
+                    {/* INVITED */}
+                    <View style={styles.invitedBox}>
+                        <Text style={styles.invitedTitle}>Invited (2)</Text>
+                        <View style={styles.invitedRow}>
+                            <View style={styles.chip}>
+                                <Text style={styles.chipText}>Sarah M.</Text>
+                                <Text style={styles.close}>✕</Text>
+                            </View>
+                            <View style={styles.chip}>
+                                <Text style={styles.chipText}>Alex K.</Text>
+                                <Text style={styles.close}>✕</Text>
                             </View>
                         </View>
                     </View>
                 </View>
+            </View>
 
-                {/* Simple modal selector for categories */}
-                {modalVisible && (
-                    <Modal transparent animationType="fade" visible={modalVisible}>
-                        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-                            <View style={styles.modalContainer}>
-                                <Text style={styles.modalTitle}>Select Category</Text>
-                                <ScrollView>
-                                    {categories.map(item => (
-                                        <TouchableOpacity key={item.code} style={styles.modalItem} onPress={() => { setSelected(item.code); setModalVisible(false); }}>
-                                            <Text style={styles.modalItemText}>{item.name}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </ScrollView>
-                            </View>
-                        </Pressable>
-                    </Modal>
-                )}
+            {/* Simple modal selector for categories */}
+            {modalVisible && (
+                <Modal transparent animationType="fade" visible={modalVisible}>
+                    <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Select Category</Text>
+                            <ScrollView>
+                                {categories.map(item => (
+                                    <TouchableOpacity key={item.code} style={styles.modalItem} onPress={() => { setSelected(item.code); setModalVisible(false); }}>
+                                        <Text style={styles.modalItemText}>{item.name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    </Pressable>
+                </Modal>
+            )}
 
-            </SafeAreaView>
-        </SafeAreaProvider>
+        </View>
     );
 }
 
@@ -200,7 +192,9 @@ const styles = StyleSheet.create({
     },
     headerTitle: { fontSize: 16, fontWeight: "600", textAlign: "center" },
 
-    form: { padding: 16 },
+    form: {
+        padding: responsiveScreenWidth(4),
+    },
 
 
     fieldWrapper: {

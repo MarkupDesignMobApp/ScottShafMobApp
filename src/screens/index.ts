@@ -19,3 +19,4 @@ export { default as OfferDetail } from './main/offers/OfferDetail';
 export { default as FeaturedLists } from './main/feature/FeaturedLists';
 export { default as CreateList } from './main/List/CreateList';
 export { default as MyList } from './main/List/AddItems';
+export { default as AddCustomItem } from './main/List/AddCustomItem';

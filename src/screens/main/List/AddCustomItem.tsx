@@ -6,16 +6,18 @@ import {
     TextInput,
     TouchableOpacity,
     Switch,
+    Image,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import DropDownPicker from 'react-native-dropdown-picker';
+import { AppButton } from "../../../components/ui/AppButton/AppButton";
+import { responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from "react-native-responsive-dimensions";
+import AppHeader from "../../../components/ui/AppButton/AppHeader";
 
 
 export default function AddCustomItem() {
-    const [title, setTitle] = useState("");
-    const [category, setCategory] = useState("Select Category");
-    const [listType, setListType] = useState("Select the top from list");
-    const [isGroup, setIsGroup] = useState(true);
+    const [isSwitchOn, setIsSwitchOn] = React.useState(false);
+    const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
 
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
@@ -25,112 +27,64 @@ export default function AddCustomItem() {
     ]);
 
     return (
-        <SafeAreaProvider>
-            <SafeAreaView
-                edges={['top', 'left', 'right']}
-                style={{ flex: 1, backgroundColor: '#fff' }}
-            >
-                <View style={styles.container}>
-                    {/* HEADER */}
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>Create List</Text>
-                    </View>
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <AppHeader
+                title="Add Custom Item"
+                leftImage={require('../../../../assets/image/left-icon.png')}
+            />
+            <View style={styles.container}>
 
-                    {/* FORM */}
-                    <View style={styles.form}>
-                        {/* LIST TITLE */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.floatingLabel}>List Title</Text>
-                            <TextInput
-                                placeholder="e.g. Top 5 coffee shops in NYC"
-                                placeholderTextColor="#B5B5B5"
-                                style={styles.input}
-                            />
-                        </View>
-
-
-
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.floatingLabel}>Category *</Text>
-                            <DropDownPicker
-                                open={open}
-                                value={value}
-                                items={items}
-                                setOpen={setOpen}
-                                setValue={setValue}
-                                setItems={setItems}
-                                style={styles.input}
-                            />
-                        </View>
-
-                        {/* GROUP TOGGLE */}
-                        <View style={styles.groupBox}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.groupTitle}>Make it a group list?</Text>
-                                <Text style={styles.groupDesc}>
-                                    Let friends collaborate & add their own picks to your list.
-                                </Text>
-                            </View>
-                            <Switch value={isGroup} onValueChange={setIsGroup} />
-                        </View>
-
-                        {/* LIST TYPE */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.floatingLabel}>List Type *</Text>
-                            <DropDownPicker
-                                open={open}
-                                value={value}
-                                items={items}
-                                setOpen={setOpen}
-                                setValue={setValue}
-                                setItems={setItems}
-                                style={styles.input}
-                            />
-                        </View>
-
-                        {/* BUTTON */}
-                        <TouchableOpacity style={styles.button}>
-                            <Text style={styles.buttonText}>Create Group List</Text>
-                        </TouchableOpacity>
-
-                        {/* INVITED */}
-                        <View style={styles.invitedBox}>
-                            <Text style={styles.invitedTitle}>Invited (2)</Text>
-                            <View style={styles.invitedRow}>
-                                <View style={styles.chip}>
-                                    <Text style={styles.chipText}>Sarah M.</Text>
-                                    <Text style={styles.close}>✕</Text>
-                                </View>
-                                <View style={styles.chip}>
-                                    <Text style={styles.chipText}>Alex K.</Text>
-                                    <Text style={styles.close}>✕</Text>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
+                {/* FORM */}
+                {/* LIST TITLE */}
+                <View style={[styles.fieldWrapper]}>
+                    <Text style={styles.floatingLabel}>List Title</Text>
+                    <TextInput
+                        placeholder="e.g. Top 5 coffee shops in NYC"
+                        placeholderTextColor="#B5B5B5"
+                        style={styles.input}
+                    />
                 </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+
+                <View style={[styles.fieldWrapper, { marginVertical: 0 }]}>
+                    <Text style={styles.descriptionLabel}>Description (Optional)</Text>
+                    <TextInput multiline
+                        placeholder="Add a short description"
+                        placeholderTextColor="#B5B5B5"
+                        style={[styles.input, { borderRadius: 10, height: responsiveScreenHeight(15), textAlignVertical: 'top', }]}
+                    />
+                </View>
+
+                {/* GROUP TOGGLE */}
+                <View style={styles.targetcontainer}>
+                    <View style={styles.switchcontainer}>
+                        <Image source={require('../../../../assets/image/info.png')} style={{ width: 15, height: 15 }} />
+                        <Text style={styles.switchtxt}>Custom Item</Text>
+
+                    </View>
+
+                    <Text style={styles.privacytxt2}>
+                        This item will be marked as custom and will only appear in your list.
+                    </Text>
+
+                </View>
+
+
+
+                {/* BUTTON */}
+                <AppButton title="Create Group List" onPress={() => { }} />
+
+            </View>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, },
-
-    header: {
-        padding: 16,
-        borderBottomWidth: 1,
-        borderColor: "#eee",
-        backgroundColor: "#fff",
+    container: {
+        flex: 1, padding: responsiveScreenWidth(4),
     },
-    headerTitle: { fontSize: 16, fontWeight: "600", textAlign: "center" },
-
-    form: { padding: 16 },
-
-    label: { fontSize: 13, color: "#555", marginBottom: 6 },
 
     fieldWrapper: {
-        marginBottom: 18,
+        marginTop: 18,
         zIndex: 10,
     },
 
@@ -143,6 +97,41 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: "#8A8A8A",
         zIndex: 20,              // ⭐ label ABOVE everything
+    },
+    descriptionLabel: {
+        paddingHorizontal: 18,
+        marginBottom: 6,
+        backgroundColor: "#FFFFFF", // must be solid
+        fontSize: 12,
+        color: "#8A8A8A",
+    },
+
+    targetcontainer: {
+        borderWidth: 1,
+        paddingHorizontal: responsiveScreenWidth(4),
+        paddingVertical: responsiveScreenHeight(2),
+        borderColor: '#0180FE',
+        borderRadius: responsiveScreenWidth(4),
+        marginVertical: responsiveScreenHeight(2),
+        backgroundColor: '#EFFCFF',
+    },
+    switchcontainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    switchtxt: {
+        fontFamily: 'samsungsharpsans-medium',
+        fontSize: responsiveScreenFontSize(1.9),
+        letterSpacing: 0.5,
+        left: responsiveScreenWidth(3)
+    },
+    privacytxt2: {
+        fontFamily: 'Quicksand-Regular',
+        fontSize: responsiveScreenFontSize(1.68),
+        paddingTop: responsiveScreenHeight(2),
+        left: responsiveScreenWidth(7),
+        color: '#000000',
+        width: responsiveScreenWidth(75)
     },
 
     input: {
@@ -157,63 +146,4 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
 
-    dropdown: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: "#fff",
-        borderRadius: 24,
-        paddingHorizontal: 16,
-        height: 48,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-    },
-    dropdownText: { color: "#999" },
-    arrow: { color: "#999" },
-
-    groupBox: {
-        flexDirection: "row",
-        backgroundColor: "#F0FAFF",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#BFE7FF",
-    },
-    groupTitle: { color: "#1DA1F2", fontWeight: "600" },
-    groupDesc: { color: "#666", fontSize: 12, marginTop: 4 },
-
-    button: {
-        backgroundColor: "#1DA1F2",
-        height: 52,
-        borderRadius: 26,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 24,
-    },
-    buttonText: { color: "#fff", fontWeight: "600" },
-
-    invitedBox: {
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        padding: 14,
-        borderWidth: 1,
-        borderColor: "#CFE9FF",
-    },
-    invitedTitle: { fontSize: 13, color: "#1DA1F2", marginBottom: 10 },
-
-    invitedRow: { flexDirection: "row" },
-    chip: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#CFE9FF",
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        marginRight: 8,
-    },
-    chipText: { marginRight: 6 },
-    close: { color: "#999" },
 });

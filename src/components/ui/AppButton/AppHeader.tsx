@@ -8,6 +8,7 @@ import {
   ViewStyle,
   Image,
   ImageSourcePropType,
+  StatusBar,
 } from 'react-native';
 import { responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from 'react-native-responsive-dimensions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,8 +39,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       style={[
         styles.container,
         {
-          paddingTop: Platform.OS === 'ios' ? insets.top : 0,
-          height: HEADER_HEIGHT + (Platform.OS === 'ios' ? insets.top : 0),
+          paddingTop: Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight,
+          height: HEADER_HEIGHT + (Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight || 0),
         },
         containerStyle,
       ]}
@@ -47,7 +48,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       {/* Left */}
       <View style={styles.sideContainer}>
         {leftImage && (
-          <TouchableOpacity style={styles.imgcontainer}  onPress={onLeftPress} hitSlop={10}>
+          <TouchableOpacity style={styles.imgcontainer} onPress={onLeftPress} hitSlop={10}>
             <Image resizeMode='contain' source={leftImage} style={styles.icon} />
           </TouchableOpacity>
         )}
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize:responsiveScreenFontSize(2),
+    fontSize: responsiveScreenFontSize(2),
     fontWeight: Platform.OS === 'ios' ? '600' : '500',
     color: '#000000',
     fontFamily: 'samsungsharpsans',
@@ -103,8 +104,8 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'contain',
   },
-  imgcontainer:{
-    width:responsiveScreenWidth(6),
-    height:responsiveScreenHeight(6)
+  imgcontainer: {
+    width: responsiveScreenWidth(6),
+    height: responsiveScreenHeight(6)
   }
 });
