@@ -2,7 +2,14 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image } from 'react-native';
 import { TabParamList } from '../types/navigation';
-import { Profile, Home, FeaturedLists,CreateList, MyList} from '../../screens';
+import {
+  Profile,
+  Home,
+  FeaturedLists,
+  CreateList,
+  MyList,
+  Discover,
+} from '../../screens';
 import CampaignAnalytics from '../../screens/main/campaign/CampaignAnalytics';
 import OfferDetail from '../../screens/main/offers/OfferDetail';
 import AddCustomItem from '../../screens/main/List/AddCustomItem';
@@ -63,7 +70,7 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Discover" component={Profile} />
+      <Tab.Screen name="Discover" component={FeaturedLists} />
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
       <Tab.Screen name="Profile" component={Profile} />

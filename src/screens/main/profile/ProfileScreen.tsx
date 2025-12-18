@@ -9,13 +9,14 @@ import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { removeTokenFromKeychain } from '../../../app/keychain';
 import { useNavigation } from '@react-navigation/native';
 export default function ProfileScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation({navigation});
   const handleLogout = async () => {
     await removeTokenFromKeychain();
   };
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <AppHeader
+      onLeftPress={()=>navigation.goBack()}
         title="My Account"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />

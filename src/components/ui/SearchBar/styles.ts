@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   searchbar: {
     borderWidth: 1,
     paddingHorizontal: responsiveScreenWidth(5),
-    paddingVertical: responsiveScreenHeight(2),
+    paddingVertical: responsiveScreenHeight(1.25),
     borderRadius: responsiveScreenWidth(10),
     borderColor: '#fff',
     flexDirection: 'row',

@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     width: responsiveScreenWidth(8),
     height: responsiveScreenHeight(3),
   },
-    imgcontainerlogo: {
+  imgcontainerlogo: {
     width: responsiveScreenWidth(12),
     height: responsiveScreenHeight(8),
   },
@@ -42,7 +42,7 @@ export const styles = StyleSheet.create({
   scrollbox: {
     borderWidth: 1,
     paddingHorizontal: responsiveScreenWidth(4),
-    paddingVertical: responsiveScreenHeight(1.25),
+    paddingVertical: responsiveScreenHeight(0.75),
     borderRadius: responsiveScreenWidth(20),
     borderColor: '#fff',
     marginRight: responsiveScreenWidth(2.5),
@@ -57,7 +57,7 @@ export const styles = StyleSheet.create({
   boxtitle: {
     color: '#fff',
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.85),
+    fontSize: responsiveScreenFontSize(1.75),
   },
 
   activeBoxTitle: {
@@ -75,7 +75,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
 
     paddingHorizontal: responsiveScreenWidth(4),
-    // paddingTop: responsiveScreenHeight(4),
+    paddingTop: responsiveScreenHeight(0),
+  
   },
   btncontainer: {
     width: '100%',
@@ -95,7 +96,14 @@ export const styles = StyleSheet.create({
     color: '#fff',
     paddingTop: responsiveScreenHeight(1),
   },
-
+  card2: {
+    borderWidth: 1,
+    height: responsiveScreenHeight(40),
+    width: responsiveScreenWidth(90),
+    margin: responsiveScreenWidth(1),
+    borderRadius: responsiveScreenWidth(4),
+    borderColor: '#CFCFCF',
+  },
   card: {
     borderWidth: 1,
     height: responsiveScreenHeight(40),
@@ -165,13 +173,13 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: responsiveScreenHeight(4),
-    paddingBottom:responsiveScreenHeight(2)
+    paddingBottom: responsiveScreenHeight(2),
   },
   cardheadingtxt: {
     fontFamily: 'Quicksand-Regular',
     fontWeight: 'medium',
     color: '#000',
-    fontSize:responsiveScreenFontSize(2.25),
-    letterSpacing:0.1
+    fontSize: responsiveScreenFontSize(2.25),
+    letterSpacing: 0.1,
   },
 });

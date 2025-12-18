@@ -62,6 +62,7 @@ export type MainStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList> | undefined;
   Drawer: NavigatorScreenParams<DrawerParamList> | undefined;
   EditProfile:undefined;
+  Notification:undefined;
   
 };
 

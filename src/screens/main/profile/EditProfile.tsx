@@ -23,6 +23,7 @@ export default function EditProfile() {
       <StatusBar hidden={false} barStyle='dark-content' />
 
       <AppHeader
+      onLeftPress={()=>navigation.goBack()}
         title="Edit Profile"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
