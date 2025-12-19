@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
@@ -9,11 +9,12 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
 
-    borderBottomWidth: 0.5,
+    borderBottomWidth: 0.25,
     // paddingHorizontal: responsiveScreenWidth(4),
     marginHorizontal: responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(2),
     borderColor: '#707070',
+    paddingBottom: responsiveScreenHeight(1),
   },
   imgcontainer: {
     width: responsiveScreenWidth(14),
@@ -57,7 +58,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingTop: responsiveScreenHeight(2),
   },
   imgcontainer3: {
     width: responsiveScreenWidth(4),
@@ -69,7 +70,7 @@ export const styles = StyleSheet.create({
     paddingLeft: responsiveScreenWidth(3),
   },
   listmaincontainer: {
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.25,
     paddingTop: responsiveScreenHeight(2),
     paddingBottom: responsiveScreenHeight(12),
     marginHorizontal: responsiveScreenWidth(4),
@@ -115,10 +116,121 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F6FBFF',
     right: 10,
     bottom: -12,
-    borderColor: "#0180FE"
+    borderColor: '#0180FE',
   },
   cammaincontainer: {
     width: responsiveScreenHeight(1.5),
-    height: responsiveScreenHeight(1.5)
+    height: responsiveScreenHeight(1.5),
+  },
+  bottomcontainer: {
+    paddingHorizontal: responsiveScreenWidth(4),
+    position: 'absolute',
+    width: '100%',
+    bottom:
+      Platform.OS == 'ios'
+        ? responsiveScreenHeight(2)
+        : responsiveScreenHeight(6),
+  },
+});
+
+export const styles2 = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff' },
+
+  fieldWrapper: {
+    marginTop: responsiveScreenHeight(2),
+    zIndex: 10,
+  },
+  profile: {
+    alignSelf: 'center',
+    height: responsiveScreenWidth(25),
+    width: responsiveScreenWidth(25),
+    borderRadius: responsiveScreenWidth(12.5),
+    marginTop: responsiveScreenHeight(2),
+    marginBottom: responsiveScreenHeight(5),
+  },
+  camcontainer: {
+    borderWidth: 1,
+    height: responsiveScreenWidth(8),
+    width: responsiveScreenWidth(8),
+    borderRadius: responsiveScreenWidth(4),
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F6FBFF',
+    right: 10,
+    bottom: -12,
+    borderColor: '#0180FE',
+  },
+  cammaincontainer: {
+    width: responsiveScreenHeight(1.5),
+    height: responsiveScreenHeight(1.5),
+  },
+  floatingLabel: {
+    position: 'absolute',
+    top: -9,
+    left: 18,
+    backgroundColor: '#FFFFFF', // must be solid
+    paddingHorizontal: 6,
+    fontSize: 12,
+    color: '#8A8A8A',
+    zIndex: 20, // ⭐ label ABOVE everything
+  },
+  img: {
+    width: '100%',
+    height: '100%',
+  },
+
+  input: {
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.2,
+    borderColor: '#E4E6EB',
+    paddingHorizontal: 18,
+    fontSize: 14,
+    color: '#1A1A1A',
+    backgroundColor: '#FFFFFF',
+    zIndex: 1,
+  },
+
+  prefix: {
+    position: 'absolute',
+    paddingTop: responsiveScreenHeight(0.5),
+    right: responsiveScreenWidth(8),
+    color: '#AEAEAE',
+    width: responsiveScreenWidth(4),
+    height: responsiveScreenHeight(4),
+  },
+
+  labeltxt: {
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveScreenFontSize(2),
+    paddingBottom: responsiveScreenHeight(2),
+  },
+
+  descriptionLabel: {
+    paddingHorizontal: 18,
+    marginBottom: 6,
+    backgroundColor: '#FFFFFF', // must be solid
+    fontSize: 12,
+    color: '#8A8A8A',
+  },
+  paragraph: {
+    borderWidth: 1,
+    height: responsiveScreenHeight(20),
+    borderRadius: responsiveScreenWidth(4),
+    borderColor: 'lightgrey',
+    padding: responsiveScreenWidth(3), // 👈 important
+  },
+multilineInput: {
+  flex: 1,
+  textAlignVertical: 'top', // 👈 top-left start
+  fontSize:responsiveScreenFontSize(2),
+  color: '#1A1A1A',
+},
+
+  wordcapacity: {
+    position: 'absolute',
+    right: 0,
+    bottom: -responsiveScreenHeight(2.5),
   },
 });

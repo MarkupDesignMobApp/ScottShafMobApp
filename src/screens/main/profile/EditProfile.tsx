@@ -1,275 +1,196 @@
-import { View, Text, Image, Pressable, Alert, StyleSheet, TextInput, StatusBar, TouchableOpacity, Keyboard, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Pressable,
+  Alert,
+  TextInput,
+  StatusBar,
+  TouchableOpacity,
+  Keyboard,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import React from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
-import { responsiveFontSize, responsiveHeight, responsiveScreenHeight, responsiveScreenWidth } from 'react-native-responsive-dimensions';
+import { responsiveScreenWidth } from 'react-native-responsive-dimensions';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-
-export default function EditProfile({navigation}) {
-
+import { styles2 } from './styles';
+export default function EditProfile({ navigation }) {
   const [categories, setCategories] = React.useState([
     { name: 'Travel', code: 'Travel' },
     { name: 'Movies', code: 'Movies' },
-    { name: 'Music', code: 'Music' }
+    { name: 'Music', code: 'Music' },
   ]);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [selected, setSelected] = React.useState<string | null>(null);
+  const [budgetText, setBudgetText] = React.useState('');
+  const MAX_WORDS = 200;
+  const handleBudgetChange = (text: string) => {
+    // Remove extra spaces and split into words
+    const words = text.trim().split(/\s+/);
 
-  const selectedLabel = selected ? categories.find(c => c.code === selected)?.name ?? '' : '';
+    if (words.length <= MAX_WORDS) {
+      setBudgetText(text);
+    } else {
+      // Stop accepting more words
+      const limitedText = words.slice(0, MAX_WORDS).join(' ');
+      setBudgetText(limitedText);
+    }
+  };
 
+  const selectedLabel = selected
+    ? categories.find(c => c.code === selected)?.name ?? ''
+    : '';
 
   return (
-    <View style={styles.container}>
-      <StatusBar hidden={false} barStyle='dark-content' />
+    <View style={styles2.container}>
+      <StatusBar hidden={false} barStyle="dark-content" />
 
       <AppHeader
-      onLeftPress={()=>navigation.goBack()}
+        onLeftPress={() => navigation.goBack()}
         title="Edit Profile"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
-      <View style={{ flex: 1, padding: responsiveScreenWidth(4), }}>
-        <View style={styles.profile}>
-          <Image
-            resizeMode="cover"
-            style={styles.img}
-            source={require('../../../../assets/image/women1.png')}
-          />
-          <Pressable onPress={() => Alert.alert("efef")} style={styles.camcontainer}>
-            <View style={styles.cammaincontainer}>
-              <Image
-                resizeMode="contain"
-                style={styles.img}
-                source={require('../../../../assets/image/camera.png')}
-              />
-            </View>
-          </Pressable>
-        </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 2 : 0}
+      >
+        <View style={{ flex: 1, padding: responsiveScreenWidth(2) }}>
+          <View style={styles2.profile}>
+            <Image
+              resizeMode="cover"
+              style={styles2.img}
+              source={require('../../../../assets/image/women1.png')}
+            />
+            <Pressable
+              onPress={() => Alert.alert('efef')}
+              style={styles2.camcontainer}
+            >
+              <View style={styles2.cammaincontainer}>
+                <Image
+                  resizeMode="contain"
+                  style={styles2.img}
+                  source={require('../../../../assets/image/camera.png')}
+                />
+              </View>
+            </Pressable>
+          </View>
 
-        <ScrollView>
-
-          {/* LIST TITLE */}
-          <View style={[styles.fieldWrapper]}>
-            <Text style={styles.floatingLabel}>Name*</Text>
+          <ScrollView
+          bounces={false}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
+            {/* LIST TITLE */}
+            {/* <View style={[styles2.fieldWrapper]}>
+            <Text style={styles2.floatingLabel}>Name*</Text>
             <TextInput
               placeholder="e.g. Sarah Johnson"
               placeholderTextColor="#B5B5B5"
-              style={styles.input}
+              style={styles2.input}
             />
-          </View>
-
-          {/* email */}
-          <View style={[styles.fieldWrapper]}>
-            <Text style={styles.floatingLabel}>Email*</Text>
-            <TextInput
+          </View> */}
+            <AppInput
+              placeholder="e.g. Sarah Johnson"
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  Name
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
+            />
+            {/* email */}
+            <AppInput
               placeholder="e.g. sarah.johnson@gmail.com"
-              placeholderTextColor="#B5B5B5"
-              style={styles.input}
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  Email
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
             />
-          </View>
 
-          {/* interest */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
-            <View style={styles.prefix}>
-              <Image
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="contain"
-                source={require('../../../../assets/image/arrow-down.png')}
-              />
-            </View>
+            {/* interest */}
+            <AppInput
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  Interest
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
+            />
 
-            <TouchableOpacity
-              style={{ width: '100%' }}
-              activeOpacity={0.8}
-              onPress={() => {
-                Keyboard.dismiss();
-                setTimeout(() => setModalVisible(true), 100);
-              }}
-            >
-              <AppInput
-                label={
-                  <Text style={{ ...styles.labeltxt }}>
-                    Interests
-                    <Text style={{ color: 'red', fontSize: 18 }}>
-                      *
-                    </Text>
-                  </Text>
-                }
-                value={selectedLabel}
-                editable={false}
-              />
-            </TouchableOpacity>
-          </View>
+            {/* age */}
+            <AppInput
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  Age
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
+            />
 
-          {/* age */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
-            <View style={styles.prefix}>
-              <Image
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="contain"
-                source={require('../../../../assets/image/arrow-down.png')}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={{ width: '100%' }}
-              activeOpacity={0.8}
-              onPress={() => {
-                Keyboard.dismiss();
-                setTimeout(() => setModalVisible(true), 100);
-              }}
-            >
-              <AppInput
-                label={
-                  <Text style={{ ...styles.labeltxt }}>
-                    Age
-                    <Text style={{ color: 'red', fontSize: 18 }}>
-                      *
-                    </Text>
-                  </Text>
-                }
-                value={selectedLabel}
-                editable={false}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* city */}
-          <View style={[styles.fieldWrapper]}>
-            <Text style={styles.floatingLabel}>City*</Text>
-            <TextInput
+            {/* city */}
+            <AppInput
               placeholder="e.g. San Francisco"
-              placeholderTextColor="#B5B5B5"
-              style={styles.input}
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  City
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
             />
-          </View>
 
-          {/* Budget Preference* */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
-            <View style={styles.prefix}>
-              <Image
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="contain"
-                source={require('../../../../assets/image/arrow-down.png')}
-              />
+            {/* Budget Preference* */}
+            <AppInput
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  Budget Preference
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
+            />
+            <View>
+              <Text style={styles2.labeltxt}>
+                Budget Preference
+                <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+              </Text>
+
+              <View style={styles2.paragraph}>
+                <TextInput
+                  keyboardType=""
+                  value={budgetText}
+                  onChangeText={handleBudgetChange}
+                  multiline
+                  placeholder="e.g. Love exploring new restaurants and hidden gems in the city!"
+                  placeholderTextColor="#B5B5B5"
+                  style={{
+                    height: '100%',
+
+                    textAlignVertical: 'top', // 👈 starts from top-left
+                  }}
+                />
+              </View>
+
+              <Text style={styles2.wordcapacity}>
+                {budgetText.trim() === ''
+                  ? 0
+                  : budgetText.trim().split(/\s+/).length}
+                /200 Words
+              </Text>
             </View>
-
-            <TouchableOpacity
-              style={{ width: '100%' }}
-              activeOpacity={0.8}
-              onPress={() => {
-                Keyboard.dismiss();
-                setTimeout(() => setModalVisible(true), 100);
-              }}
-            >
-              <AppInput
-                label={
-                  <Text style={{ ...styles.labeltxt }}>
-                    Budget Preference
-                    <Text style={{ color: 'red', fontSize: 18 }}>
-                      *
-                    </Text>
-                  </Text>
-                }
-                value={selectedLabel}
-                editable={false}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View style={[styles.fieldWrapper, { marginVertical: 0 }]}>
-            <Text style={styles.descriptionLabel}>Notes (Optional)</Text>
-            <TextInput multiline
-              placeholder="Add a short description"
-              placeholderTextColor="#B5B5B5"
-              style={[styles.input, { borderRadius: 10, height: responsiveScreenHeight(15), textAlignVertical: 'top', }]}
+            <AppButton
+              title="Save Changes"
+              onPress={() => Alert.alert('hii')}
             />
-          </View>
-        </ScrollView>
-        <AppButton title='Save Changes' onPress={() => Alert.alert('hii')} />
-
-      </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-
-  fieldWrapper: {
-    marginTop: responsiveScreenHeight(2),
-    zIndex: 10,
-  },
-  profile: {
-    alignSelf: 'center',
-    height: responsiveScreenWidth(25),
-    width: responsiveScreenWidth(25),
-    borderRadius: responsiveScreenWidth(12.5),
-    marginTop: responsiveScreenHeight(2),
-    marginBottom: responsiveScreenHeight(5),
-  },
-  camcontainer: {
-    borderWidth: 1,
-    height: responsiveScreenWidth(8),
-    width: responsiveScreenWidth(8),
-    borderRadius: responsiveScreenWidth(4),
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F6FBFF',
-    right: 10,
-    bottom: -12,
-    borderColor: "#0180FE"
-  },
-  cammaincontainer: {
-    width: responsiveScreenHeight(1.5),
-    height: responsiveScreenHeight(1.5)
-  },
-  floatingLabel: {
-    position: "absolute",
-    top: -9,
-    left: 18,
-    backgroundColor: "#FFFFFF", // must be solid
-    paddingHorizontal: 6,
-    fontSize: 12,
-    color: "#8A8A8A",
-    zIndex: 20,              // ⭐ label ABOVE everything
-  },
-  img: {
-    width: '100%',
-    height: '100%',
-  },
-
-  input: {
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1.2,
-    borderColor: "#E4E6EB",
-    paddingHorizontal: 18,
-    fontSize: 14,
-    color: "#1A1A1A",
-    backgroundColor: "#FFFFFF",
-    zIndex: 1,
-  },
-
-  prefix: {
-    position: 'absolute',
-    paddingTop: responsiveScreenHeight(0.5),
-    right: responsiveScreenWidth(8),
-    color: '#AEAEAE',
-    width: responsiveScreenWidth(4),
-    height: responsiveHeight(4),
-  },
-
-  labeltxt: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2),
-  },
-
-  descriptionLabel: {
-    paddingHorizontal: 18,
-    marginBottom: 6,
-    backgroundColor: "#FFFFFF", // must be solid
-    fontSize: 12,
-    color: "#8A8A8A",
-  },
-});

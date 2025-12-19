@@ -9,14 +9,15 @@ import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { removeTokenFromKeychain } from '../../../app/keychain';
 import { useNavigation } from '@react-navigation/native';
 export default function ProfileScreen() {
-  const navigation = useNavigation({navigation});
+  const navigation = useNavigation({ navigation });
   const handleLogout = async () => {
     await removeTokenFromKeychain();
   };
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <StatusBar barStyle={'dark-content'} />
       <AppHeader
-      onLeftPress={()=>navigation.goBack()}
+        onLeftPress={() => navigation.goBack()}
         title="My Account"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
@@ -35,7 +36,10 @@ export default function ProfileScreen() {
             Since Jan 2025
           </Text>
         </View>
-        <View style={styles.edit}>
+        <Pressable
+          onPress={() => navigation.navigate('EditProfile')}
+          style={styles.edit}
+        >
           <Text style={styles.edittxt}>Edit</Text>
           <View style={styles.imgcontainer2}>
             <Image
@@ -44,7 +48,7 @@ export default function ProfileScreen() {
               style={styles.img}
             />
           </View>
-        </View>
+        </Pressable>
       </View>
       <View style={styles.listmaincontainer}>
         {Data.map((item, index) => (
@@ -75,7 +79,7 @@ export default function ProfileScreen() {
           </Pressable>
         ))}
       </View>
-      <View style={{ paddingHorizontal: responsiveScreenWidth(4) }}>
+      <View style={styles.bottomcontainer}>
         <View style={styles.termcontainer}>
           <Text style={styles.term}>Terms of Service</Text>
           <View style={styles.circleview}></View>
