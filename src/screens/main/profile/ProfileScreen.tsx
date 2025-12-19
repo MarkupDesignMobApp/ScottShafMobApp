@@ -1,6 +1,6 @@
 import { View, Text, StatusBar, Image, Pressable } from 'react-native';
 import React from 'react';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { styles } from './styles';
 import { responsiveScreenWidth } from 'react-native-responsive-dimensions';
