@@ -1,14 +1,13 @@
-import { useRef, useState } from 'react';
-import { TextInput } from 'react-native';
-import { useLoginMutation } from '../../../features/auth/authApi';
-import { saveTokenToKeychain } from '../../../app/keychain';
-import { useNavigation } from '@react-navigation/native';
+import { useRef, useState, useCallback } from 'react';
+import { Alert, TextInput } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSignupMutation } from '../../../features/auth/authApi';
 
 type Country = {
   name: string;
   code: string;
 };
-const navigation = useNavigation;
+
 const COUNTRIES: Country[] = [
   { name: 'India', code: '+91' },
   { name: 'USA', code: '+1' },
@@ -17,25 +16,33 @@ const COUNTRIES: Country[] = [
   { name: 'France', code: '+33' },
   { name: 'Canada', code: '+1' },
   { name: 'Australia', code: '+61' },
-  { name: 'Japan', code: '+81' },
-  { name: 'China', code: '+86' },
-  { name: 'Brazil', code: '+55' },
 ];
 
 export const useSignupLogic = () => {
-  /* ================= API ================= */
-  const [login, { isLoading, isError }] = useLoginMutation();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const [signup, { isLoading }] = useSignupMutation();
+
   /* ================= STATE ================= */
-  const [country, setCountry] = useState('India');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [country, setCountry] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+
   const phoneInputRef = useRef<TextInput>(null);
 
-  /* ================= HANDLERS ================= */
+  /* ================= VALIDATION ================= */
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPhoneValid = /^\d{8,15}$/.test(phone);
+
+  const isFormValid =
+    fullName.trim().length > 2 &&
+    isEmailValid &&
+    isPhoneValid &&
+    country.length > 0;
+
+  /* ================= COUNTRY SELECT ================= */
   const handleSelectCountry = (selectedCountry: string) => {
     const found = COUNTRIES.find(c => c.name === selectedCountry);
 
@@ -49,21 +56,52 @@ export const useSignupLogic = () => {
     }, 100);
   };
 
-  const handleLogin = async () => {
-    navigation.navigate('TermCondition');
-    
-    // try {
+  /* ================= SUBMIT ================= */
+  const handleSignup = async () => {
+    if (!isFormValid || isLoading) return;
 
-    //   // const res = await login({
-    //   //   email: country, // or phone, based on backend
-    //   //   password: phone,
-    //   // }).unwrap();
+    try {
+      const response = await signup({
+        full_name: fullName.trim(),
+        email: email.trim(),
+        country_code: countryCode,
+        phone,
+        country,
+      }).unwrap();
 
-    //   // await saveTokenToKeychain(res.access_token);
-    // } catch (error) {
-    //   console.log('Login failed:', error);
-    // }
+      // ❌ Business validation (email exists, etc.)
+      if (!response.success) {
+        Alert.alert(
+          'Account Already Registered',
+          response.message || 'This account already exists'
+        );
+        return;
+      }
+
+      // ✅ SUCCESS (201 only)
+      navigation.navigate('TermCondition', {
+        phone: `${countryCode}${phone}`,
+        country,
+      });
+    } catch (err: any) {
+      Alert.alert(
+        'Error',
+        err?.data?.message || 'Something went wrong'
+      );
+    }
   };
+
+  /* ================= CLEAR ON FOCUS ================= */
+  useFocusEffect(
+    useCallback(() => {
+      setFullName('');
+      setEmail('');
+      setPhone('');
+      setCountry('');
+      setCountryCode('+91');
+      setModalVisible(false);
+    }, [])
+  );
 
   return {
     fullName,
@@ -73,14 +111,17 @@ export const useSignupLogic = () => {
     country,
     countryCode,
     phone,
-    modalVisible,
-    phoneInputRef,
-    countries: COUNTRIES.map(c => c.name),
     setPhone,
+    modalVisible,
     setModalVisible,
+    phoneInputRef,
+
+    countries: COUNTRIES.map(c => c.name),
     handleSelectCountry,
-    handleLogin,
+
+    isFormValid,
     isLoading,
-    isError,
+
+    handleSignup,
   };
 };

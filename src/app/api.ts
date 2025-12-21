@@ -6,7 +6,7 @@ const { apiUrl } = getEnvConfig();
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: apiUrl,
+    baseUrl:'https://www.markupdesigns.net',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
       if (token) headers.set('Authorization', `Bearer ${token}`);

@@ -1,10 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
-import { TextInput } from 'react-native';
+import { Alert, TextInput } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+
+import {
+  useVerifyOtpMutation,
+  useRequestOtpMutation,
+} from '../../../features/auth/authApi';
+import { setCredentials } from '../../../features/auth/authSlice';
+import { saveTokenToKeychain } from '../../../app/keychain';
 
 const OTP_LENGTH = 6;
-const RESEND_TIME = 10;
+const RESEND_TIME = 30;
 
-export function useOtpLogic() {
+export function useOtpLogic(phone: string, country: string) {
+  const navigation = useNavigation<any>();
+  const dispatch = useDispatch();
+
+  /* ================= API ================= */
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  const [requestOtp, { isLoading: isResending }] = useRequestOtpMutation();
+
+  /* ================= STATE ================= */
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [timer, setTimer] = useState(RESEND_TIME);
   const [isResendEnabled, setIsResendEnabled] = useState(false);
@@ -13,7 +31,7 @@ export function useOtpLogic() {
 
   /* ================= TIMER ================= */
   useEffect(() => {
-    if (timer === 0) {
+    if (timer <= 0) {
       setIsResendEnabled(true);
       return;
     }
@@ -25,13 +43,14 @@ export function useOtpLogic() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  /* ================= OTP HANDLERS ================= */
+  /* ================= OTP INPUT ================= */
   const handleOtpChange = (text: string, index: number) => {
+    const value = text.slice(-1);
     const newOtp = [...otp];
-    newOtp[index] = text[0] || '';
+    newOtp[index] = value;
     setOtp(newOtp);
 
-    if (text && index < OTP_LENGTH - 1) {
+    if (value && index < OTP_LENGTH - 1) {
       inputsRef.current[index + 1]?.focus();
     }
   };
@@ -42,31 +61,89 @@ export function useOtpLogic() {
     }
   };
 
-  const isOtpComplete = otp.every(digit => digit !== '');
+  const isOtpComplete = otp.every(d => d !== '');
 
-  /* ================= ACTIONS ================= */
-  const submitOtp = () => {
-    if (!isOtpComplete) return;
-    const otpCode = otp.join('');
-    return otpCode; 
-  };
+  /* ================= VERIFY OTP ================= */
+/* ================= VERIFY OTP ================= */
+const submitOtp = async () => {
+  if (!isOtpComplete || isVerifying) return;
 
-  const handleResendOtp = () => {
+  try {
+    const response = await verifyOtp({
+      phone,
+      country,
+      otp: otp.join(''),
+    }).unwrap();
+
+    if (!response.success) {
+      // ❌ Wrong OTP — show alert
+      Alert.alert('Verification Failed', response.message);
+      return;
+    }
+
+    // ✅ Correct OTP — save token and dispatch
+    await saveTokenToKeychain(response.token);
+    dispatch(
+      setCredentials({
+        token: response.token,
+        user: response.user,
+      })
+    );
+
+    // No manual navigation — RootNavigator handles logged-in state
+  } catch (err) {
+    // Network or server errors
+    Alert.alert('Error', 'Something went wrong. Please try again.');
+  }
+};
+
+
+
+
+/* ================= RESEND / REQUEST OTP ================= */
+const handleResendOtp = async () => {
+  if (!isResendEnabled || isResending) return;
+
+  try {
+    const response = await requestOtp({ phone, country }).unwrap();
+
+    // Reset OTP inputs & timer
     setOtp(Array(OTP_LENGTH).fill(''));
-    inputsRef.current[0]?.focus();
     setTimer(RESEND_TIME);
     setIsResendEnabled(false);
-  };
+    inputsRef.current[0]?.focus();
+
+    // 🔹 Show the OTP coming from API
+    if (response.success && response.otp) {
+      Alert.alert('OTP Sent', `Your OTP is: ${response.otp}`);
+    } else {
+      Alert.alert('OTP Sent', response.message || 'OTP has been sent');
+    }
+  } catch (err) {
+    const error = err as FetchBaseQueryError;
+    const message =
+      'data' in error && error.data && (error.data as any).message
+        ? (error.data as any).message
+        : 'Failed to resend OTP';
+
+    Alert.alert('Error', message);
+  }
+};
+
 
   return {
     otp,
     timer,
     isResendEnabled,
     inputsRef,
+
     isOtpComplete,
+    isVerifying,
+    isResending,
+
     handleOtpChange,
     handleKeyPress,
-    handleResendOtp,
     submitOtp,
+    handleResendOtp,
   };
 }
