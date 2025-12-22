@@ -207,6 +207,12 @@ export const styles2 = StyleSheet.create({
     paddingBottom: responsiveScreenHeight(2),
   },
 
+  error: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
+  },
+
   descriptionLabel: {
     paddingHorizontal: 18,
     marginBottom: 6,
@@ -221,16 +227,18 @@ export const styles2 = StyleSheet.create({
     borderColor: 'lightgrey',
     padding: responsiveScreenWidth(3), // 👈 important
   },
-multilineInput: {
-  flex: 1,
-  textAlignVertical: 'top', // 👈 top-left start
-  fontSize:responsiveScreenFontSize(2),
-  color: '#1A1A1A',
-},
+  multilineInput: {
+    flex: 1,
+    textAlignVertical: 'top', // 👈 top-left start
+    fontSize: responsiveScreenFontSize(2),
+    color: '#1A1A1A',
+  },
 
   wordcapacity: {
     position: 'absolute',
     right: 0,
+    marginVertical: responsiveScreenHeight(3),
+    marginHorizontal: responsiveScreenWidth(2),
     bottom: -responsiveScreenHeight(2.5),
   },
 });
