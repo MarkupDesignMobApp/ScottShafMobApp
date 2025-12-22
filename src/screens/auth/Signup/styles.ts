@@ -4,6 +4,7 @@ import {
   responsiveHeight,
   responsiveScreenWidth,
   responsiveFontSize,
+responsiveScreenFontSize
 } from 'react-native-responsive-dimensions';
 export const styles = StyleSheet.create({
   safeArea: {
@@ -19,13 +20,9 @@ export const styles = StyleSheet.create({
     height: '100%',
   },
   imgcontainer: {
-    height: responsiveScreenHeight(37),
-    width: responsiveScreenWidth(100),
-  
-    // ✅ KEY FIX
-     marginTop: Platform.OS === 'android'
-      ?-(StatusBar.currentHeight ?? 0)
-      : -30,
+    width: '100%',
+    height: responsiveScreenHeight(38),
+    overflow: 'hidden',
   },
   
   maincontainer: {
@@ -56,8 +53,9 @@ export const styles = StyleSheet.create({
     padding: responsiveHeight(0.5),
     fontFamily: 'Quicksand-Regular',
     color: '#000000',
-    fontSize: responsiveFontSize(1.85),
+    fontSize: responsiveFontSize(1.75),
   },
+  
   
   bottomtxt2: {
     width: '40%',
@@ -90,34 +88,35 @@ export const styles = StyleSheet.create({
   },
   labeltxt: {
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2),
+
   },
   prefix2: {
     position: 'absolute',
-    left: responsiveScreenWidth(4),
-    height: responsiveHeight(4),          // ✅ match input height
-    minWidth: responsiveScreenWidth(14),
-    alignItems: 'center',
-    justifyContent: 'center',  
-    borderRightWidth:1  , 
-    borderRightColor:'lightgrey'         // ✅ vertical center
+    left: responsiveScreenWidth(8),
+    // height: responsiveHeight(4),          // ✅ match input height
+    minWidth: responsiveScreenWidth(10),
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: 'lightgrey',       // ✅ vertical center
+    top:responsiveScreenHeight(4.15)
+
 
   },
   
   
   prefix2style: {
-    marginLeft: responsiveScreenWidth(16), // ✅ matches prefix width
+    marginLeft: responsiveScreenWidth(14), // ✅ matches prefix width
     
   },
   
   codetxt: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(1.9),
-    lineHeight: responsiveFontSize(1.5),  // ✅ forces vertical centering
-    textAlignVertical: 'center',
-    paddingTop:responsiveScreenHeight(0.85),
-    color:'#535353'
+    fontFamily: "Quicksand-Regular",
+    fontSize:responsiveScreenFontSize(1.75),
+    color:'#111111',
 
+
+  
   },
   countryArrow: {
     position: 'absolute',
@@ -133,5 +132,14 @@ export const styles = StyleSheet.create({
   
   inputcontainer: {
     paddingBottom: responsiveScreenHeight(2),
+  },
+
+  banner: {
+    flex: 1,
+    // position: 'relative',
+    width: '100%'
+  },
+  blur: {
+    ...StyleSheet.absoluteFill,
   },
 });

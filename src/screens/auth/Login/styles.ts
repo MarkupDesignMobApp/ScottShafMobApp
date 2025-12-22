@@ -4,6 +4,7 @@ import {
   responsiveHeight,
   responsiveScreenWidth,
   responsiveFontSize,
+  responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions';
 export const styles = StyleSheet.create({
   safeArea: {
@@ -12,27 +13,40 @@ export const styles = StyleSheet.create({
   innercontainer: {
     paddingHorizontal: responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(4),
+
+    height: '100%'
   },
-  
+
   img: {
     width: '100%',
     height: '100%',
   },
+
   imgcontainer: {
-    height: responsiveScreenHeight(37),
-    width: responsiveScreenWidth(100),
-    marginTop: Platform.OS === 'android'
-      ? -(StatusBar.currentHeight ?? 0)
-      : -30,
+    width: '100%',
+    height: responsiveScreenHeight(38),
+    overflow: 'hidden',
   },
   maincontainer: {
     flex: 1,
     backgroundColor: '#fff',
+
+
   },
+  banner: {
+    flex: 1,
+    // position: 'relative',
+    width: '100%'
+  },
+  blur: {
+    ...StyleSheet.absoluteFill,
+  },
+
+
   heading: {
     letterSpacing: 0.25,
     fontFamily: 'samsungsharpsans-medium',
-    fontSize: responsiveFontSize(3),
+    fontSize: responsiveFontSize(2.5),
     paddingBottom: responsiveHeight(1),
     // fontWeight: Platform.OS == 'android' ? 'bold' : '500',
     color: '#000000',
@@ -40,12 +54,17 @@ export const styles = StyleSheet.create({
   heading2: {
     color: '#8A8A8A',
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2),
+    fontSize: responsiveFontSize(1.85),
   },
   headcontainer: {
+    position: 'absolute',
+    bottom: responsiveScreenHeight(0),
+    alignSelf: 'center',
     alignItems: 'center',
-    // marginTop: responsiveScreenHeight(-2),
+
+
   },
+
   bottomtxt: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -59,7 +78,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'black',
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2.15),
+    fontSize: responsiveFontSize(2),
     fontWeight: '400',
   },
   linestyle: {
@@ -82,40 +101,57 @@ export const styles = StyleSheet.create({
     padding: 2,
     fontFamily: 'Quicksand-Regular',
     color: '#000000',
-    fontSize: responsiveFontSize(1.85),
-    position: 'absolute',
-    bottom: responsiveScreenHeight(-8),
+    fontSize: responsiveFontSize(1.75),
+    marginTop: responsiveScreenHeight(4),
   },
   prefix: {
     position: 'absolute',
     paddingTop: responsiveScreenHeight(0.5),
     right: responsiveScreenWidth(8),
     color: '#AEAEAE',
-    width: responsiveScreenWidth(4),
+    width: responsiveScreenWidth(3),
     height: responsiveHeight(4),
   },
   labeltxt: {
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2),
+
   },
   prefix2: {
     position: 'absolute',
-    left: responsiveScreenWidth(4),
-    height: responsiveHeight(4),          // ✅ match input height
-    minWidth: responsiveScreenWidth(14),
-    alignItems: 'center',
-    justifyContent: 'center',  
-    borderRightWidth:1  , 
-    borderRightColor:'lightgrey'         // ✅ vertical center
+    left: responsiveScreenWidth(8),
+    // height: responsiveHeight(4),          // ✅ match input height
+    minWidth: responsiveScreenWidth(10),
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: 'lightgrey',       // ✅ vertical center
+    top: responsiveScreenHeight(4.15)
+
 
   },
   prefix2style: {
-    marginLeft: responsiveScreenWidth(16), // ✅ matches prefix width
-    
+    marginLeft: responsiveScreenWidth(14), // ✅ matches prefix width
+    // borderWidth:1,
+    // marginVertical:responsiveHeight(-2)
   },
   codetxt: {
     fontFamily: "Quicksand-Regular",
+    fontSize: responsiveScreenFontSize(1.75),
+    color: '#111111',
+
 
     // fontSize:15
+  },
+  inputcontainer: {
+    paddingTop: responsiveScreenHeight(2),
+    paddingBottom: responsiveScreenHeight(4),
+    // borderWidth:1
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
   }
+  
+
 });

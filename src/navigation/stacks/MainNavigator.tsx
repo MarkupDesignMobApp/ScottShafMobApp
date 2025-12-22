@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../types/navigation';
 import { TabNavigator, DrawerNavigator } from '../index';
-import {Editprofile,Notification} from "../../screens/index"
+import {Editprofile,Notification,} from "../../screens/index"
 import inviteScreen from '../../screens/main/Invite&Refer/inviteScreen';
 import ListDetailScreen from '../../screens/main/List/AddItems';
 import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
@@ -17,6 +17,7 @@ export default function MainNavigator() {
       <Stack.Screen name="Drawer" component={DrawerNavigator} />
        <Stack.Screen name="EditProfile" component={Editprofile}/>
          <Stack.Screen name="Notification" component={Notification}/>
+            
     </Stack.Navigator>
   );
 }

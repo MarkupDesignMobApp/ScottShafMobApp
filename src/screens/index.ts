@@ -23,3 +23,4 @@ export { default as AddCustomItem } from './main/List/AddCustomItem';
 export { default as Editprofile } from './main/profile/EditProfile';
 export { default as Notification } from './main/notification/Notification';
 export { default as Discover} from './main/discover/Discover';
+export { default as Custom} from './main/List/AddCustomItem'

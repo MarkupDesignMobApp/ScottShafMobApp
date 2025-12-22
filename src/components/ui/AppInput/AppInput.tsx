@@ -79,7 +79,7 @@ export const AppInput = forwardRef<TextInput, Props>(
       position: 'absolute',
       left: responsiveScreenWidth(6),
       top: -10,
-      fontSize: responsiveFontSize(1.85),
+      fontSize: responsiveFontSize(1.5),
       color: '#000',
       backgroundColor: '#fff',
       paddingLeft: responsiveScreenWidth(1.5),
@@ -94,6 +94,7 @@ export const AppInput = forwardRef<TextInput, Props>(
           {label && <Animated.Text style={labelStyle}>{label}</Animated.Text>}
 
           <TextInput
+          autoCapitalize='none'
             ref={internalRef}
             editable={editable}
             style={[styles.input, inputStyle]}
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
     paddingBottom: responsiveScreenHeight(1),
   },
   input: {
-    fontSize: responsiveFontSize(2),
+    fontSize: responsiveFontSize(1.75),
     paddingVertical: responsiveScreenHeight(0.75),
     fontFamily: 'Quicksand-Regular',
     color: '#535353',

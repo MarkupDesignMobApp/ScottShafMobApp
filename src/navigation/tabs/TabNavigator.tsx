@@ -8,9 +8,9 @@ import {
   FeaturedLists,
   CreateList,
   MyList,
-  Discover,
+ 
 } from '../../screens';
-import CampaignAnalytics from '../../screens/main/campaign/CampaignAnalytics';
+
 import OfferDetail from '../../screens/main/offers/OfferDetail';
 import AddCustomItem from '../../screens/main/List/AddCustomItem';
 import CreateListScreen from '../../screens/main/List/CreateList';
@@ -71,11 +71,11 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Discover" component={FeaturedLists} />
+      <Tab.Screen name="Discover" component={BrowseCatalogScreen} />
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
       <Tab.Screen name="Profile" component={Profile} />
-      {/* <Tab.Screen name="ProfileQuestion" component={ProfileQuestion} /> */}
+       
     </Tab.Navigator>
   );
 }

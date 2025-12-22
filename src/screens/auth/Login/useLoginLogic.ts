@@ -1,38 +1,50 @@
-import { useRef, useState } from 'react';
-import { TextInput } from 'react-native';
-import { useLoginMutation } from '../../../features/auth/authApi';
-import { saveTokenToKeychain } from '../../../app/keychain';
-import { useNavigation } from '@react-navigation/native';
+import { useRef, useState, useCallback } from 'react';
+import { TextInput, Alert } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useRequestOtpMutation } from '../../../features/auth/authApi';
 
 type Country = {
   name: string;
   code: string;
 };
-const navigation = useNavigation;
+
 const COUNTRIES: Country[] = [
   { name: 'India', code: '+91' },
   { name: 'USA', code: '+1' },
   { name: 'UK', code: '+44' },
-  { name: 'Germany', code: '+49' },
-  { name: 'France', code: '+33' },
-  { name: 'Canada', code: '+1' },
-  { name: 'Australia', code: '+61' },
-  { name: 'Japan', code: '+81' },
-  { name: 'China', code: '+86' },
-  { name: 'Brazil', code: '+55' },
 ];
 
 export const useLoginLogic = () => {
-  /* ================= API ================= */
-  const [login, { isLoading, isError }] = useLoginMutation();
   const navigation = useNavigation();
+  const [requestOtp, { isLoading }] = useRequestOtpMutation();
+
   /* ================= STATE ================= */
-  const [country, setCountry] = useState('India');
+  const [country, setCountry] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
   const phoneInputRef = useRef<TextInput>(null);
+
+  /* ================= VALIDATION ================= */
+  const validate = () => {
+    if (!country) {
+      Alert.alert('Validation Error', 'Please select a country');
+      return false;
+    }
+
+    if (!phone) {
+      Alert.alert('Validation Error', 'Please enter phone number');
+      return false;
+    }
+
+    if (!/^\d{8,15}$/.test(phone)) {
+      Alert.alert('Validation Error', 'Please enter a valid phone number');
+      return false;
+    }
+
+    return true;
+  };
 
   /* ================= HANDLERS ================= */
   const handleSelectCountry = (selectedCountry: string) => {
@@ -49,22 +61,51 @@ export const useLoginLogic = () => {
   };
 
   const handleLogin = async () => {
-    navigation.navigate('Otp');
-    // try {
-    //   NavigationActions.goToRegister();
-    //   // const res = await login({
-    //   //   email: country, // or phone, based on backend
-    //   //   password: phone,
-    //   // }).unwrap();
+    if (!validate()) return;
 
-    //   // await saveTokenToKeychain(res.access_token);
-    // } catch (error) {
-    //   console.log('Login failed:', error);
-    // }
+    const fullPhone = `${countryCode}${phone}`;
+
+    try {
+      const response = await requestOtp({
+        phone: fullPhone,
+        country,
+      }).unwrap();
+
+      if (response.success) {
+        // 🔹 Show the OTP in an alert (for testing/debugging)
+        if (response.otp) {
+          Alert.alert('OTP Sent', `Your OTP is: ${response.otp}`);
+        } else {
+          Alert.alert('OTP Sent', response.message);
+        }
+
+        // ✅ Navigate to OTP screen
+        navigation.navigate('Otp', {
+          phone: fullPhone,
+          country,
+        });
+      } else {
+        // ❌ User not found → DO NOT navigate
+        Alert.alert('User Not Found', response.message);
+      }
+    } catch (error: any) {
+      // Only network / server errors
+      Alert.alert('Error', error?.data?.message || 'Failed to send OTP');
+    }
   };
 
+  const isFormComplete = Boolean(country) && /^\d{8,15}$/.test(phone);
+
+  useFocusEffect(
+    useCallback(() => {
+      setCountry('');
+      setCountryCode('+91');
+      setPhone('');
+      setModalVisible(false);
+    }, [])
+  );
+
   return {
-    /* UI state */
     country,
     countryCode,
     phone,
@@ -72,16 +113,12 @@ export const useLoginLogic = () => {
     phoneInputRef,
     countries: COUNTRIES.map(c => c.name),
 
-    /* setters */
     setPhone,
     setModalVisible,
 
-    /* actions */
     handleSelectCountry,
     handleLogin,
-
-    /* api flags */
+    isFormComplete,
     isLoading,
-    isError,
   };
 };

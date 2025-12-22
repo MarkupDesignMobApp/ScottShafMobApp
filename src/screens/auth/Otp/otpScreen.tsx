@@ -1,23 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   Image,
-  ImageBackground,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform,
+  ImageBackground,
   ScrollView,
-  TextInput,
+  Keyboard,
   TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
+  TextInput
 } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+
 import { styles } from './styles';
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { saveTokenToKeychain } from '../../../app/keychain';
 import { useOtpLogic } from './useOtpLogic';
+
+import { AppButton } from '../../../components/ui/AppButton/AppButton';
+
 import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
-export default function OtpScreen() {
+import Loader from '../../../components/ui/Loader/Loader';
+
+/* 🔹 Keyboard hook */
+const useKeyboardOpen = () => {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setOpen(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  return open;
+};
+
+export default function OtpScreen({ route }) {
+  const { phone, country } = route.params;
+
   const {
     otp,
     timer,
@@ -28,121 +53,131 @@ export default function OtpScreen() {
     handleKeyPress,
     handleResendOtp,
     submitOtp,
-  } = useOtpLogic();
+    isVerifying
+  } = useOtpLogic(phone, country);
 
-  const onVerify = async () => {
-    const otpCode = submitOtp();
-    if (!otpCode) return;
-    try {
-      // const res = await login({
-      //   email: country, // or phone, based on backend
-      //   password: phone,
-      // }).unwrap();
 
-      await saveTokenToKeychain("123456");
-    } catch (error) {
-      console.log('Login failed:', error);
-    }
-  };
-
+  const keyboardOpen = useKeyboardOpen();
+  ;
   return (
     <View style={styles.maincontainer}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="dark-content"
-      />
+      <Loader color='#0180FE' visible={isVerifying} />
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      {/* HEADER */}
+      {/* ---------- Banner (NON-SCROLLABLE) ---------- */}
+
       <View style={styles.imgcontainer}>
         <ImageBackground
-          resizeMode="contain"
-          style={styles.img}
           source={require('../../../../assets/image/loginbanner.png')}
+          resizeMode="cover"
+          style={styles.banner}
         >
+          {/* Blur overlay */}
           <Image
-            resizeMode="cover"
-            style={styles.img}
             source={require('../../../../assets/image/blur.png')}
+            resizeMode="cover"
+            style={{ ...styles.img }}
           />
-          
+
+
+
         </ImageBackground>
+
+      </View>
+      <View style={styles.headcontainer}>
+        <Text style={styles.heading}>OTP Verification</Text>
+        <Text style={styles.heading2}>
+          Enter the code from the SMS we sent to<Text style={{ color: '#0180FE',fontWeight:"500" }}>{phone}</Text>
+        </Text>
+        <Text />
       </View>
 
-      {/* BODY */}
-      <SafeAreaProvider>
-      <KeyboardAvoidingView
+
+      {/* ---------- Scrollable Content ---------- */}
+      <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
+        <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ?responsiveScreenHeight(30) : 0}
         >
-          <ScrollView keyboardShouldPersistTaps="handled">
-          <View style={styles.headcontainer}>
-            <Text style={styles.heading}>OTP Verification</Text>
-            <Text style={styles.heading2}>
-              Enter the code from the SMS we sent to{' '}
-              <Text style={{ color: '#0180FE', fontFamily: 'Quicksand-Bold' }}>
-                +91 976 058 6144
-              </Text>
-            </Text>
-          </View>
-            <SafeAreaView style={styles.safeArea}>
-              <View style={styles.innercontainer}>
-                {/* OTP INPUTS */}
-                <View style={styles.otpcontainer}>
-                  {otp.map((digit, index) => (
-                    <TextInput
-                      key={index}
-                      style={styles.otpInput}
-                      keyboardType="number-pad"
-                      maxLength={1}
-                      value={digit}
-                      ref={ref => (inputsRef.current[index] = ref!)}
-                      onChangeText={text => handleOtpChange(text, index)}
-                      onKeyPress={e => handleKeyPress(e, index)}
-                      autoFocus={index === 0}
-                    />
-                  ))}
-                </View>
+          <ScrollView
+            scrollEnabled={keyboardOpen}
+            bounces={false}
+            alwaysBounceVertical={false}
+            overScrollMode="never"
+            keyboardShouldPersistTaps="handled"
+            contentInsetAdjustmentBehavior="never"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: keyboardOpen ? responsiveScreenHeight(12) : responsiveScreenHeight(4),
 
-                {/* RESEND */}
-                <View style={styles.resendcontainer}>
-                  <View style={styles.icon}>
-                    <Image
-                      style={styles.img}
-                      resizeMode="contain"
-                      source={require('../../../../assets/image/reload.png')}
-                    />
-                  </View>
 
-                  <TouchableOpacity
-                    disabled={!isResendEnabled}
-                    onPress={handleResendOtp}
-                  >
-                    <Text
-                      style={[
-                        styles.resendtxt,
-                        { color: isResendEnabled ? '#0180FE' : '#999' },
-                      ]}
-                    >
-                      {isResendEnabled
-                        ? 'Resend Code'
-                        : `Resend Code in ${timer}s`}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+            }}
+          >
+            {/* <Loader visible={isLoading} color="blue" /> */}
 
-                {/* VERIFY */}
-                <AppButton
-                  title="Verify"
-                  disabled={!isOtpComplete}
-                  onPress={onVerify}
-                />
+            <View style={styles.innercontainer}>
+
+              <View style={styles.otpcontainer}>
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    style={styles.otpInput}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    value={digit}
+                    ref={ref => (inputsRef.current[index] = ref!)}
+                    onChangeText={text => handleOtpChange(text, index)}
+                    onKeyPress={e => handleKeyPress(e, index)}
+                    autoFocus={index === 0}
+                  />
+                ))}
               </View>
-            </SafeAreaView>
+
+
+
+              {/* OTP INPUTS */}
+
+              {/* RESEND */}
+              <View style={styles.resendcontainer}>
+                <View style={styles.icon}>
+                  <Image
+                    style={styles.img}
+                    resizeMode="contain"
+                    source={require('../../../../assets/image/reload.png')}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  disabled={!isResendEnabled}
+                  onPress={handleResendOtp}
+                >
+                  <Text
+                    style={[
+                      styles.resendtxt,
+                      { color: isResendEnabled ? '#0180FE' : '#000' },
+                    ]}
+                  >
+                    {isResendEnabled
+                      ? 'Resend Code'
+                      : `Resend Code in ${timer}s`}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Verify */}
+              <AppButton
+                title={isVerifying ? 'Verifying...' : 'Verify'}
+                disabled={!isOtpComplete || isVerifying}
+                onPress={() => submitOtp()}
+              />
+
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaProvider>
+      </SafeAreaView>
+
+
     </View>
   );
 }
