@@ -87,7 +87,7 @@ export default function OtpScreen({ route }) {
       <View style={styles.headcontainer}>
         <Text style={styles.heading}>OTP Verification</Text>
         <Text style={styles.heading2}>
-          Enter the code from the SMS we sent to<Text style={{ color: '#0180FE',fontWeight:"500" }}>{phone}</Text>
+          Enter the code from the SMS we sent to<Text style={{ color: '#0180FE', fontWeight: "500" }}>{phone}</Text>
         </Text>
         <Text />
       </View>

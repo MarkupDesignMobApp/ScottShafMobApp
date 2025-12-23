@@ -6,15 +6,13 @@ import {
   Alert,
   TextInput,
   StatusBar,
-  TouchableOpacity,
-  Keyboard,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Modal,
-  StyleSheet,
+  PermissionsAndroid,
+  TouchableOpacity
 } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import {
   responsiveScreenWidth,
@@ -27,42 +25,39 @@ import { styles as Homestyle } from '../../auth/Login/styles';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import {
   useUpdateUserProfileMutation,
-  useGetProfileQuery,
   useGetUserProfileQuery,
 } from '../../../features/auth/authApi';
-import { PermissionsAndroid } from 'react-native';
 import Loader from '../../../components/ui/Loader/Loader';
-export default function EditProfile({ navigation }) {
-  const [categories, setCategories] = React.useState([
-    { name: 'Travel', code: 'Travel' },
-    { name: 'Movies', code: 'Movies' },
-    { name: 'Music', code: 'Music' },
-  ]);
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const [budgetText, setBudgetText] = React.useState('');
-  const [profileImage, setProfileImage] = React.useState<any>(null);
-  const [email, setemail] = React.useState('');
-  const [name, setName] = React.useState('');
-  const [city, setCity] = React.useState('');
-  const [age, setage] = React.useState('');
+
+export default function EditProfile({ navigation }: any) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [city, setCity] = useState('');
+  const [age, setAge] = useState('');
+  const [budgetText, setBudgetText] = useState('');
+  const [profileImage, setProfileImage] = useState<any>(null);
+
+  const MAX_WORDS = 200;
 
   const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
   const { data: profileResponse, isLoading: profileLoading } =
     useGetUserProfileQuery();
-  React.useEffect(() => {
-    console.log('ddd', profileResponse);
+
+  /* ------------------ LOAD PROFILE ------------------ */
+  useEffect(() => {
     if (profileResponse?.success) {
       const user = profileResponse.data.user;
 
       setName(user.full_name ?? '');
+      setEmail(user.email ?? '');
       setCity(user.profile?.city ?? '');
+      setAge(user.profile?.age_band ?? '');
       setBudgetText(user.profile?.dining_budget ?? '');
-      setemail(user.email ?? '');
-      setage(user.profile?.age_band ?? '');
-      setProfileImage(user.profile?.profile_image ?? '');
+      setProfileImage(user.profile?.profile_image ?? null);
     }
   }, [profileResponse]);
 
+  /* ------------------ CAMERA PERMISSION ------------------ */
   const requestCameraPermission = async () => {
     if (Platform.OS !== 'android') return true;
 
@@ -74,30 +69,42 @@ export default function EditProfile({ navigation }) {
         buttonPositive: 'OK',
       },
     );
-
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
-  const MAX_WORDS = 200;
-  const handleBudgetChange = (text: string) => {
-    // remove extra spaces
-    const words = text.trim().split(/\s+/);
 
+  /* ------------------ IMAGE PICKERS ------------------ */
+  const openCamera = async () => {
+    const granted = await requestCameraPermission();
+    if (!granted) return;
+
+    launchCamera({ mediaType: 'photo', quality: 0.8 }, response => {
+      if (response.assets?.length) {
+        setProfileImage(response.assets[0]);
+      }
+    });
+  };
+
+  const openGallery = () => {
+    launchImageLibrary({ mediaType: 'photo', quality: 0.8 }, response => {
+      if (response.assets?.length) {
+        setProfileImage(response.assets[0]);
+      }
+    });
+  };
+
+  /* ------------------ BUDGET WORD LIMIT ------------------ */
+  const handleBudgetChange = (text: string) => {
+    const words = text.trim().split(/\s+/);
     if (words.length <= MAX_WORDS) {
       setBudgetText(text);
-    } else {
-      // limit to 200 words
-      const limitedText = words.slice(0, MAX_WORDS).join(' ');
-      setBudgetText(limitedText);
     }
   };
 
+  /* ------------------ SAVE PROFILE ------------------ */
   const handleSaveChanges = async () => {
     try {
       const formData = new FormData();
-
-      // ⭐ IMPORTANT FOR LARAVEL
-      formData.append('_method', 'PUT');
-
+      formData.append('_method', 'POST');
       formData.append('full_name', name);
       formData.append('city', city);
       formData.append('dining_budget', budgetText);
@@ -117,242 +124,135 @@ export default function EditProfile({ navigation }) {
 
       const res = await updateProfile(formData).unwrap();
       Alert.alert('Success', res.message);
+      navigation.goBack();
     } catch (err: any) {
       console.log('UPDATE ERROR 👉', err);
       Alert.alert('Error', err?.data?.message || 'Update failed');
     }
   };
 
-  const selectedLabel = selected
-    ? categories.find(c => c.code === selected)?.name ?? ''
-    : '';
-
+  /* ====================== UI ====================== */
   return (
     <View style={styles2.container}>
-      <StatusBar hidden={false} barStyle="dark-content" />
-      <Loader color="blue" visible={isLoading || profileLoading} />
+      <StatusBar barStyle="dark-content" />
+      <Loader visible={isLoading || profileLoading} />
 
       <AppHeader
-        onLeftPress={() => navigation.goBack()}
         title="Edit Profile"
+        onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 2 : 0}
       >
-        <View style={{ flex: 1, padding: responsiveScreenWidth(0) }}>
-          <View style={{ ...styles2.profile }}>
-            <View style={styles2.cammaincontainer2}>
-              <Image
-                resizeMode="cover"
-                style={styles2.img}
-                source={
-                  profileImage?.uri
-                    ? { uri: profileImage }
-                    : require('../../../../assets/image/women1.png')
-                }
-              />
-            </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: responsiveScreenWidth(4),
+            paddingBottom: responsiveScreenHeight(8),
+          }}
+        >
+          {/* PROFILE IMAGE */}
+          <View style={styles2.profile}>
+            <Image
+              resizeMode="cover"
+              style={styles2.img}
+              source={
+                profileImage
+                  ? { uri: profileImage?.uri ?? profileImage }
+                  : require('../../../../assets/image/women1.png')
+              }
+            />
+
             <Pressable
               style={styles2.camcontainer}
               onPress={() =>
-                Alert.alert(
-                  'Update Profile Photo',
-                  'Choose an option',
-                  [
-                    { text: 'Camera', onPress: openCamera },
-                    { text: 'Gallery', onPress: openGallery },
-                    { text: 'Cancel', style: 'cancel' },
-                  ],
-                  { cancelable: true },
-                )
+                Alert.alert('Update Profile Photo', 'Choose an option', [
+                  { text: 'Camera', onPress: openCamera },
+                  { text: 'Gallery', onPress: openGallery },
+                  { text: 'Cancel', style: 'cancel' },
+                ])
               }
             >
-              <View style={styles2.cammaincontainer}>
-                <Image
-                  resizeMode="contain"
-                  style={styles2.img}
-                  source={require('../../../../assets/image/camera.png')}
-                />
-              </View>
+              <Image
+                source={require('../../../../assets/image/camera.png')}
+                style={styles2.img}
+              />
             </Pressable>
           </View>
 
-          <ScrollView
-            bounces={false}
-            scrollEventThrottle={16}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: responsiveScreenWidth(2),
-              paddingBottom: responsiveScreenHeight(18), // 👈 reserve footer space
-            }}
+          {/* NAME */}
+          <AppInput
+            editable={false}
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Sarah Johnson"
+            label={<Text style={Homestyle.labeltxt}>Name *</Text>}
+          />
+
+          {/* EMAIL */}
+          <AppInput
+
+            value={email}
+            editable={false}
+            label={<Text style={Homestyle.labeltxt}>Email *</Text>}
+          />
+
+          {/* AGE */}
+        
+          <TouchableOpacity
+            style={{ width: '100%' }}
+            activeOpacity={0.8}
+          // onPress={() => {
+          //   Keyboard.dismiss();
+          //   setTimeout(() => setModalVisible(true), 150);
+          // }}
           >
-
-            {/* name  */}
-            <AppInput
-              placeholder="e.g. Sarah Johnson"
-              label={
-                <Text style={{ ...Homestyle.labeltxt }}>
-                  Name
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-            />
-            {/* email */}
-            <AppInput
-              editable={false}
-              placeholder="e.g. sarah.johnson@gmail.com"
-              value={form.email}
-              onChangeText={text => updateField('email', text)}
-              label={
-                <Text style={{ ...Homestyle.labeltxt }}>
-                  Email
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-              value={email}
-            />
-
-            {/* interest */}
-            <AppInput
-              label={
-                <Text style={{ ...styles2.labeltxt }}>
-                  Interest
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-            />
-
-            {/* age */}
-            <AppInput
-              label={
-                <Text style={{ ...Homestyle.labeltxt }}>
-                  Age
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-            />
-            {form.errors.age && <Text style={styles2.error}>{form.errors.age}</Text>}
-
-
-            {/* city */}
-            <AppInput
-              placeholder="e.g. San Francisco"
-              label={
-                <Text style={{ ...Homestyle.labeltxt }}>
-                  City
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-              value={city}
-            />
-            {form.errors.city && <Text style={styles2.error}>{form.errors.city}</Text>}
-
-
-            {/* Budget Preference* */}
-            <AppInput
-              value={form.budgetPreference}
-              onSelect={item => updateField('budgetPreference', item)}
-              label={
-                <Text style={{ ...styles2.labeltxt }}>
-                  Budget Preference
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-            />
-            <View>
-              <Text style={styles2.labeltxt}>
-                Budget Preference
-                <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-              </Text>
-
-              <View style={styles2.paragraph}>
-                <TextInput
-                  keyboardType='default'
-                  value={budgetText}
-                  onChangeText={handleBudgetChange}
-                  multiline
-                  placeholder="e.g. Love exploring new restaurants and hidden gems in the city!"
-                  placeholderTextColor="#B5B5B5"
-                  style={{
-                    height: '100%',
-
-                    textAlignVertical: 'top', // 👈 starts from top-left
-                  }}
-                />
-              </View>
-              {form.errors.description && (
-                <Text style={styles2.error}>{form.errors.description}</Text>
-              )}
-
-              <Text style={styles2.wordcapacity}>
-                {budgetText.trim() === ''
-                  ? 0
-                  : budgetText.trim().split(/\s+/).length}
-                /200 Words
-              </Text>
+            <View pointerEvents="none">
+              <AppInput
+                onChangeText={setAge}
+                placeholder="Select Age"
+                label={
+                  <Text style={Homestyle.labeltxt}>
+                    Age <Text style={{ color: 'red' }}>*</Text>
+                  </Text>
+                }
+              value={age}
+              />
             </View>
-            <AppButton
-              title="Save Changes"
-              onPress={() => Alert.alert('hii')}
+          </TouchableOpacity>
+          {/* CITY */}
+          <AppInput
+            value={city}
+            onChangeText={setCity}
+            placeholder="e.g. San Francisco"
+            label={<Text style={Homestyle.labeltxt}>City *</Text>}
+          />
+
+          {/* BUDGET */}
+          <Text style={styles2.labeltxt}>Budget Preference *</Text>
+          <View style={styles2.paragraph}>
+            <TextInput
+              value={budgetText}
+              onChangeText={handleBudgetChange}
+              multiline
+              placeholder="Love exploring new restaurants and hidden gems..."
+              textAlignVertical="top"
+              style={{ height: 120 }}
             />
-          </ScrollView>
-        </View>
+          </View>
+          <Text style={styles2.wordcapacity}>
+            {budgetText.trim()
+              ? budgetText.trim().split(/\s+/).length
+              : 0}
+            /200 Words
+          </Text>
 
-        {/* Simple modal selector for categories */}
-        {modalVisible && (
-          <Modal transparent animationType="fade" visible={modalVisible}>
-            <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-              <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Select Category</Text>
-                <ScrollView>
-                  {categories.map(item => {
-                    const isSelected = Array.isArray(form.interest) && form.interest.includes(item.code);
-                    return (
-                      <TouchableOpacity key={item.code} style={styles.modalItem} onPress={() => { toggleInterest(item.code); }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Text style={styles.modalItemText}>{item.name}</Text>
-                          {isSelected && <Text style={{ color: '#2B8AFF', fontWeight: '700' }}>✔</Text>}
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-
-                <TouchableOpacity style={styles.modalDone} onPress={() => setModalVisible(false)}>
-                  <Text style={{ color: '#fff', fontWeight: '600', textAlign: 'center' }}>Done</Text>
-                </TouchableOpacity>
-              </View>
-            </Pressable>
-          </Modal>
-        )}
+          <AppButton title="Save Changes" onPress={handleSaveChanges} />
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    width: '80%',
-    maxHeight: '60%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-  },
-  modalTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  modalItem: { paddingVertical: 12, borderBottomWidth: 1, borderColor: '#eee', },
-  modalItemText: { fontSize: 14 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 0, marginBottom: responsiveScreenHeight(1) },
-  chip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#00C4FA', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, marginRight: 8, marginTop: 8 },
-  chipText: { color: '#fff', marginRight: 8 },
-  chipRemove: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  modalDone: { marginTop: 12, backgroundColor: '#2B8AFF', paddingVertical: 10, borderRadius: 8 },
-});
