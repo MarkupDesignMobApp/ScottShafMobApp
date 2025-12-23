@@ -16,10 +16,22 @@ import {
 } from 'react-native';
 import React from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
-import { responsiveScreenHeight, responsiveScreenWidth } from 'react-native-responsive-dimensions';
+import {
+  responsiveScreenWidth,
+  responsiveScreenHeight,
+} from 'react-native-responsive-dimensions';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { styles2 } from './styles';
+import { styles as Homestyle } from '../../auth/Login/styles';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import {
+  useUpdateUserProfileMutation,
+  useGetProfileQuery,
+  useGetUserProfileQuery,
+} from '../../../features/auth/authApi';
+import { PermissionsAndroid } from 'react-native';
+import Loader from '../../../components/ui/Loader/Loader';
 export default function EditProfile({ navigation }) {
   const [categories, setCategories] = React.useState([
     { name: 'Travel', code: 'Travel' },
@@ -28,89 +40,97 @@ export default function EditProfile({ navigation }) {
   ]);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [budgetText, setBudgetText] = React.useState('');
-  const MAX_WORDS = 200;
-  const [form, setForm] = React.useState<any>({
-    name: '',
-    email: '',
-    // store interest as array of codes for multi-select
-    interest: [],
-    age: '',
-    city: '',
-    budgetPreference: '',
-    description: '',
-    errors: {}
-  });
+  const [profileImage, setProfileImage] = React.useState<any>(null);
+  const [email, setemail] = React.useState('');
+  const [name, setName] = React.useState('');
+  const [city, setCity] = React.useState('');
+  const [age, setage] = React.useState('');
 
-  // Toggle interest code in the form.interest array
-  const toggleInterest = (code: string) => {
-    setForm((prev: any) => {
-      const arr: string[] = Array.isArray(prev.interest) ? prev.interest : [];
-      const exists = arr.includes(code);
-      const next = exists ? arr.filter(c => c !== code) : [...arr, code];
-      return {
-        ...prev,
-        interest: next,
-        errors: { ...prev.errors, interest: '' }
-      };
-    });
+  const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
+  const { data: profileResponse, isLoading: profileLoading } =
+    useGetUserProfileQuery();
+  React.useEffect(() => {
+    console.log('ddd', profileResponse);
+    if (profileResponse?.success) {
+      const user = profileResponse.data.user;
+
+      setName(user.full_name ?? '');
+      setCity(user.profile?.city ?? '');
+      setBudgetText(user.profile?.dining_budget ?? '');
+      setemail(user.email ?? '');
+      setage(user.profile?.age_band ?? '');
+      setProfileImage(user.profile?.profile_image ?? '');
+    }
+  }, [profileResponse]);
+
+  const requestCameraPermission = async () => {
+    if (Platform.OS !== 'android') return true;
+
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      {
+        title: 'Camera Permission',
+        message: 'App needs camera access to upload profile photo',
+        buttonPositive: 'OK',
+      },
+    );
+
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
-
-
+  const MAX_WORDS = 200;
   const handleBudgetChange = (text: string) => {
-    // Remove extra spaces and split into words
+    // remove extra spaces
     const words = text.trim().split(/\s+/);
 
     if (words.length <= MAX_WORDS) {
       setBudgetText(text);
     } else {
-      // Stop accepting more words
+      // limit to 200 words
       const limitedText = words.slice(0, MAX_WORDS).join(' ');
       setBudgetText(limitedText);
     }
   };
 
-  const updateField = (key: string, value: string) => {
-    setForm(prev => ({
-      ...prev,
-      [key]: value,
-      errors: {
-        ...prev.errors,
-        [key]: '' // clear error when typing
+  const handleSaveChanges = async () => {
+    try {
+      const formData = new FormData();
+
+      // ⭐ IMPORTANT FOR LARAVEL
+      formData.append('_method', 'PUT');
+
+      formData.append('full_name', name);
+      formData.append('city', city);
+      formData.append('dining_budget', budgetText);
+      formData.append('has_dogs', '0');
+
+      if (age) {
+        formData.append('age_band', age);
       }
-    }));
-  };
 
-  const validateForm = () => {
-    let errors: any = {};
+      if (profileImage?.uri) {
+        formData.append('profile_image', {
+          uri: profileImage.uri,
+          type: profileImage.type || 'image/jpeg',
+          name: profileImage.fileName || `profile_${Date.now()}.jpg`,
+        } as any);
+      }
 
-    if (!form.name.trim()) errors.name = 'Name is required';
-    if (!form.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
-      errors.email = 'Invalid email';
-    }
-
-    if (!form.interest || form.interest.length === 0) errors.interest = 'Interest is required';
-    if (!form.age) errors.age = 'Age is required';
-    if (!form.city.trim()) errors.city = 'City is required';
-    if (!form.budgetPreference) errors.budgetPreference = 'Select budget preference';
-    if (!form.description.trim()) errors.description = 'Description is required';
-
-    setForm(prev => ({ ...prev, errors }));
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validateForm()) {
-      console.log('FORM DATA 👉', form);
+      const res = await updateProfile(formData).unwrap();
+      Alert.alert('Success', res.message);
+    } catch (err: any) {
+      console.log('UPDATE ERROR 👉', err);
+      Alert.alert('Error', err?.data?.message || 'Update failed');
     }
   };
 
-
+  const selectedLabel = selected
+    ? categories.find(c => c.code === selected)?.name ?? ''
+    : '';
 
   return (
     <View style={styles2.container}>
       <StatusBar hidden={false} barStyle="dark-content" />
+      <Loader color="blue" visible={isLoading || profileLoading} />
 
       <AppHeader
         onLeftPress={() => navigation.goBack()}
@@ -122,16 +142,33 @@ export default function EditProfile({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 2 : 0}
       >
-        <View style={{ flex: 1, padding: responsiveScreenWidth(2) }}>
-          <View style={styles2.profile}>
-            <Image
-              resizeMode="cover"
-              style={styles2.img}
-              source={require('../../../../assets/image/women1.png')}
-            />
+        <View style={{ flex: 1, padding: responsiveScreenWidth(0) }}>
+          <View style={{ ...styles2.profile }}>
+            <View style={styles2.cammaincontainer2}>
+              <Image
+                resizeMode="cover"
+                style={styles2.img}
+                source={
+                  profileImage?.uri
+                    ? { uri: profileImage }
+                    : require('../../../../assets/image/women1.png')
+                }
+              />
+            </View>
             <Pressable
-              onPress={() => Alert.alert('efef')}
               style={styles2.camcontainer}
+              onPress={() =>
+                Alert.alert(
+                  'Update Profile Photo',
+                  'Choose an option',
+                  [
+                    { text: 'Camera', onPress: openCamera },
+                    { text: 'Gallery', onPress: openGallery },
+                    { text: 'Cancel', style: 'cancel' },
+                  ],
+                  { cancelable: true },
+                )
+              }
             >
               <View style={styles2.cammaincontainer}>
                 <Image
@@ -147,105 +184,51 @@ export default function EditProfile({ navigation }) {
             bounces={false}
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{
+              paddingHorizontal: responsiveScreenWidth(2),
+              paddingBottom: responsiveScreenHeight(18), // 👈 reserve footer space
+            }}
           >
 
             {/* name  */}
             <AppInput
               placeholder="e.g. Sarah Johnson"
-              value={form.name}
-              onChangeText={text => updateField('name', text)}
               label={
-                <Text style={{ ...styles2.labeltxt }}>
+                <Text style={{ ...Homestyle.labeltxt }}>
                   Name
                   <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
                 </Text>
               }
             />
-            {form.errors.name && <Text style={styles2.error}>{form.errors.name}</Text>}
-
             {/* email */}
             <AppInput
+              editable={false}
               placeholder="e.g. sarah.johnson@gmail.com"
               value={form.email}
               onChangeText={text => updateField('email', text)}
               label={
-                <Text style={{ ...styles2.labeltxt }}>
+                <Text style={{ ...Homestyle.labeltxt }}>
                   Email
                   <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
                 </Text>
               }
+              value={email}
             />
-            {form.errors.email && <Text style={styles2.error}>{form.errors.email}</Text>}
 
             {/* interest */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveScreenHeight(2), }}>
-              <View style={styles2.prefix}>
-                <Image
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="contain"
-                  source={require('../../../../assets/image/arrow-down.png')}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={{ width: '100%' }}
-                activeOpacity={0.8}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setTimeout(() => setModalVisible(true), 100);
-                }}
-              >
-                <AppInput
-                  label={
-                    <Text style={{ ...styles2.labeltxt }}>
-                      Interest
-                      <Text style={{ color: 'red', fontSize: 18 }}>
-                        *
-                      </Text>
-                    </Text>
-                  }
-                  // show selected labels comma separated inside the input
-                  value={
-                    Array.isArray(form.interest) && form.interest.length > 0
-                      ? form.interest
-                        .map((code: string) => categories.find(c => c.code === code)?.name ?? code)
-                        .join(', ')
-                      : ''
-                  }
-                  editable={false}
-                />
-              </TouchableOpacity>
-            </View>
-            {form.errors.interest && <Text style={styles2.error}>{form.errors.interest}</Text>}
-
-            {/* selected interest chips */}
-            {Array.isArray(form.interest) && form.interest.length > 0 && (
-              <View style={styles.chipRow}>
-                {form.interest.map((code: string) => {
-                  const label = categories.find(c => c.code === code)?.name ?? code;
-                  return (
-                    <View key={code} style={styles.chip}>
-                      <Text style={styles.chipText}>{label}</Text>
-                      <TouchableOpacity onPress={() => toggleInterest(code)} style={styles.chipRemove}>
-                        <Text style={{ color: '#00C4FA', fontWeight: '600' }}>×</Text>
-                      </TouchableOpacity>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-
-
+            <AppInput
+              label={
+                <Text style={{ ...styles2.labeltxt }}>
+                  Interest
+                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+                </Text>
+              }
+            />
 
             {/* age */}
             <AppInput
-              value={form.age}
-              onChangeText={text => updateField('age', text)}
-              keyboardType='number-pad'
               label={
-                <Text style={{ ...styles2.labeltxt }}>
+                <Text style={{ ...Homestyle.labeltxt }}>
                   Age
                   <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
                 </Text>
@@ -257,14 +240,13 @@ export default function EditProfile({ navigation }) {
             {/* city */}
             <AppInput
               placeholder="e.g. San Francisco"
-              value={form.city}
-              onChangeText={text => updateField('city', text)}
               label={
-                <Text style={{ ...styles2.labeltxt }}>
+                <Text style={{ ...Homestyle.labeltxt }}>
                   City
                   <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
                 </Text>
               }
+              value={city}
             />
             {form.errors.city && <Text style={styles2.error}>{form.errors.city}</Text>}
 
@@ -280,10 +262,6 @@ export default function EditProfile({ navigation }) {
                 </Text>
               }
             />
-            {form.errors.budgetPreference && (
-              <Text style={styles2.error}>{form.errors.budgetPreference}</Text>
-            )}
-
             <View>
               <Text style={styles2.labeltxt}>
                 Budget Preference
@@ -316,13 +294,11 @@ export default function EditProfile({ navigation }) {
                 /200 Words
               </Text>
             </View>
-
+            <AppButton
+              title="Save Changes"
+              onPress={() => Alert.alert('hii')}
+            />
           </ScrollView>
-
-          <AppButton
-            title="Save Changes"
-            onPress={() => handleSubmit()}
-          />
         </View>
 
         {/* Simple modal selector for categories */}

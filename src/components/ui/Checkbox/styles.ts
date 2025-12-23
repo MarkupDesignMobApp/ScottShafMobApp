@@ -1,48 +1,29 @@
 import { StyleSheet } from 'react-native';
-import { responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from 'react-native-responsive-dimensions';
-
+import {
+  responsiveScreenHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 export const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    
-  },
-
-  checkbox: {
-    width:responsiveScreenWidth(6),
-    height:responsiveScreenHeight(3),
-    borderRadius: 6,
-    borderWidth: 2,
+  box: {
+    width: 23,
+    height: 22,
+    borderWidth: 1.5,
     borderColor: '#00C4FA',
-    alignItems: 'center',
+    borderRadius: 4,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EFFCFF',
+  },
+  checkedBox: {
+    backgroundColor: '#EFFCFF',
   },
 
-  checked: {
-    backgroundColor: '#00C4FA',
+  img:{
+    width:'100%',
+    height:'100%'
   },
-
-  innerTick: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 2,
-  },
-
-  label: {
-    marginLeft:responsiveScreenWidth(3),
-   
-    color: '#131313',
-    fontFamily: 'Quicksand-Regular',
-    fontSize:responsiveScreenFontSize(1.75)
-  },
-
-  disabled: {
-    opacity: 0.5,
-  },
-
-  disabledLabel: {
-    color: '#131313',
-    fontSize:responsiveScreenFontSize(2)
-  },
+  imgcontainer:{
+    width:responsiveScreenWidth(2.5),
+    height:responsiveScreenHeight(2.5)
+  }
 });

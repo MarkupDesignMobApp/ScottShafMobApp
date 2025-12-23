@@ -15,8 +15,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#EFFCFF',
   },
   switchtxt: {
-    fontFamily: 'Quicksand-medium',
-    fontSize: responsiveScreenFontSize(1.9),
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveScreenFontSize(1.75),
     letterSpacing: 0.5,
   },
   maincontainer: {
@@ -35,5 +35,15 @@ export const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     bottom: responsiveScreenHeight(10),
+  },
+  checkboxconatiner: {
+    paddingTop: responsiveScreenHeight(2),
+  },
+  title: {
+    marginLeft: 10,
+    fontFamily: 'Quicksand-Regular',
+    fontSize:responsiveScreenFontSize(1.75),
+    color:'#000',
+    fontWeight:'semibold'
   },
 });

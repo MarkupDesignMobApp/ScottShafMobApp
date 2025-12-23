@@ -2,7 +2,7 @@ import { useRef, useState, useCallback } from 'react';
 import { Alert, TextInput } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSignupMutation } from '../../../features/auth/authApi';
-
+import React from 'react';
 type Country = {
   name: string;
   code: string;
@@ -21,7 +21,7 @@ const COUNTRIES: Country[] = [
 export const useSignupLogic = () => {
   const navigation = useNavigation<any>();
   const [signup, { isLoading }] = useSignupMutation();
-
+  const navigatedForward = React.useRef(false);
   /* ================= STATE ================= */
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -70,37 +70,43 @@ export const useSignupLogic = () => {
       }).unwrap();
 
       // ❌ Business validation (email exists, etc.)
-      if (!response.success) {
+      if (!response.success || !response.user) {
         Alert.alert(
           'Account Already Registered',
-          response.message || 'This account already exists'
+          response.message || 'This account already exists',
         );
         return;
       }
 
-      // ✅ SUCCESS (201 only)
+      // ✅ Extract the user ID from API response
+      const userId = response.user.id;
+
+      // ✅ Navigate to TermCondition screen with userId
       navigation.navigate('TermCondition', {
-        phone: `${countryCode}${phone}`,
-        country,
+        phone: response.user.phone,
+        country: response.user.country,
+        userId, // 👈 pass the ID here
       });
     } catch (err: any) {
-      Alert.alert(
-        'Error',
-        err?.data?.message || 'Something went wrong'
-      );
+      Alert.alert('Error', err?.data?.message || 'Something went wrong');
     }
   };
 
   /* ================= CLEAR ON FOCUS ================= */
   useFocusEffect(
     useCallback(() => {
-      setFullName('');
-      setEmail('');
-      setPhone('');
-      setCountry('');
-      setCountryCode('+91');
-      setModalVisible(false);
-    }, [])
+      if (navigatedForward.current) {
+        setFullName('');
+        setEmail('');
+        setPhone('');
+        setCountry('');
+        setCountryCode('+91');
+        setModalVisible(false);
+
+        // reset flag
+        navigatedForward.current = false;
+      }
+    }, []),
   );
 
   return {

@@ -1,52 +1,57 @@
 import React, { useEffect, useState } from 'react';
-
-import { FlatList, View, Text, Pressable, Image } from 'react-native';
+import { FlatList, View, Text, Pressable, Image, Alert } from 'react-native';
 import { styles } from './styles';
+import {
+  useGetAllInterestsQuery,
+  useGetUserInterestsQuery,
+  useSaveUserInterestsMutation,
+} from '../../../features/auth/authApi';
+import Loader from '../../../components/ui/Loader/Loader';
+import { useNavigation } from '@react-navigation/native';
+import { AppButton } from '../../../components/ui/AppButton/AppButton';
 
-const DATA = [
-  {
-    id: '1',
-    title: 'Movie',
-    icon: require('../../../../assets/image/movie.png'),
-  },
-  {
-    id: '2',
-    title: 'Music',
-    icon: require('../../../../assets/image/music.png'),
-  },
-  {
-    id: '3',
-    title: 'Food',
-    icon: require('../../../../assets/image/food.png'),
-  },
-  {
-    id: '4',
-    title: 'Travel',
-    icon: require('../../../../assets/image/travel.png'),
-  },
-  {
-    id: '5',
-    title: 'Gaming',
-    icon: require('../../../../assets/image/controller.png'),
-  },
-  {
-    id: '6',
-    title: 'Books',
-    icon: require('../../../../assets/image/book.png'),
-  },
-];
+interface TwoColumnListProps {
+  userId: number;
+}
+
 const MIN_SELECTION = 3;
-const TwoColumnList = () => {
-  useEffect(() => {
-    const defaultSelected = DATA.slice(0, MIN_SELECTION).map(item => item.id);
-    setSelectedItems(defaultSelected);
-  }, []);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  const toggleSelection = (id: string) => {
+const TwoColumnList: React.FC<TwoColumnListProps> = ({ userId }) => {
+  const navigation = useNavigation();
+
+  // ✅ GET ALL INTERESTS
+  const { data: allInterests, isLoading } = useGetAllInterestsQuery();
+
+  // ✅ GET USER SELECTED INTERESTS
+  const { data: userInterests } = useGetUserInterestsQuery(userId);
+
+  // ✅ SAVE
+  const [saveInterests, { isLoading: isSaving }] =
+    useSaveUserInterestsMutation();
+
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+
+  // ✅ PRESELECT USER INTERESTS
+  useEffect(() => {
+    if (userInterests) {
+      setSelectedItems(userInterests.map(i => i.id));
+    }
+  }, [userInterests]);
+
+  // ✅ TOGGLE
+  const toggleSelection = (id: number) => {
     setSelectedItems(prev =>
       prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id],
     );
+  };
+
+  const ICONS: Record<string, any> = {
+    Books: require('../../../../assets/image/book.png'),
+    Gaming: require('../../../../assets/image/controller.png'),
+    Travel: require('../../../../assets/image/travel.png'),
+    Movies: require('../../../../assets/image/movie.png'),
+    Music: require('../../../../assets/image/music.png'),
+    Food: require('../../../../assets/image/food.png'),
   };
 
   const renderItem = ({ item }: any) => {
@@ -55,25 +60,28 @@ const TwoColumnList = () => {
     return (
       <Pressable
         onPress={() => toggleSelection(item.id)}
-        delayLongPress={250}
         style={[styles.card2, isSelected && styles.selectedCard]}
       >
         <View style={styles.imgcontainer}>
-          <Image source={item.icon} resizeMode="contain" style={styles.img} />
-          {/* <Image  source={require("../../../../assets/image/blur.png")} resizeMode="contain" style={styles.img2} /> */}
+          <Image
+            source={ICONS[item.name] || ICONS.Movies}
+            style={styles.img}
+            resizeMode="contain"
+          />
         </View>
 
         <View style={styles.btntitlecontainer}>
           <Text style={[styles.btntitle, isSelected && styles.selectedText]}>
-            {item.title}
+            {item.name}
           </Text>
+
           {isSelected && (
             <View style={styles.checkboxcontainer}>
               <Image
-                tintColor={'red'}
+                source={require('../../../../assets/image/check.png')}
                 style={styles.img}
                 resizeMode="contain"
-                source={require('../../../../assets/image/check.png')}
+                tintColor="red"
               />
             </View>
           )}
@@ -82,31 +90,59 @@ const TwoColumnList = () => {
     );
   };
 
+  // ✅ SUBMIT
+  const handleSubmit = async () => {
+    if (selectedItems.length < MIN_SELECTION) {
+      Alert.alert(`Please select at least ${MIN_SELECTION} interests`);
+      return;
+    }
+
+    try {
+      await saveInterests({
+        user_id: userId,
+        interests: selectedItems,
+      }).unwrap();
+
+      Alert.alert('Success', 'Interests saved successfully');
+      navigation.navigate('About' as never);
+    } catch (err: any) {
+      Alert.alert('Error', err?.data?.message || 'Failed to save interests');
+    }
+  };
+
   return (
     <>
+      <Loader visible={isLoading || isSaving} color="blue" />
+
       <FlatList
-        data={DATA}
-        keyExtractor={item => item.id}
+        data={allInterests}
+        keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listmaincontainer}
         ListFooterComponent={
-          <View style={styles.bottomtxtcontainer}>
-            <Text style={styles.bottomtxt}>
-              Selected:{' '}
-              <Text style={{ color: '#0180FE' }}>
-                {selectedItems.length.toString().padStart(2, '0')}
+          <>
+            <View style={styles.bottomtxtcontainer}>
+              <Text style={styles.bottomtxt}>
+                Selected:{' '}
+                <Text style={{ color: '#0180FE' }}>
+                  {selectedItems.length.toString().padStart(2, '0')}
+                </Text>
               </Text>
-            </Text>
 
-            <Text style={styles.bottomtxt}>
-              Minimum:{' '}
-              <Text style={{ color: '#0180FE',  }}>
-                {MIN_SELECTION.toString().padStart(2, '0')}
+              <Text style={styles.bottomtxt}>
+                Minimum:{' '}
+                <Text style={{ color: '#0180FE' }}>
+                  {MIN_SELECTION.toString().padStart(2, '0')}
+                </Text>
               </Text>
-            </Text>
-          </View>
+            </View>
+
+            <View style={styles.btncontainer}>
+              <AppButton title="Submit And Continue" onPress={handleSubmit} />
+            </View>
+          </>
         }
       />
     </>

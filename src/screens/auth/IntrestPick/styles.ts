@@ -18,10 +18,11 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   btncontainer: {
-    position: 'absolute',
+    // position: 'absolute',
     width: '100%',
     alignSelf: 'center',
-    bottom: responsiveScreenHeight(8),
+    paddingTop: responsiveScreenHeight(2),
+    // bottom: responsiveScreenHeight(8),
   },
   container: {
     padding: 16,
@@ -107,12 +108,11 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop:responsiveScreenHeight(1)
-   
+    paddingTop: responsiveScreenHeight(1),
   },
-  bottomtxt:{
-    color:'#000000',
-    fontFamily:'Ubuntu-Medium',
-    fontSize:responsiveScreenFontSize(2)
-  }
+  bottomtxt: {
+    color: '#000000',
+    fontFamily: 'Ubuntu-Medium',
+    fontSize: responsiveScreenFontSize(2),
+  },
 });

@@ -27,7 +27,7 @@ export default function AuthNavigator() {
       <Stack.Screen name="Register" component={Register} />
       <Stack.Screen name="Socialauth" component={SocialAuth} />
       <Stack.Screen name="Signup" component={Signup} />
-      <Stack.Screen name="Privacy" component={Privacy} />
+     
       <Stack.Screen name="TermCondition" component={TermCondition} />
       <Stack.Screen name="Intrestpick" component={IntrestPick} />
       <Stack.Screen name="About" component={About} />

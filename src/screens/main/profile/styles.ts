@@ -142,11 +142,11 @@ export const styles2 = StyleSheet.create({
   },
   profile: {
     alignSelf: 'center',
-    height: responsiveScreenWidth(25),
-    width: responsiveScreenWidth(25),
-    borderRadius: responsiveScreenWidth(12.5),
+    height: responsiveScreenWidth(20),
+    width: responsiveScreenWidth(20),
+    borderRadius: responsiveScreenWidth(10),
     marginTop: responsiveScreenHeight(2),
-    marginBottom: responsiveScreenHeight(5),
+    marginBottom: responsiveScreenHeight(4),
   },
   camcontainer: {
     borderWidth: 1,
@@ -157,8 +157,8 @@ export const styles2 = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F6FBFF',
-    right: 10,
-    bottom: -12,
+    right: 0,
+    bottom: -14,
     borderColor: '#0180FE',
   },
   cammaincontainer: {
@@ -178,6 +178,7 @@ export const styles2 = StyleSheet.create({
   img: {
     width: '100%',
     height: '100%',
+    borderRadius: responsiveScreenWidth(10),
   },
 
   input: {
@@ -240,5 +241,25 @@ export const styles2 = StyleSheet.create({
     marginVertical: responsiveScreenHeight(3),
     marginHorizontal: responsiveScreenWidth(2),
     bottom: -responsiveScreenHeight(2.5),
+  },
+  bottomFixed: {
+    position: 'absolute',
+    bottom:
+      Platform.OS === 'ios'
+        ? responsiveScreenHeight(2)
+        : responsiveScreenHeight(1.5),
+    left: 0,
+    right: 0,
+    paddingHorizontal: responsiveScreenWidth(4),
+    backgroundColor: '#fff',
+  },
+  cammaincontainer2: {
+    height: responsiveScreenWidth(22),
+    width: responsiveScreenWidth(22),
+    borderRadius: responsiveScreenWidth(11),
+
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F6FBFF',
   },
 });

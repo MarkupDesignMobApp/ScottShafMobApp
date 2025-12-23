@@ -9,7 +9,7 @@ export const Data = [
     id: '2',
     icon: require('../../../../assets/image/privacy.png'),
     title: 'Privacy & Consent',
-    navigate: 'EditProfile',
+    navigate: 'Privacy',
   },
   {
     id: '3',
@@ -17,20 +17,20 @@ export const Data = [
     title: 'Notifications',
     navigate: 'Notification',
   },
+  // {
+  //   id: '4',
+  //   icon: require('../../../../assets/image/campaign.png'),
+  //   title: 'Campaign Analytics',
+  //   navigate: 'EditProfile',
+  // },
   {
     id: '4',
-    icon: require('../../../../assets/image/campaign.png'),
-    title: 'Campaign Analytics',
-    navigate: 'EditProfile',
-  },
-  {
-    id: '5',
     icon: require('../../../../assets/image/Request.png'),
     title: 'Request Data Export',
     navigate: 'EditProfile',
   },
   {
-    id: '6',
+    id: '5',
     icon: require('../../../../assets/image/delete.png'),
     title: 'Request Account Deletion',
     navigate: 'EditProfile',

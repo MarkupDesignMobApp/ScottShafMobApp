@@ -102,7 +102,7 @@ export const useLoginLogic = () => {
       setCountryCode('+91');
       setPhone('');
       setModalVisible(false);
-    }, [])
+    }, []),
   );
 
   return {

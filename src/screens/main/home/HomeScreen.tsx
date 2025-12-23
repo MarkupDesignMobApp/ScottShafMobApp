@@ -18,7 +18,7 @@ import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import ImageCarousel3 from './MyCarousel3';
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
   async function Gettoken() {
@@ -66,13 +66,16 @@ export default function HomeScreen() {
         }}
       />
       <View style={styles.header}>
-        <View style={styles.imgcontainer}>
+        <Pressable
+        onPress={()=>navigation.navigate("Profile")}
+          style={{ ...styles.imgcontainer, ...styles.profilecontainer }}
+        >
           <Image
             resizeMode="contain"
-            style={styles.img}
+            style={{ ...styles.img }}
             source={require('../../../../assets/image/women1.png')}
           />
-        </View>
+        </Pressable>
         <View style={styles.imgcontainerlogo}>
           <Image
             tintColor={'#fff'}
@@ -81,14 +84,17 @@ export default function HomeScreen() {
             source={require('../../../../assets/image/logo.png')}
           />
         </View>
-        <View style={styles.imgcontainer}>
+        <Pressable
+          onPress={() => navigation.navigate('Notification')}
+          style={styles.imgcontainer}
+        >
           <Image
             tintColor={'#fff'}
             resizeMode="contain"
             style={styles.img}
             source={require('../../../../assets/image/bell.png')}
           />
-        </View>
+        </Pressable>
       </View>
       <SafeAreaView
         edges={['left', 'right', 'bottom']}

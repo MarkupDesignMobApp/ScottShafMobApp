@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -54,16 +54,19 @@ export default function LoginScreen() {
     handleSelectCountry,
     handleLogin,
     isLoading,
-    isFormComplete
+    isFormComplete,
   } = useLoginLogic();
 
   const navigation = useNavigation();
   const keyboardOpen = useKeyboardOpen();
- 
-  
+
   return (
     <View style={styles.maincontainer}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
 
       {/* ---------- Banner (NON-SCROLLABLE) ---------- */}
       <View style={styles.imgcontainer}>
@@ -169,9 +172,6 @@ export default function LoginScreen() {
                 onPress={handleLogin}
                 disabled={!isFormComplete}
               />
-
-
-
 
               {/* OR */}
               <View style={styles.bottomtxt}>

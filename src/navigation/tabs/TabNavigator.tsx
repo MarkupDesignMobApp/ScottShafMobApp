@@ -8,7 +8,7 @@ import {
   FeaturedLists,
   CreateList,
   MyList,
- 
+
 } from '../../screens';
 
 import OfferDetail from '../../screens/main/offers/OfferDetail';
@@ -75,7 +75,7 @@ export default function TabNavigator() {
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
       <Tab.Screen name="Profile" component={Profile} />
-       
+     
     </Tab.Navigator>
   );
 }

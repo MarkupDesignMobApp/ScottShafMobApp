@@ -41,6 +41,7 @@ export type TabParamList = {
   CreateListScreen: undefined;
   AddCustomItem: undefined;
   ListPublishedScreen: undefined
+  Privacy:undefined
 };
 
 /**
@@ -63,6 +64,7 @@ export type MainStackParamList = {
   Drawer: NavigatorScreenParams<DrawerParamList> | undefined;
   EditProfile:undefined;
   Notification:undefined;
+  Privacy:undefined
   
 };
 

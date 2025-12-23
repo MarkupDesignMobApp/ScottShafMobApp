@@ -28,6 +28,12 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+	<key>NSCameraUsageDescription</key>
+<string>Allow access to camera to upload profile picture</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Allow access to gallery to upload profile picture</string>
+
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>

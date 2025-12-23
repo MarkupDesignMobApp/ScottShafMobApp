@@ -12,6 +12,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#00C4FA',
     paddingHorizontal: responsiveScreenWidth(4),
+  
   },
   img: {
     width: '100%',
@@ -19,11 +20,12 @@ export const styles = StyleSheet.create({
   },
   imgcontainer: {
     width: responsiveScreenWidth(8),
-    height: responsiveScreenHeight(3),
+    height: responsiveScreenWidth(8),
+
   },
   imgcontainerlogo: {
-    width: responsiveScreenWidth(12),
-    height: responsiveScreenHeight(8),
+      width: responsiveScreenWidth(12),
+    height: responsiveScreenWidth(12),
   },
   innercontainer: {
     flex: 1,
@@ -182,4 +184,10 @@ export const styles = StyleSheet.create({
     fontSize: responsiveScreenFontSize(2.25),
     letterSpacing: 0.1,
   },
+  profilecontainer:{
+    width:responsiveScreenWidth(10),
+    height:responsiveScreenWidth(10),
+    borderRadius:responsiveScreenWidth(6),
+ 
+  }
 });

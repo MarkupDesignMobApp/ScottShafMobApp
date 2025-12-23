@@ -1,49 +1,25 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { styles } from './styles'
-
-interface CheckboxProps {
-  checked: boolean;
-  onChange: (value: boolean) => void;
-  label?: string;
-  disabled?: boolean;
-}
-
-const Checkbox: React.FC<CheckboxProps> = ({
-  checked,
-  onChange,
-  label,
-  disabled = false,
-}) => {
-  const handlePress = () => {
-    if (!disabled) {
-      onChange(!checked);
-    }
-  };
-
+import { TouchableOpacity, View, Image } from 'react-native';
+import { styles } from './styles';
+const CustomCheckBox = ({ checked, onPress }) => {
   return (
-    <Pressable
-      style={styles.container}
-      onPress={handlePress}
-      disabled={disabled}
-    >
-      <View
-        style={[
-          styles.checkbox,
-          checked && styles.checked,
-          disabled && styles.disabled,
-        ]}
-      >
-        {checked && <View style={styles.innerTick} />}
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <View style={[styles.box, checked && styles.checkedBox]}>
+        {/* {checked && <View style={styles.tick} />} */}
+        {checked && (
+          <View style={styles.imgcontainer}>
+            <Image
+              tintColor={'#00C4FA'}
+              style={styles.img}
+              resizeMode="contain"
+              source={require('../../../../assets/image/plaincheck.png')}
+            />
+            {/* <Image sourc}/> */}
+          </View>
+        )}
       </View>
-
-      {label && (
-        <Text style={[styles.label, disabled && styles.disabledLabel]}>
-          {label}
-        </Text>
-      )}
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
-export default Checkbox;
+export default CustomCheckBox;
