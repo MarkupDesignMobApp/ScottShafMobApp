@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   PermissionsAndroid,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
@@ -20,7 +20,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { styles2 } from './styles';
+import { styles, styles2 } from './styles';
 import { styles as Homestyle } from '../../auth/Login/styles';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import {
@@ -177,8 +177,9 @@ export default function EditProfile({ navigation }: any) {
               }
             >
               <Image
+              resizeMode='contain'
                 source={require('../../../../assets/image/camera.png')}
-                style={styles2.img}
+                style={styles.cammaincontainer}
               />
             </Pressable>
           </View>
@@ -194,21 +195,20 @@ export default function EditProfile({ navigation }: any) {
 
           {/* EMAIL */}
           <AppInput
-
             value={email}
             editable={false}
             label={<Text style={Homestyle.labeltxt}>Email *</Text>}
           />
 
           {/* AGE */}
-        
+
           <TouchableOpacity
             style={{ width: '100%' }}
             activeOpacity={0.8}
-          // onPress={() => {
-          //   Keyboard.dismiss();
-          //   setTimeout(() => setModalVisible(true), 150);
-          // }}
+            // onPress={() => {
+            //   Keyboard.dismiss();
+            //   setTimeout(() => setModalVisible(true), 150);
+            // }}
           >
             <View pointerEvents="none">
               <AppInput
@@ -219,7 +219,7 @@ export default function EditProfile({ navigation }: any) {
                     Age <Text style={{ color: 'red' }}>*</Text>
                   </Text>
                 }
-              value={age}
+                value={age}
               />
             </View>
           </TouchableOpacity>
@@ -244,9 +244,7 @@ export default function EditProfile({ navigation }: any) {
             />
           </View>
           <Text style={styles2.wordcapacity}>
-            {budgetText.trim()
-              ? budgetText.trim().split(/\s+/).length
-              : 0}
+            {budgetText.trim() ? budgetText.trim().split(/\s+/).length : 0}
             /200 Words
           </Text>
 

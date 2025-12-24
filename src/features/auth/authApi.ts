@@ -18,10 +18,20 @@ import {
   UpdateProfileRequest,
   UpdateProfileResponse,
   ProfileResponse,
+  VerifyOtpResponse,
 } from './authTypes';
 import { AUTH_ENDPOINTS } from './endpoints';
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+    verifyOtp: builder.mutation<VerifyOtpResponse, VerifyOtpRequest>({
+      query: body => ({
+        url: AUTH_ENDPOINTS.VERIFY_OTP,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
+
     getUserProfile: builder.query<ProfileResponse, void>({
       query: () => ({
         url: AUTH_ENDPOINTS.GET_PROFILE,
@@ -86,19 +96,8 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: SignupResponse, meta) => {
-        // ✅ Allow ONLY 201 + success true
-        if (meta?.response?.status === 201 && response.success) {
-          return response;
-        }
-
-        // ❌ Force error for everything else
-        throw {
-          data: response,
-          status: meta?.response?.status,
-        };
-      },
     }),
+
     // 1️⃣ SEND OTP (no auth change)
     requestOtp: builder.mutation<RequestOtpResponse, RequestOtpRequest>({
       query: body => ({

@@ -69,26 +69,39 @@ export const useSignupLogic = () => {
         country,
       }).unwrap();
 
-      // ❌ Business validation (email exists, etc.)
-      if (!response.success || !response.user) {
+      const { success, exists, message, data } = response;
+
+      // 🔴 USER ALREADY EXISTS → STOP HERE
+      if (!success && exists) {
         Alert.alert(
-          'Account Already Registered',
-          response.message || 'This account already exists',
+          'Account Already Exists',
+          message || 'This user is already registered. Please login.',
         );
+
+        // ❌ DO NOT navigate to Terms
+        // Optional: navigate to Login / OTP
+        // navigation.navigate('Login');
+
         return;
       }
 
-      // ✅ Extract the user ID from API response
-      const userId = response.user.id;
+      // 🟢 NEW USER → Go to Terms & Privacy
+      if (success && !exists) {
+        navigation.navigate('TermCondition', {
+          userId: data.user_id,
+          phone,
+          country,
+        });
 
-      // ✅ Navigate to TermCondition screen with userId
-      navigation.navigate('TermCondition', {
-        phone: response.user.phone,
-        country: response.user.country,
-        userId, // 👈 pass the ID here
-      });
+        return;
+      }
+
+      Alert.alert('Error', message || 'Unexpected response');
     } catch (err: any) {
-      Alert.alert('Error', err?.data?.message || 'Something went wrong');
+      Alert.alert(
+        'Error',
+        err?.data?.message || err?.message || 'Something went wrong',
+      );
     }
   };
 

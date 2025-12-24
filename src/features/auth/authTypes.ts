@@ -1,8 +1,19 @@
 export interface User {
-  id: string;
-  name: string;
+  id: number;
+  full_name: string;
   email: string;
+  country_code: string;
+  phone: string;
+  country: string;
+  is_phone_verified: boolean;
+  is_consent_completed: boolean;
+  is_interest_completed: boolean;
+  is_profile_completed: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
+
 
 export interface LoginRequest {
   email: string;
@@ -192,6 +203,35 @@ export interface UpdateProfileResponse {
     };
   };
 }
+export interface VerifyOtpSuccessResponse {
+  success: true;
+  message: string;
+  token: string;
+  user: User;
+}
+
+export interface VerifyOtpOnboardingResponse {
+  success: true;
+  user_id: number;
+  message: string;
+  data: {
+    is_consent: boolean;
+    is_interest: boolean;
+    is_profile: boolean;
+  };
+}
+
+
+export interface VerifyOtpFailureResponse {
+  success: false;
+  message: string;
+}
+
+export type VerifyOtpResponse =
+  | VerifyOtpSuccessResponse
+  | VerifyOtpOnboardingResponse
+  | VerifyOtpFailureResponse;
+
 export interface ProfileResponse {
   success: boolean;
   message: string;

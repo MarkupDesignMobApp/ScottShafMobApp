@@ -2,11 +2,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../types/navigation';
 import { TabNavigator, DrawerNavigator } from '../index';
 import { Editprofile, Notification, Privacy } from '../../screens/index';
-import inviteScreen from '../../screens/main/Invite&Refer/inviteScreen';
-import ListDetailScreen from '../../screens/main/List/AddItems';
-import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
-import CreateListScreen from '../../screens/main/List/CreateList';
-import AddCustomItem from '../../screens/main/List/AddCustomItem';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 

@@ -119,8 +119,8 @@ export const styles = StyleSheet.create({
     borderColor: '#0180FE',
   },
   cammaincontainer: {
-    width: responsiveScreenHeight(1.5),
-    height: responsiveScreenHeight(1.5),
+    width: responsiveScreenHeight(1.75),
+    height: responsiveScreenHeight(1.75),
   },
   bottomcontainer: {
     paddingHorizontal: responsiveScreenWidth(4),

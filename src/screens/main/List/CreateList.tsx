@@ -24,6 +24,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { Switch } from 'react-native-paper';
+import { styles as Homestyle } from '../../auth/Login/styles';
 export default function CreateListScreen({ navigation }) {
   const [categories, setCategories] = useState([
     { name: 'Apple', code: 'apple' },
@@ -47,12 +48,33 @@ export default function CreateListScreen({ navigation }) {
       />
       <View style={styles.container}>
         {/* LIST TITLE */}
+        {/* <TouchableOpacity
+          style={{ width: '100%' }}
+          activeOpacity={0.8}
+          onPress={() => {
+            Keyboard.dismiss();
+            setTimeout(() => setModalVisible(true), 150);
+          }}
+        >
+          <View pointerEvents="none">
+            <AppInput
+                placeholder="e.g. Top 5 coffee shops in NYC"
+              label={
+                <Text style={Homestyle.labeltxt}>
+                  Country <Text style={{ color: 'red' }}>*</Text>
+                </Text>
+              }
+              // value={country}
+            />
+          </View>
+        </TouchableOpacity> */}
+
         <AppInput
           placeholder="e.g. Top 5 coffee shops in NYC"
           label={
-            <Text style={{ ...styles.labeltxt }}>
+            <Text style={{ ...Homestyle.labeltxt }}>
               List Title
-              <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
+              <Text style={{ color: 'red', fontSize: 16 }}>*</Text>
             </Text>
           }
         />
@@ -65,7 +87,37 @@ export default function CreateListScreen({ navigation }) {
                     />
                 </View> */}
 
-        <View
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={Homestyle.prefix}>
+            <Image
+              resizeMode="contain"
+              style={{ width: '100%', height: '100%' }}
+              source={require('../../../../assets/image/arrow-down.png')}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={{ width: '100%' }}
+            activeOpacity={0.8}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => setModalVisible(true), 150);
+            }}
+          >
+            <View pointerEvents="none">
+              <AppInput
+                placeholder="Select Category"
+                label={
+                  <Text style={Homestyle.labeltxt}>
+                    Category <Text style={{ color: 'red' }}>*</Text>
+                  </Text>
+                }
+                //  value={country}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+        {/* <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -99,7 +151,7 @@ export default function CreateListScreen({ navigation }) {
               editable={false}
             />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* GROUP TOGGLE */}
         <View style={styles.targetcontainer}>
@@ -117,39 +169,34 @@ export default function CreateListScreen({ navigation }) {
           </Text>
         </View>
 
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: responsiveScreenHeight(2),
-          }}
-        >
-          <View style={styles.prefix}>
+        <View style={{ flexDirection: 'row', alignItems: 'center',paddingTop:responsiveScreenHeight(2) }}>
+          <View style={Homestyle.prefix}>
             <Image
-              style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
+              style={{ width: '100%', height: '100%' }}
               source={require('../../../../assets/image/arrow-down.png')}
             />
           </View>
+
           <TouchableOpacity
             style={{ width: '100%' }}
             activeOpacity={0.8}
             onPress={() => {
               Keyboard.dismiss();
-              setTimeout(() => setModalVisible(true), 100);
+              setTimeout(() => setModalVisible(true), 150);
             }}
           >
-            <AppInput
-              placeholder="Select the top from list"
-              label={
-                <Text style={{ ...styles.labeltxt }}>
-                  List Type
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-              value={selectedLabel}
-              editable={false}
-            />
+            <View pointerEvents="none">
+              <AppInput
+                placeholder="Select the top from list"
+                label={
+                  <Text style={Homestyle.labeltxt}>
+                    List Type <Text style={{ color: 'red' }}>*</Text>
+                  </Text>
+                }
+                //  value={country}
+              />
+            </View>
           </TouchableOpacity>
         </View>
 

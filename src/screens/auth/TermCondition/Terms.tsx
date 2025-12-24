@@ -19,7 +19,7 @@ export default function Terms() {
 
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RouteParams, 'TermCondition'>>();
-  // const { userId } = route.params;
+  const { userId } = route.params;
   const [checked, setChecked] = useState(false); // terms & privacy
   const [checked2, setChecked2] = useState(false); // marketing
 
@@ -36,8 +36,8 @@ export default function Terms() {
       await updateTermsAndPrivacy({
         accepted_terms_privacy: checked,
         campaign_marketing: checked2,
-        // user_id: userId,
-        user_id: 7,
+        user_id: userId,
+
       }).unwrap();
 
       // ✅ Navigate only after successful API call
