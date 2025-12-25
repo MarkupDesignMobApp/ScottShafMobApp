@@ -77,20 +77,38 @@ export default function EditProfile({ navigation }: any) {
     const granted = await requestCameraPermission();
     if (!granted) return;
 
-    launchCamera({ mediaType: 'photo', quality: 0.8 }, response => {
-      if (response.assets?.length) {
-        setProfileImage(response.assets[0]);
-      }
-    });
+    launchCamera(
+      {
+        mediaType: 'photo',
+        quality: 0.5,          // 🔥 LOWER QUALITY
+        maxWidth: 800,         // 🔥 RESIZE
+        maxHeight: 800,
+      },
+      response => {
+        if (response.assets?.length) {
+          setProfileImage(response.assets[0]);
+        }
+      },
+    );
   };
 
+
   const openGallery = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 0.8 }, response => {
-      if (response.assets?.length) {
-        setProfileImage(response.assets[0]);
-      }
-    });
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.5,          // 🔥 LOWER QUALITY
+        maxWidth: 800,         // 🔥 RESIZE
+        maxHeight: 800,
+      },
+      response => {
+        if (response.assets?.length) {
+          setProfileImage(response.assets[0]);
+        }
+      },
+    );
   };
+
 
   /* ------------------ BUDGET WORD LIMIT ------------------ */
   const handleBudgetChange = (text: string) => {
@@ -114,11 +132,16 @@ export default function EditProfile({ navigation }: any) {
         formData.append('age_band', age);
       }
 
-      if (profileImage?.uri) {
+      // ✅ only when user selected new image
+      if (profileImage && typeof profileImage === 'object') {
         formData.append('profile_image', {
-          uri: profileImage.uri,
+          uri:
+            Platform.OS === 'ios'
+              ? profileImage.uri.replace('file://', '')
+              : profileImage.uri,
           type: profileImage.type || 'image/jpeg',
-          name: profileImage.fileName || `profile_${Date.now()}.jpg`,
+          name:
+            profileImage.fileName || `profile_${Date.now()}.jpg`,
         } as any);
       }
 
@@ -130,6 +153,7 @@ export default function EditProfile({ navigation }: any) {
       Alert.alert('Error', err?.data?.message || 'Update failed');
     }
   };
+
 
   /* ====================== UI ====================== */
   return (
@@ -177,7 +201,7 @@ export default function EditProfile({ navigation }: any) {
               }
             >
               <Image
-              resizeMode='contain'
+                resizeMode='contain'
                 source={require('../../../../assets/image/camera.png')}
                 style={styles.cammaincontainer}
               />
@@ -205,10 +229,10 @@ export default function EditProfile({ navigation }: any) {
           <TouchableOpacity
             style={{ width: '100%' }}
             activeOpacity={0.8}
-            // onPress={() => {
-            //   Keyboard.dismiss();
-            //   setTimeout(() => setModalVisible(true), 150);
-            // }}
+          // onPress={() => {
+          //   Keyboard.dismiss();
+          //   setTimeout(() => setModalVisible(true), 150);
+          // }}
           >
             <View pointerEvents="none">
               <AppInput

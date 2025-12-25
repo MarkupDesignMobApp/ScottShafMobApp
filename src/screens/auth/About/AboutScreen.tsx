@@ -18,7 +18,7 @@ import { useLoginLogic } from '../Login/useLoginLogic';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 import Loader from '../../../components/ui/Loader/Loader';
-
+import { useRoute } from '@react-navigation/native';
 export default function AboutScreen({ navigation }) {
   const {
     country,
@@ -34,7 +34,8 @@ export default function AboutScreen({ navigation }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [hasDogs, setHasDogs] = useState(false);
-
+  const route = useRoute();
+  const { userId } = route.params;
   const Data = [
     { id: '1', agegroup: '18-24' },
     { id: '2', agegroup: '25-34' },
@@ -87,19 +88,32 @@ export default function AboutScreen({ navigation }) {
     }
 
     try {
+      const ageBand = Data.find(d => d.id === selectedId)?.agegroup;
+      const diningBudget = budgetData
+        .find(b => b.id === selectedBudget)
+        ?.label.replace(/\D/g, '_');
+
+      if (!ageBand || !diningBudget) {
+        Alert.alert('Error', 'Invalid selection. Please try again.');
+        return;
+      }
+
       const response = await saveUserProfile({
-        user_id: 7,
-        age_band: Data.find(d => d.id === selectedId)?.agegroup,
+        user_id: userId,
+        age_band: ageBand,
         city: country,
-        dining_budget: budgetData
-          .find(b => b.id === selectedBudget)
-          ?.label.replace(/\D/g, '_'),
+        dining_budget: diningBudget,
         has_dogs: hasDogs,
       }).unwrap();
 
       if (response?.success) {
         Alert.alert('Success', response.message);
-        navigation.navigate('Privacy');
+
+        // ✅ Best practice after setup
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Socialauth' }],
+        });
       }
     } catch (err: any) {
       Alert.alert('Error', err?.data?.message || 'Failed to save profile');

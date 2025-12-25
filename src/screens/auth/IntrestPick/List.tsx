@@ -7,7 +7,7 @@ import {
   useSaveUserInterestsMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute} from '@react-navigation/native';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 
 interface TwoColumnListProps {
@@ -16,9 +16,11 @@ interface TwoColumnListProps {
 
 const MIN_SELECTION = 3;
 
-const TwoColumnList: React.FC<TwoColumnListProps> = ({ userId }) => {
+const TwoColumnList: React.FC<TwoColumnListProps> = () => {
   const navigation = useNavigation();
+const route =useRoute()
 
+const { userId } = route.params;
   // ✅ GET ALL INTERESTS
   const { data: allInterests, isLoading } = useGetAllInterestsQuery();
 
@@ -104,7 +106,9 @@ const TwoColumnList: React.FC<TwoColumnListProps> = ({ userId }) => {
       }).unwrap();
 
       Alert.alert('Success', 'Interests saved successfully');
-      navigation.navigate('About' as never);
+      navigation.navigate('About',{
+        userId:userId
+      });
     } catch (err: any) {
       Alert.alert('Error', err?.data?.message || 'Failed to save interests');
     }

@@ -12,15 +12,22 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { removeTokenFromKeychain } from '../../../app/keychain';
 import { TokenService } from '../../../services/storage/keychain.services';
 import { styles } from './styles';
-import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import ImageCarousel3 from './MyCarousel3';
+import { useGetUserProfileQuery } from '../../../features/auth/authApi';
+import {
+  responsiveFontSize,
+  responsiveScreenFontSize,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 export default function HomeScreen({ navigation }) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const { data, isLoading, refetch } = useGetUserProfileQuery();
 
+  const user = data?.data?.user;
   async function Gettoken() {
     let mytoken = await TokenService.get();
   }
@@ -67,13 +74,25 @@ export default function HomeScreen({ navigation }) {
       />
       <View style={styles.header}>
         <Pressable
-        onPress={()=>navigation.navigate("Profile")}
-          style={{ ...styles.imgcontainer, ...styles.profilecontainer }}
+          onPress={() => navigation.navigate('Profile')}
+          style={{
+            ...styles.profilecontainer,
+            borderWidth: 1,
+            borderColor: '#fff',
+          }}
         >
           <Image
-            resizeMode="contain"
-            style={{ ...styles.img }}
-            source={require('../../../../assets/image/women1.png')}
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: responsiveScreenWidth(5),
+            }}
+            resizeMode="cover"
+            source={
+              user?.profile?.profile_image
+                ? { uri: user.profile.profile_image }
+                : require('../../../../assets/image/women1.png')
+            }
           />
         </Pressable>
         <View style={styles.imgcontainerlogo}>
@@ -103,6 +122,8 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.contentcontainer}>
           <SearchBar placeholder="Search lists, users, topics..." />
           <ScrollView
+          scrollEventThrottle={16}
+          bounces={false}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollcontainer}
@@ -128,6 +149,7 @@ export default function HomeScreen({ navigation }) {
         </View>
         <View style={{ ...styles.checkmaincontainer }}>
           <ScrollView
+          bounces={false}
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={16}
             contentContainerStyle={styles.innerscrollcontainer}
@@ -138,7 +160,7 @@ export default function HomeScreen({ navigation }) {
                   ...styles.btnheadertxt,
                   paddingTop: 0,
                   fontFamily: 'Quicksand-Medium',
-                  fontSize: 22,
+                  fontSize:responsiveScreenFontSize(2),
                 }}
               >
                 Create Your First List
@@ -149,16 +171,22 @@ export default function HomeScreen({ navigation }) {
 
               <Button
                 buttonStyle={styles.btncontainer}
+              
                 textStyle={styles.btntxt}
                 source={require('../../../../assets/image/add.png')}
                 title="Start Creating"
               />
             </View>
             <View style={styles.cardheading}>
-              <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
-                Featured Lists
-              </Text>
-              <Text style={{ ...styles.cardheadingtxt, color: '#0180FE' }}>
+              <Text style={{ ...styles.cardheadingtxt }}>Featured Lists</Text>
+              <Text
+                onPress={() => navigation.navigate('Feature')}
+                style={{
+                  ...styles.cardheadingtxt,
+                  color: '#0180FE',
+                  fontSize: responsiveScreenFontSize(1.75),
+                }}
+              >
                 See All
               </Text>
             </View>

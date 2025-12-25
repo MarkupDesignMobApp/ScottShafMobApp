@@ -40,6 +40,7 @@ export default function SocialLoginScreen() {
               buttonStyle={styles.btn}
             />
             <Button
+              onPress={()=>navigation.navigate("Login")}
               source={require('../../../../assets/image/telephone.png')}
               title="Continue With Phone"
               buttonStyle={styles.btn}

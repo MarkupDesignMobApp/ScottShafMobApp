@@ -19,13 +19,13 @@ export const styles = StyleSheet.create({
     height: '100%',
   },
   imgcontainer: {
-    width: responsiveScreenWidth(8),
-    height: responsiveScreenWidth(8),
+    width: responsiveScreenWidth(6),
+    height: responsiveScreenWidth(6),
 
   },
   imgcontainerlogo: {
-      width: responsiveScreenWidth(12),
-    height: responsiveScreenWidth(12),
+      width: responsiveScreenWidth(10),
+    height: responsiveScreenWidth(10),
   },
   innercontainer: {
     flex: 1,
@@ -69,7 +69,7 @@ export const styles = StyleSheet.create({
   checkcontainer: {
     backgroundColor: '#0180FE',
     paddingHorizontal: responsiveScreenWidth(4),
-    paddingVertical: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenWidth(3.75),
     borderRadius: responsiveScreenWidth(4),
   },
   checkmaincontainer: {
@@ -84,17 +84,18 @@ export const styles = StyleSheet.create({
     width: '100%',
     borderRadius: responsiveScreenWidth(12),
     backgroundColor: '#00C4FA',
-    paddingVertical: responsiveScreenHeight(0.25),
+    paddingVertical: responsiveScreenHeight(0),
     marginTop: responsiveScreenHeight(2),
+    borderWidth:1,borderColor:'#fff'
   },
   btntxt: {
     fontFamily: 'Ubuntu-Regular',
     color: '#fff',
-    fontSize: responsiveScreenFontSize(2),
+    fontSize: responsiveScreenFontSize(1.75),
   },
   btnheadertxt: {
     fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.85),
+    fontSize: responsiveScreenFontSize(1.75),
     color: '#fff',
     paddingTop: responsiveScreenHeight(1),
   },
@@ -118,7 +119,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   innerscrollcontainer: {
-    paddingTop: responsiveScreenHeight(3),
+    paddingTop: responsiveScreenHeight(2),
   },
   cardimgcontainer: {
     borderRadius: responsiveScreenWidth(4),
@@ -174,12 +175,12 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: responsiveScreenHeight(4),
+    paddingTop: responsiveScreenHeight(2.5),
     paddingBottom: responsiveScreenHeight(2),
   },
   cardheadingtxt: {
     fontFamily: 'Quicksand-Regular',
-    fontWeight: 'medium',
+  
     color: '#000',
     fontSize: responsiveScreenFontSize(2.25),
     letterSpacing: 0.1,
@@ -187,7 +188,7 @@ export const styles = StyleSheet.create({
   profilecontainer:{
     width:responsiveScreenWidth(10),
     height:responsiveScreenWidth(10),
-    borderRadius:responsiveScreenWidth(6),
+    borderRadius:responsiveScreenWidth(5),
  
   }
 });

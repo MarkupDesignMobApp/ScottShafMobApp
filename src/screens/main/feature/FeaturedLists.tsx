@@ -11,14 +11,19 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import { responsiveScreenFontSize, responsiveScreenHeight, responsiveScreenWidth } from 'react-native-responsive-dimensions';
+import {
+  responsiveScreenFontSize,
+  responsiveScreenHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 
-export default function FeaturedLists() {
+import { styles as Catlogstyle } from '../campaign/CatlogScreen';
+import { styles as Homestyle } from '../home/styles';
+export default function FeaturedLists({ navigation }) {
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
-
 
   const Data = [
     {
@@ -58,29 +63,40 @@ export default function FeaturedLists() {
           backgroundColor: '#00C4FA',
         }}
       />
-      <View style={styles.header}>
-        <TouchableOpacity>
+      <View style={Catlogstyle.header}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={{ ...Catlogstyle.backarrow }}
+        >
           <Image
+            tintColor={'#fff'}
+            resizeMode="contain"
+            style={Catlogstyle.img}
             source={require('../../../../assets/image/left-icon.png')}
-            style={{ width: 22, height: 22, tintColor: '#fff' }}
           />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Featured Lists</Text>
-        <View style={{ width: 22 }} />
+        </Pressable>
 
+        <Text
+          style={{
+            ...Catlogstyle.headerTitle,
+            marginRight: responsiveScreenWidth(6),
+          }}
+        >
+          Feature List
+        </Text>
+        <View></View>
       </View>
-      <SafeAreaView
-        edges={['left', 'right', 'bottom']}
-        style={styles.innercontainer}
+      <View style={styles.contentcontainer}>
+        <SearchBar
+          rightIconSource={require('../../../../assets/image/filter.png')}
+          placeholder="Search lists, users, topics..."
+        />
+      </View>
+      <View
+        style={{ paddingHorizontal: responsiveScreenWidth(4), paddingTop: 24 }}
       >
-        <View style={styles.contentcontainer}>
-          <SearchBar placeholder="Search lists, users, topics..." />
-
-        </View>
-
-        {/* Sponsored Card */}
         <View style={styles.card2}>
-          <View style={styles.cardimgcontainer}>
+          <View style={{ height: responsiveScreenWidth(45), width: '100%' }}>
             <Image
               resizeMode="cover"
               style={{ ...styles.img2 }}
@@ -88,37 +104,59 @@ export default function FeaturedLists() {
             />
           </View>
 
-          <View style={{ height: '40%' }}>
-            <View style={{ paddingHorizontal: responsiveScreenWidth(2) }}>
+          <View style={styles.cardtitlecontainer}>
+            <View
+              style={{
+                borderWidth: 1.75,
+                borderTopWidth: 0,
+                borderColor: '#0180FE',
+                paddingTop: responsiveScreenHeight(1.5),
+                paddingHorizontal: responsiveScreenWidth(4),
+                borderBottomLeftRadius: responsiveScreenWidth(5),
+                borderBottomRightRadius: responsiveScreenWidth(5),
+              }}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View
                   style={{
-                    paddingVertical: responsiveScreenHeight(0.75),
+                    paddingVertical: responsiveScreenHeight(0),
                     backgroundColor: '#00C4FA',
-                    width: responsiveScreenWidth(25),
+                    width: '30%',
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: responsiveScreenWidth(20),
-                    marginVertical: 10,
-                    flexDirection: 'row'
+                    // marginVertical: 10,
+                    flexDirection: 'row',
                   }}
                 >
-                  <Text>Sponsored</Text>
+                  <Text
+                    style={{
+                      fontFamily: 'Ubuntu-Regular',
+                      color: '#fff',
+                      fontSize: responsiveScreenFontSize(1.65),
+                    }}
+                  >
+                    Sponsored
+                  </Text>
                 </View>
 
                 <Text style={styles.byText}>By Brand Name</Text>
-
               </View>
 
-
-              <View style={{ paddingLeft: '2%' }}>
+              <View
+                style={{
+                  paddingLeft: '2%',
+                  paddingTop: responsiveScreenHeight(1.5),
+                }}
+              >
                 <Text style={styles.cardmaintitletxt}>
                   Get 20% off your next coffee
                 </Text>
                 <Text
                   style={{
                     ...styles.cardsubtitletxt,
-                    fontSize: responsiveScreenFontSize(1.5),
+                    fontSize: responsiveScreenFontSize(1.65),
+                    color: 'black',
                   }}
                 >
                   Exclusive offer for Top List members. Valid at participating
@@ -127,106 +165,86 @@ export default function FeaturedLists() {
               </View>
 
               <View style={styles.actionRow}>
-                <AppButton style={{ width: responsiveScreenWidth(65) }} title='View Offer' onPress={() => Alert.alert('hii')} />
+                <Pressable
+                  onPress={() => navigation.navigate('Offer')}
+                  style={{ ...styles.offerbtn }}
+                >
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontFamily: 'Ubuntu-Regular',
+                      fontSize: responsiveScreenFontSize(1.75),
+                    }}
+                  >
+                    View Offer
+                  </Text>
+                </Pressable>
+
                 <TouchableOpacity style={styles.closeBtn}>
                   <Image
+                    resizeMode="contain"
                     source={require('../../../../assets/image/cross.png')}
-                    style={{ width: 25, height: 25 }}
+                    style={{ width: '55%', height: '55%' }}
                   />
                 </TouchableOpacity>
               </View>
-
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderColor: '#C1C1C1',
-                  marginVertical: 10,
-                }}
-              ></View>
-
               <View style={styles.footerRow}>
                 <Text style={styles.expireText}>Expires Dec 31, 2025</Text>
-                <Text style={styles.whyText}>Why am I seeing this?</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View
+                    style={{
+                      width: responsiveScreenWidth(3),
+                      height: responsiveScreenWidth(3),
+                      marginRight: 4,
+                    }}
+                  >
+                    <Image
+                      style={styles.img}
+                      resizeMode="contain"
+                      source={require('../../../../assets/image/info.png')}
+                    />
+                  </View>
+                  <Text style={styles.whyText}>Why am I seeing this?</Text>
+                </View>
               </View>
             </View>
           </View>
           {/* <Image source={{ uri: item.image }} />
-              <Text>{item.title}</Text> */}
+      <Text>{item.title}</Text> */}
         </View>
-        {/* <View style={styles.card}>
-          <View style={styles.cardImagePlaceholder} />
-
-          <View style={styles.sponsoredRow}>
-            <View style={styles.sponsoredBadge}>
-              <Text style={styles.sponsoredText}>Sponsored</Text>
-            </View>
-            <Text style={styles.byText}>By Brand Name</Text>
-          </View>
-
-          <Text style={styles.offerTitle}>Get 20% off your next coffee</Text>
-          <Text style={styles.offerDesc}>
-            Exclusive offer for Top List members. Valid at participating
-            locations.
-          </Text>
-
-          <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.viewBtn}>
-              <Text style={styles.viewBtnText}>View Offer</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.closeBtn}>
-              <Image
-                source={require('../../../../assets/image/cross.png')}
-                style={{ width: 16, height: 16 }}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderColor: '#C1C1C1',
-              marginVertical: 10,
-            }}
-          ></View>
-
-          <View style={styles.footerRow}>
-            <Text style={styles.expireText}>Expires Dec 31, 2025</Text>
-            <Text style={styles.whyText}>Why am I seeing this?</Text>
-          </View>
-        </View> */}
 
         {/* List Card */}
-        <View style={styles.listCard}>
-          <View style={styles.listHeader}>
-            <Image
-              source={{ uri: 'https://i.pravatar.cc/100' }}
-              style={styles.avatar}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.listTitle}>Sarah's Top 5 Brunch Spots</Text>
-              <Text style={styles.listSub}>Food & Drinks · 255 Saved</Text>
-            </View>
-            <Image
-              source={require('../../../../assets/image/info.png')}
-              style={{ width: 18, height: 18 }}
-            />
+        {/* <View style={styles.listCard}>
+        <View style={styles.listHeader}>
+          <Image
+            source={{ uri: 'https://i.pravatar.cc/100' }}
+            style={styles.avatar}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.listTitle}>Sarah's Top 5 Brunch Spots</Text>
+            <Text style={styles.listSub}>Food & Drinks · 255 Saved</Text>
           </View>
-
-          <View style={styles.imageRow}>
-            {[1, 2, 3].map((_, i) => (
-              <Image
-                key={i}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
-                }}
-                style={styles.listImage}
-              />
-            ))}
-          </View>
+          <Image
+            source={require('../../../../assets/image/info.png')}
+            style={{ width: 18, height: 18 }}
+          />
         </View>
 
+        <View style={styles.imageRow}>
+          {[1, 2, 3].map((_, i) => (
+            <Image
+              key={i}
+              source={{
+                uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
+              }}
+              style={styles.listImage}
+            />
+          ))}
+        </View>
+      </View> */}
+
         <View style={{ height: 30 }} />
-      </SafeAreaView>
+      </View>
     </SafeAreaProvider>
   );
 }
@@ -241,20 +259,21 @@ const styles = StyleSheet.create({
   },
   cardmaintitletxt: {
     fontFamily: 'Quicksand-Bold',
-    fontSize: responsiveScreenFontSize(2),
+    fontSize: responsiveScreenFontSize(1.95),
   },
   cardsubtitletxt: {
     fontFamily: 'Quicksand-Light',
-    color: '#1D1D1D',
-    paddingTop: '2%',
-    fontSize: responsiveScreenFontSize(1.85),
+    color: '#000000',
+    paddingTop: responsiveScreenHeight(1),
+
+    lineHeight: responsiveScreenHeight(2),
   },
   header: {
     backgroundColor: '#00C4FA',
     paddingHorizontal: 16,
 
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   headerRow: {
     flexDirection: 'row',
@@ -264,18 +283,16 @@ const styles = StyleSheet.create({
   },
   cardimgcontainer: {
     borderRadius: responsiveScreenWidth(4),
-    height: '40%',
+    height: '100%',
+    width: '100%',
   },
   headerTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
   card2: {
-    borderWidth: 1,
-    height: responsiveScreenHeight(45),
-    width: responsiveScreenWidth(90),
+    height: responsiveScreenHeight(48),
+
     margin: responsiveScreenWidth(1),
     borderRadius: responsiveScreenWidth(4),
     borderColor: '#CFCFCF',
-    alignSelf: 'center',
-    marginTop: responsiveScreenHeight(3),
   },
 
   searchBox: {
@@ -315,18 +332,29 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   sponsoredText: { fontSize: 10, color: '#fff', fontWeight: '600' },
-  byText: { fontSize: 11, color: '#64748B', left: responsiveScreenWidth(5) },
+  byText: {
+    fontSize: responsiveScreenFontSize(1.65),
+    color: '#64748B',
+    left: responsiveScreenWidth(2),
+    fontFamily: 'Quicksand-Regular',
+  },
 
   offerTitle: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
   offerDesc: { fontSize: 12, color: '#64748B', marginBottom: 12 },
 
-  actionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: responsiveScreenHeight(1.75),
+  },
   viewBtn: {
     flex: 1,
     backgroundColor: '#0EA5E9',
     borderRadius: 24,
     paddingVertical: 10,
     alignItems: 'center',
+    flexDirection: 'row',
   },
   imgcontainer: {
     width: responsiveScreenWidth(8),
@@ -342,7 +370,8 @@ const styles = StyleSheet.create({
   },
 
   innercontainer: {
-    flex: 1, backgroundColor: '#fff'
+    flex: 1,
+    backgroundColor: '#fff',
   },
   contentcontainer: {
     paddingHorizontal: responsiveScreenWidth(4),
@@ -386,22 +415,49 @@ const styles = StyleSheet.create({
     paddingVertical: responsiveScreenWidth(4),
     borderRadius: responsiveScreenWidth(4),
   },
+  offerbtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#00C4FA',
+    paddingHorizontal: responsiveScreenWidth(25),
+    height: responsiveScreenHeight(5),
+    borderRadius: responsiveScreenWidth(10),
+  },
   viewBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
   closeBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: responsiveScreenWidth(8),
+    height: responsiveScreenWidth(8),
+    borderRadius: responsiveScreenWidth(4),
     borderColor: '#C1C1C1',
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10,
-    marginTop: 10
   },
 
-  footerRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  expireText: { fontSize: 10, color: '#64748B' },
-  whyText: { fontSize: 10, color: '#0EA5E9' },
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 2,
+    borderColor: 'lightgrey',
+    alignItems: 'center',
+    paddingVertical: responsiveScreenHeight(2),
+  },
+  expireText: {
+    fontSize: responsiveScreenFontSize(1.5),
+
+    fontFamily: 'Ubuntu-Regular',
+    color: '#000',
+  },
+  whyText: {
+    fontSize: responsiveScreenFontSize(1.5),
+    color: '#000',
+    fontFamily: 'Ubuntu-Regular',
+  },
+
+  cardtitlecontainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 
   listCard: {
     backgroundColor: '#fff',

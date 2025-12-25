@@ -7,9 +7,10 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
+  Pressable,
 } from 'react-native';
+import { responsiveScreenWidth } from 'react-native-responsive-dimensions';
 import { styles } from './styles';
-
 interface SearchBarProps {
   placeholder?: string;
   placeholderTextColor?: string;
@@ -17,8 +18,15 @@ interface SearchBarProps {
   onChangeText?: (text: string) => void;
   style?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<TextStyle>;
-  iconSource?: ImageSourcePropType;
-  iconTintColor?: string;
+
+  // Left icon (fixed)
+  leftIconSource?: ImageSourcePropType;
+  leftIconTintColor?: string;
+
+  // Right icon (optional)
+  rightIconSource?: ImageSourcePropType;
+  rightIconTintColor?: string;
+  onRightIconPress?: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -28,19 +36,29 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onChangeText,
   style,
   inputStyle,
-  iconSource = require('../../../../assets/image/mysearch.png'),
-  iconTintColor = '#fff',
+
+  // LEFT (fixed)
+  leftIconSource = require('../../../../assets/image/mysearch.png'),
+  leftIconTintColor = '#fff',
+
+  // RIGHT (optional)
+  rightIconSource,
+  rightIconTintColor = '#fff',
+  onRightIconPress,
 }) => {
   return (
     <View style={[styles.searchbar, style]}>
+      {/* 🔍 LEFT ICON (FIXED) */}
       <View style={styles.imgcontainer}>
         <Image
-          tintColor={iconTintColor}
+          source={leftIconSource}
+          tintColor={leftIconTintColor}
           style={styles.img}
           resizeMode="contain"
-          source={iconSource}
         />
       </View>
+
+      {/* INPUT */}
       <TextInput
         style={[styles.inputstyle, inputStyle]}
         placeholder={placeholder}
@@ -48,6 +66,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
         value={value}
         onChangeText={onChangeText}
       />
+
+      {/* 👉 RIGHT ICON (OPTIONAL) */}
+      {rightIconSource && (
+        <Pressable
+          onPress={onRightIconPress}
+          style={{...styles.imgcontainer,right:responsiveScreenWidth(10)}}
+          hitSlop={10}
+        >
+          <Image
+            source={rightIconSource}
+            tintColor={rightIconTintColor}
+            style={styles.img}
+            resizeMode="contain"
+          />
+        </Pressable>
+      )}
     </View>
   );
 };

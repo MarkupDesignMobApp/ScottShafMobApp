@@ -18,11 +18,13 @@ export const styles = StyleSheet.create({
   },
   imgcontainer: {
     width: responsiveScreenWidth(14),
-    height: responsiveScreenHeight(10),
+    height: responsiveScreenWidth(14),
+    borderRadius: responsiveScreenWidth(7)
   },
   img: {
     width: '100%',
     height: '100%',
+    borderRadius: responsiveScreenWidth(7)
   },
   nametxt: {
     fontFamily: 'Quicksand-Bold',

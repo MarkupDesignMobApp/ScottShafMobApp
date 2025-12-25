@@ -10,15 +10,10 @@ import {
   MyList,
 
 } from '../../screens';
-
-import OfferDetail from '../../screens/main/offers/OfferDetail';
-import AddCustomItem from '../../screens/main/List/AddCustomItem';
-import CreateListScreen from '../../screens/main/List/CreateList';
+import ProfileStackNavigator from '../stacks/InternalNavigator/ProfileStackNavigator';
+import HomeStackNavigator from '../stacks/InternalNavigator/HomeStackNavigator';
 import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
-import ListDetailScreen from '../../screens/main/List/AddItems';
-import inviteScreen from '../../screens/main/Invite&Refer/inviteScreen';
-import ListPublishedScreen from '../../screens/main/List/ListPublish';
-import ProfileQuestion from '../../screens/main/feature/ProfileQuestion';
+
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const getTabIcon = (routeName: string, focused: boolean) => {
@@ -70,11 +65,11 @@ export default function TabNavigator() {
         tabBarIcon: ({ focused }) => getTabIcon(route.name, focused),
       })}
     >
-      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
       <Tab.Screen name="Discover" component={BrowseCatalogScreen} />
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
-      <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
      
     </Tab.Navigator>
   );

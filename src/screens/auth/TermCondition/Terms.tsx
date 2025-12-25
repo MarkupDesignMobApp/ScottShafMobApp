@@ -41,7 +41,9 @@ export default function Terms() {
       }).unwrap();
 
       // ✅ Navigate only after successful API call
-      navigation.navigate('Intrestpick');
+      navigation.navigate('Intrestpick',{
+        userId:userId,
+      });
     } catch (error: any) {
       Alert.alert('Error', error?.data?.message || 'Something went wrong');
     }

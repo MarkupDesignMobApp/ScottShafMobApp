@@ -3,7 +3,7 @@ export const Data = [
     id: '1',
     icon: require('../../../../assets/image/user3.png'),
     title: 'My Profile',
-    navigate: 'EditProfile',
+    navigate: 'ProfileEdit',
   },
   {
     id: '2',
@@ -27,7 +27,7 @@ export const Data = [
     id: '4',
     icon: require('../../../../assets/image/Request.png'),
     title: 'Request Data Export',
-    navigate: 'EditProfile',
+    navigate: 'Privacy',
   },
   {
     id: '5',

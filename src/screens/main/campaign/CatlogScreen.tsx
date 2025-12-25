@@ -243,16 +243,16 @@ export default function BrowseCatalogScreen({navigation}) {
   );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: { flex: 1 },
 
   header: {
     backgroundColor: '#00C4FA',
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems:"center",
+    justifyContent:"space-between",
+   
 
-    //  borderWidth:1
   },
   header2: {
     backgroundColor: '#00C4FA',
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#fff',
 
-    fontFamily: 'samsungsharpsans',
+    fontFamily: 'samsungsharpsans-medium',
     fontSize: responsiveScreenFontSize(2),
     fontWeight: '600',
     letterSpacing: 0.5,

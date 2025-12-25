@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   imgcontainer: {
-    width: responsiveScreenWidth(7),
+    width: responsiveScreenWidth(6),
     height: responsiveHeight(5),
   },
   text: {
