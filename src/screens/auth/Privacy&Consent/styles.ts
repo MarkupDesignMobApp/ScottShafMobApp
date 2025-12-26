@@ -65,6 +65,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: responsiveScreenHeight(2),
+    backgroundColor:'#ECF6FF'
   },
   icon: {
     height: responsiveScreenHeight(5),
@@ -72,11 +73,13 @@ export const styles = StyleSheet.create({
   },
   headcontainer: {
     paddingHorizontal: responsiveScreenWidth(4),
+    
   },
   listheadtxt: {
-    fontFamily: 'Quicksand-Medium',
+    fontFamily: 'Quicksand-Bold',
     fontSize: responsiveScreenFontSize(1.9),
     color: '#000000',
+    fontWeight:"medium"
   },
   listsubheadtxt: {
     paddingTop: responsiveScreenHeight(0.75),

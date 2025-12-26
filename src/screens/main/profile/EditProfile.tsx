@@ -12,7 +12,7 @@ import {
   PermissionsAndroid,
   TouchableOpacity,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import {
   responsiveScreenWidth,
@@ -28,6 +28,7 @@ import {
   useGetUserProfileQuery,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function EditProfile({ navigation }: any) {
   const [name, setName] = useState('');
@@ -36,8 +37,20 @@ export default function EditProfile({ navigation }: any) {
   const [age, setAge] = useState('');
   const [budgetText, setBudgetText] = useState('');
   const [profileImage, setProfileImage] = useState<any>(null);
+  const scrollRef = useRef<ScrollView>(null);
 
   const MAX_WORDS = 200;
+  useFocusEffect(
+    useCallback(() => {
+      // Small timeout ensures layout is ready
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          y: 0,
+          animated: true,
+        });
+      }, 100);
+    }, []),
+  );
 
   const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
   const { data: profileResponse, isLoading: profileLoading } =
@@ -80,8 +93,8 @@ export default function EditProfile({ navigation }: any) {
     launchCamera(
       {
         mediaType: 'photo',
-        quality: 0.5,          // 🔥 LOWER QUALITY
-        maxWidth: 800,         // 🔥 RESIZE
+        quality: 0.5, // 🔥 LOWER QUALITY
+        maxWidth: 800, // 🔥 RESIZE
         maxHeight: 800,
       },
       response => {
@@ -91,14 +104,13 @@ export default function EditProfile({ navigation }: any) {
       },
     );
   };
-
 
   const openGallery = () => {
     launchImageLibrary(
       {
         mediaType: 'photo',
-        quality: 0.5,          // 🔥 LOWER QUALITY
-        maxWidth: 800,         // 🔥 RESIZE
+        quality: 0.5, // 🔥 LOWER QUALITY
+        maxWidth: 800, // 🔥 RESIZE
         maxHeight: 800,
       },
       response => {
@@ -108,7 +120,6 @@ export default function EditProfile({ navigation }: any) {
       },
     );
   };
-
 
   /* ------------------ BUDGET WORD LIMIT ------------------ */
   const handleBudgetChange = (text: string) => {
@@ -140,8 +151,7 @@ export default function EditProfile({ navigation }: any) {
               ? profileImage.uri.replace('file://', '')
               : profileImage.uri,
           type: profileImage.type || 'image/jpeg',
-          name:
-            profileImage.fileName || `profile_${Date.now()}.jpg`,
+          name: profileImage.fileName || `profile_${Date.now()}.jpg`,
         } as any);
       }
 
@@ -153,7 +163,6 @@ export default function EditProfile({ navigation }: any) {
       Alert.alert('Error', err?.data?.message || 'Update failed');
     }
   };
-
 
   /* ====================== UI ====================== */
   return (
@@ -172,10 +181,11 @@ export default function EditProfile({ navigation }: any) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: responsiveScreenWidth(4),
-            paddingBottom: responsiveScreenHeight(8),
+            paddingBottom: responsiveScreenHeight(15),
           }}
         >
           {/* PROFILE IMAGE */}
@@ -201,7 +211,7 @@ export default function EditProfile({ navigation }: any) {
               }
             >
               <Image
-                resizeMode='contain'
+                resizeMode="contain"
                 source={require('../../../../assets/image/camera.png')}
                 style={styles.cammaincontainer}
               />
@@ -229,10 +239,10 @@ export default function EditProfile({ navigation }: any) {
           <TouchableOpacity
             style={{ width: '100%' }}
             activeOpacity={0.8}
-          // onPress={() => {
-          //   Keyboard.dismiss();
-          //   setTimeout(() => setModalVisible(true), 150);
-          // }}
+            // onPress={() => {
+            //   Keyboard.dismiss();
+            //   setTimeout(() => setModalVisible(true), 150);
+            // }}
           >
             <View pointerEvents="none">
               <AppInput
@@ -272,8 +282,10 @@ export default function EditProfile({ navigation }: any) {
             /200 Words
           </Text>
 
-          <AppButton title="Save Changes" onPress={handleSaveChanges} />
         </ScrollView>
+           <View style={styles2.bottomButtonContainer}>
+      <AppButton title="Save Changes" onPress={handleSaveChanges} />
+    </View>
       </KeyboardAvoidingView>
     </View>
   );

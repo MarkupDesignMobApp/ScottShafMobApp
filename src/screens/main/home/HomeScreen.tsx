@@ -122,8 +122,8 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.contentcontainer}>
           <SearchBar placeholder="Search lists, users, topics..." />
           <ScrollView
-          scrollEventThrottle={16}
-          bounces={false}
+            scrollEventThrottle={16}
+            bounces={false}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollcontainer}
@@ -149,7 +149,7 @@ export default function HomeScreen({ navigation }) {
         </View>
         <View style={{ ...styles.checkmaincontainer }}>
           <ScrollView
-          bounces={false}
+            bounces={false}
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={16}
             contentContainerStyle={styles.innerscrollcontainer}
@@ -160,7 +160,7 @@ export default function HomeScreen({ navigation }) {
                   ...styles.btnheadertxt,
                   paddingTop: 0,
                   fontFamily: 'Quicksand-Medium',
-                  fontSize:responsiveScreenFontSize(2),
+                  fontSize: responsiveScreenFontSize(2),
                 }}
               >
                 Create Your First List
@@ -170,8 +170,8 @@ export default function HomeScreen({ navigation }) {
               </Text>
 
               <Button
+                onPress={() => navigation.navigate('Create')}
                 buttonStyle={styles.btncontainer}
-              
                 textStyle={styles.btntxt}
                 source={require('../../../../assets/image/add.png')}
                 title="Start Creating"

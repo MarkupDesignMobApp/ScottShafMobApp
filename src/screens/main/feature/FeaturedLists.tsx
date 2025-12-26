@@ -119,7 +119,7 @@ export default function FeaturedLists({ navigation }) {
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View
                   style={{
-                    paddingVertical: responsiveScreenHeight(0),
+                    paddingVertical: responsiveScreenHeight(0.75),
                     backgroundColor: '#00C4FA',
                     width: '30%',
                     alignItems: 'center',
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   cardmaintitletxt: {
     fontFamily: 'Quicksand-Bold',
-    fontSize: responsiveScreenFontSize(1.95),
+    fontSize: responsiveScreenFontSize(2),
   },
   cardsubtitletxt: {
     fontFamily: 'Quicksand-Light',

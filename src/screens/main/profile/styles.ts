@@ -238,11 +238,11 @@ export const styles2 = StyleSheet.create({
   },
 
   wordcapacity: {
-    position: 'absolute',
-    right: 0,
-    marginVertical: responsiveScreenHeight(3),
+
+  
     marginHorizontal: responsiveScreenWidth(2),
-    bottom: -responsiveScreenHeight(2.5),
+    marginLeft:responsiveScreenWidth(70),
+    width:'100%'
   },
   bottomFixed: {
     position: 'absolute',
@@ -264,4 +264,12 @@ export const styles2 = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F6FBFF',
   },
+  bottomButtonContainer: {
+  paddingHorizontal: responsiveScreenWidth(4),
+  paddingVertical: responsiveScreenHeight(2),
+  backgroundColor: '#fff',
+  borderTopWidth: 1,
+  borderTopColor: '#eee',
+},
+
 });

@@ -9,16 +9,16 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import Share from 'react-native-share'
+import Share from 'react-native-share';
 const THUMB_WIDTH = 70;
 const THUMB_MARGIN = 12;
 
-export default function OfferDetail({navigation}) {
+export default function OfferDetail({ navigation }) {
   const [isCentered, setIsCentered] = React.useState(true);
   const shareContent = async () => {
-    const options={
-      message:"This is a trst message"
-    }
+    const options = {
+      message: 'This is a trst message',
+    };
     try {
       const res = await Share.open(options);
       console.log(res);
@@ -28,7 +28,7 @@ export default function OfferDetail({navigation}) {
       }
     }
   };
-  
+
   return (
     <SafeAreaProvider>
       <SafeAreaView
@@ -36,7 +36,7 @@ export default function OfferDetail({navigation}) {
         style={{ flex: 1, backgroundColor: '#fff' }}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={()=>navigation.goBack()}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={require('../../../../assets/image/left-icon.png')}
               style={{ width: 22, height: 22 }}
@@ -52,34 +52,35 @@ export default function OfferDetail({navigation}) {
         </View>
 
         {/* Main Image */}
-        <Image
-          source={{
-            uri: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
-          }}
-          style={styles.mainImage}
-        />
+        <View style={{ borderWidth: 4, borderColor: 'yellow' }}>
+          <Image
+            source={{
+              uri: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
+            }}
+            style={styles.mainImage}
+          />
 
-        <View style={styles.thumbWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.thumbRow}
-          >
-            {[1, 2, 3, 4, 5, 6].map((_, i) => (
-              <Image
-                key={i}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93',
-                }}
-                style={styles.thumb}
-              />
-            ))}
-          </ScrollView>
+          <View style={styles.thumbWrapper}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.thumbRow}
+            >
+              {[1, 2, 3, 4, 5, 6].map((_, i) => (
+                <Image
+                  key={i}
+                  source={{
+                    uri: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93',
+                  }}
+                  style={styles.thumb}
+                />
+              ))}
+            </ScrollView>
+          </View>
         </View>
-
         {/* Content Card */}
         <View style={styles.card}>
-          <ScrollView style={{ maxHeight: 350 }}>
+          <ScrollView style={{}}>
             <View style={styles.brandRow}>
               <Image
                 source={{
@@ -149,7 +150,7 @@ export default function OfferDetail({navigation}) {
         </View>
 
         {/* Redeem Button */}
-        <AppButton title='Redeem Offer'/>
+        <AppButton title="Redeem Offer" />
         {/* <TouchableOpacity style={styles.redeemBtn}>
           <Text style={styles.redeemBtnText}>Redeem Offer</Text>
         </TouchableOpacity> */}
@@ -194,11 +195,10 @@ const styles = StyleSheet.create({
   // thumb: { width: '30%', height: 70, borderRadius: 10, borderWidth: 1, borderColor: '#E5E5E5' },
 
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: 'red',
     margin: 16,
-    borderRadius: 18,
+
     padding: 16,
-    marginTop: 30,
   },
 
   brandRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
