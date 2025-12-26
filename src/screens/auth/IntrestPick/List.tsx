@@ -56,7 +56,7 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
     Food: require('../../../../assets/image/food.png'),
   };
 
-  const renderItem = ({ item }: any) => {
+  const renderItem = ({ item }: { item: Interest }) => {
     const isSelected = selectedItems.includes(item.id);
 
     return (
@@ -66,7 +66,7 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
       >
         <View style={styles.imgcontainer}>
           <Image
-            source={ICONS[item.name] || ICONS.Movies}
+            source={{ uri: item.icon }} // ✅ FIX HERE
             style={styles.img}
             resizeMode="contain"
           />
@@ -100,14 +100,23 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
     }
 
     try {
-      await saveInterests({
+      const res = await saveInterests({
         user_id: userId,
         interests: selectedItems,
       }).unwrap();
 
-      Alert.alert('Success', 'Interests saved successfully');
+      // ✅ res = API RESPONSE
+      // {
+      //   success: true,
+      //   message: "Interests saved successfully",
+      //   user_id: 38,
+      //   Data: [6,7,8,9,10]
+      // }
+
+      Alert.alert('Success', res.message);
+
       navigation.navigate('About', {
-        userId: userId,
+        userId: res.user_id, // ✅ always trust backend
       });
     } catch (err: any) {
       Alert.alert('Error', err?.data?.message || 'Failed to save interests');

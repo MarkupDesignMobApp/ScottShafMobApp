@@ -68,9 +68,9 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // 2️⃣ USER SELECTED INTERESTS
-    getUserInterests: builder.query<Interest[], number>({
-      query: userId => ({
-        url: `${AUTH_ENDPOINTS.USE_INTEREST}/${userId}`,
+    getUserInterests: builder.query<Interest[], void>({
+      query: () => ({
+        url: AUTH_ENDPOINTS.USE_INTEREST,
         method: 'GET',
       }),
       transformResponse: (res: { success: boolean; data: Interest[] }) =>
@@ -83,7 +83,7 @@ export const authApi = baseApi.injectEndpoints({
       SaveInterestsRequest
     >({
       query: body => ({
-        url: AUTH_ENDPOINTS.USE_INTEREST,
+        url: AUTH_ENDPOINTS.ADD_INTEREST,
         method: 'POST',
         body,
       }),

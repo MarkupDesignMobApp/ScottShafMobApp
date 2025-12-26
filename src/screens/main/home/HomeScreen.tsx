@@ -17,7 +17,10 @@ import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import ImageCarousel3 from './MyCarousel3';
-import { useGetUserProfileQuery } from '../../../features/auth/authApi';
+import {
+  useGetUserProfileQuery,
+  useGetUserInterestsQuery,
+} from '../../../features/auth/authApi';
 import {
   responsiveFontSize,
   responsiveScreenFontSize,
@@ -26,8 +29,16 @@ import {
 export default function HomeScreen({ navigation }) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const { data, isLoading, refetch } = useGetUserProfileQuery();
+  const { data: profileData, isLoading: profileLoading } =
+    useGetUserProfileQuery();
 
-  const user = data?.data?.user;
+  const {
+    data: interestsData,
+    isLoading: interestsLoading, // 👈 THIS NAME YOU MUST USE
+    error,
+  } = useGetUserInterestsQuery();
+
+  const user = profileData?.data?.user;
   async function Gettoken() {
     let mytoken = await TokenService.get();
   }
@@ -128,23 +139,34 @@ export default function HomeScreen({ navigation }) {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollcontainer}
           >
-            {Data.map((item, index) => {
-              const isActive = index === activeIndex;
+            {interestsLoading && <Text>Loading...</Text>}
 
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => setActiveIndex(index)}
-                  style={[styles.scrollbox, isActive && styles.activeScrollBox]}
-                >
-                  <Text
-                    style={[styles.boxtitle, isActive && styles.activeBoxTitle]}
+            {interestsLoading && <Text>Loading...</Text>}
+
+            {!interestsLoading &&
+              interestsData?.map((item, index) => {
+                const isActive = index === activeIndex;
+
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => setActiveIndex(index)}
+                    style={[
+                      styles.scrollbox,
+                      isActive && styles.activeScrollBox,
+                    ]}
                   >
-                    {item.title}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      style={[
+                        styles.boxtitle,
+                        isActive && styles.activeBoxTitle,
+                      ]}
+                    >
+                      {item.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
           </ScrollView>
         </View>
         <View style={{ ...styles.checkmaincontainer }}>
