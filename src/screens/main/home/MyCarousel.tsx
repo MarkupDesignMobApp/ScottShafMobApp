@@ -76,7 +76,7 @@ const Row = React.memo(({ item }: { item: ItemType }) => {
         />
       </View>
 
-      <View style={{height:'40%',}}>
+      <View style={{}}>
       <View style={styles.cardtitlecontainer}>
         <View style={styles.imgcontainer4}>
           <Image

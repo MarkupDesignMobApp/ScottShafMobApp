@@ -58,6 +58,7 @@ import { store } from './src/app/store';
 import RootNavigator from './src/navigation/stacks/RootNavigator';
 
 export default function App() {
+
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>

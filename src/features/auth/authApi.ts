@@ -19,10 +19,57 @@ import {
   UpdateProfileResponse,
   ProfileResponse,
   VerifyOtpResponse,
+  FeaturedListsResponse,
+  FeaturedListSummary,
+  FeaturedListItem,
+  FeaturedListItemsResponse,
+  FeaturedList,
 } from './authTypes';
-import { AUTH_ENDPOINTS } from './endpoints';
+import { AUTH_ENDPOINTS, FEATURED_LIST_ENDPOINTS } from './endpoints';
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+    // ✅ GET FEATURED LISTS BY INTEREST
+    getFeaturedListsByInterest: builder.query<FeaturedList[], number | string>({
+      query: interestId => ({
+        url: FEATURED_LIST_ENDPOINTS.FEATURED_LISTS,
+        method: 'GET',
+        params: {
+          interest_id: interestId,
+        },
+      }),
+      transformResponse: (response: FeaturedListsResponse) => response.data,
+      providesTags: ['FeaturedList'],
+    }),
+
+    // 🔹 GET FEATURED LIST ITEMS ONLY
+    getFeaturedListItems: builder.query<FeaturedListItem[], number | string>({
+      query: id => ({
+        url: FEATURED_LIST_ENDPOINTS.FEATURED_LIST_ITEMS(id),
+        method: 'GET',
+      }),
+      transformResponse: (res: FeaturedListItemsResponse) => res.data,
+      providesTags: ['FeaturedList'],
+    }),
+
+    // ✅ GET ALL FEATURED LISTS
+    getFeaturedLists: builder.query<FeaturedListSummary[], void>({
+      query: () => ({
+        url: FEATURED_LIST_ENDPOINTS.FEATURED_LISTS,
+        method: 'GET',
+      }),
+      transformResponse: (res: FeaturedListsResponse) => res.data,
+      providesTags: ['FeaturedList'],
+    }),
+
+    //Featured list details by id//
+    getFeaturedListById: builder.query<FeaturedListsResponse, number | string>({
+      query: id => ({
+        url: FEATURED_LIST_ENDPOINTS.FEATURED_LIST_BY_ID(id),
+        method: 'GET',
+      }),
+      providesTags: ['FeaturedList'],
+    }),
+
     verifyOtp: builder.mutation<VerifyOtpResponse, VerifyOtpRequest>({
       query: body => ({
         url: AUTH_ENDPOINTS.VERIFY_OTP,
@@ -148,4 +195,8 @@ export const {
   useSaveUserProfileMutation,
   useUpdateUserProfileMutation,
   useGetUserProfileQuery,
+  useGetFeaturedListByIdQuery,
+  useGetFeaturedListsQuery,
+  useGetFeaturedListItemsQuery,
+  useGetFeaturedListsByInterestQuery,
 } = authApi;

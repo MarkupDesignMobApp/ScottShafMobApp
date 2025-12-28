@@ -109,8 +109,8 @@ export const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    height: responsiveScreenHeight(40),
-    width: responsiveScreenWidth(75),
+    height: responsiveScreenHeight(30),
+    width: responsiveScreenWidth(70),
     margin: responsiveScreenWidth(1),
     borderRadius: responsiveScreenWidth(4),
     borderColor: '#CFCFCF',
@@ -123,7 +123,7 @@ export const styles = StyleSheet.create({
   },
   cardimgcontainer: {
     borderRadius: responsiveScreenWidth(4),
-    height: '60%',
+    height: '55%',
   },
   img2: {
     width: '100%',
@@ -134,15 +134,15 @@ export const styles = StyleSheet.create({
   cardlike: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: '5%',
+   
   },
   imgcontainer3: {
     height: responsiveScreenHeight(4),
-    width: responsiveScreenWidth(6),
+    width: responsiveScreenWidth(4),
   },
   imgcontainer4: {
     height: responsiveScreenHeight(8),
-    width: responsiveScreenWidth(12),
+    width: responsiveScreenWidth(10),
   },
   likecontainer: {
     flexDirection: 'row',
@@ -154,7 +154,7 @@ export const styles = StyleSheet.create({
   liketxt: {
     paddingLeft: responsiveScreenWidth(1.5),
     fontFamily: 'Ubuntu-Regular',
-    fontSize: responsiveScreenFontSize(2),
+    fontSize: responsiveScreenFontSize(1.5),
   },
   cardtitlecontainer: {
     flexDirection: 'row',
@@ -163,13 +163,13 @@ export const styles = StyleSheet.create({
   },
   cardmaintitletxt: {
     fontFamily: 'Quicksand-Bold',
-    fontSize: responsiveScreenFontSize(2),
+    fontSize: responsiveScreenFontSize(1.75),
   },
   cardsubtitletxt: {
     fontFamily: 'Quicksand-Light',
     color: '#1D1D1D',
     paddingTop: '2%',
-    fontSize: responsiveScreenFontSize(1.85),
+    fontSize: responsiveScreenFontSize(1.65),
   },
   cardheading: {
     flexDirection: 'row',

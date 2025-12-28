@@ -20,24 +20,40 @@ import ImageCarousel3 from './MyCarousel3';
 import {
   useGetUserProfileQuery,
   useGetUserInterestsQuery,
+  useGetFeaturedListByIdQuery,
+  useGetFeaturedListsQuery,
+  useGetFeaturedListItemsQuery,
+  useGetFeaturedListsByInterestQuery 
 } from '../../../features/auth/authApi';
 import {
   responsiveFontSize,
   responsiveScreenFontSize,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
+
 export default function HomeScreen({ navigation }) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const { data, isLoading, refetch } = useGetUserProfileQuery();
+
   const { data: profileData, isLoading: profileLoading } =
     useGetUserProfileQuery();
 
+    // const { data, isLoading,refetch } =
+    // useGetFeaturedListsQuery();
+    // const { data, isLoading,  } =
+    // useGetFeaturedListByIdQuery(8);
+    // const { data, isLoading, } =
+    // useGetFeaturedListItemsQuery(8);
+    // const { data, isLoading,  } =
+    // useGetFeaturedListsByInterestQuery(interestId);
+    const { data, isLoading,  } =
+    useGetFeaturedListsByInterestQuery(6);
+    console.log("Feature",data)
   const {
     data: interestsData,
     isLoading: interestsLoading, // 👈 THIS NAME YOU MUST USE
     error,
   } = useGetUserInterestsQuery();
-
+// console.log("eded",interestsData)
   const user = profileData?.data?.user;
   async function Gettoken() {
     let mytoken = await TokenService.get();

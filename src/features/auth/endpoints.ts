@@ -12,3 +12,18 @@ export const AUTH_ENDPOINTS = {
   UPDATE_PROFILE: '/scott-shafer/api/update_profile',
   GET_PROFILE: '/scott-shafer/api/profile',
 } as const;
+
+export const FEATURED_LIST_ENDPOINTS = {
+  // GET all featured lists
+  FEATURED_LISTS: '/scott-shafer/api/featured-lists',
+
+  // GET featured list detail
+  FEATURED_LIST_BY_ID: (id: number | string) =>
+    `/scott-shafer/api/featured-lists/${id}`,
+
+  // ✅ GET featured list items only
+  FEATURED_LIST_ITEMS: (id: number | string) =>
+    `/scott-shafer/api/featured-lists/${id}/items`,
+} as const;
+
+
