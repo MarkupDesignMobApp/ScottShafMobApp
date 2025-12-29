@@ -1,7 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../types/navigation';
-import { TabNavigator, DrawerNavigator, } from '../index';
-import { Editprofile, Notification, Privacy,OfferDetail,Browsecat,AddCustomItem} from '../../screens/index';
+import { TabNavigator, DrawerNavigator } from '../index';
+import {
+
+  Notification,
+  Privacy,
+  OfferDetail,
+  Browsecat,
+  AddCustomItem,
+  Reorder
+} from '../../screens/index';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -18,6 +26,7 @@ export default function MainNavigator() {
       <Stack.Screen name="Privacy" component={Privacy} />
       <Stack.Screen name="Browsecat" component={Browsecat} />
       <Stack.Screen name="Addcustom" component={AddCustomItem} />
+      <Stack.Screen name="Reorder" component={Reorder} />
     </Stack.Navigator>
   );
 }

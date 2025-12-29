@@ -26,7 +26,9 @@ export const FEATURED_LIST_ENDPOINTS = {
     `/scott-shafer/api/featured-lists/${id}/items`,
 } as const;
 
-
 export const LIST_ENDPOINTS = {
   CREATE_LIST: '/scott-shafer/api/lists',
+  // ✅ ADD ITEM TO LIST
+  ADD_LIST_ITEM: (listId: number | string) =>
+    `/scott-shafer/api/lists/${listId}/items`,
 } as const;

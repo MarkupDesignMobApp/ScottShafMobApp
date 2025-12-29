@@ -27,6 +27,8 @@ import {
   CreateListRequest,
   CreateListResponse,
   InviteUsersResponse,
+  AddListItemRequest,
+  AddListItemResponse,
 } from './authTypes';
 import {
   AUTH_ENDPOINTS,
@@ -35,11 +37,22 @@ import {
 } from './endpoints';
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+    // ✅ POST ADD CUSTOM ITEM TO LIST
+    addListItem: builder.mutation<AddListItemResponse, AddListItemRequest>({
+      query: ({ listId, custom_item_name, custom_text }) => ({
+        url: LIST_ENDPOINTS.ADD_LIST_ITEM(listId),
+        method: 'POST',
+        body: {
+          custom_item_name,
+          custom_text,
+        },
+      }),
+    }),
     /* 🔹 INVITE USERS LIST (GET) */
-   getInviteUsers: builder.query<InviteUsersResponse, void>({
-  query: () => '/scott-shafer/api/users/invite-list', // ✅ full path
-  providesTags: ['InviteUsers'],
-}),
+    getInviteUsers: builder.query<InviteUsersResponse, void>({
+      query: () => '/scott-shafer/api/users/invite-list', // ✅ full path
+      providesTags: ['InviteUsers'],
+    }),
 
     /* 🔹 CREATE LIST (POST) */
     createList: builder.mutation<CreateListResponse, CreateListRequest>({
@@ -223,5 +236,6 @@ export const {
   useGetFeaturedListItemsQuery,
   useGetFeaturedListsByInterestQuery,
   useCreateListMutation,
-  useGetInviteUsersQuery
+  useGetInviteUsersQuery,
+  useAddListItemMutation,
 } = authApi;

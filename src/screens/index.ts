@@ -25,3 +25,4 @@ export { default as Notification } from './main/notification/Notification';
 export { default as Discover} from './main/discover/Discover';
 export { default as Custom} from './main/List/AddCustomItem'
 export { default as Browsecat} from './main/campaign/CatlogScreen'
+export { default as Reorder} from './main/reorder/Reorder'

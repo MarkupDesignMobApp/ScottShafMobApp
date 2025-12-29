@@ -4,39 +4,69 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
-  Switch,
   Image,
   StatusBar,
+  Alert,
 } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import DropDownPicker from 'react-native-dropdown-picker';
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
+import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
-export default function AddCustomItem({ navigation }) {
-  const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-  const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
+import Loader from '../../../components/ui/Loader/Loader';
+import { useAddListItemMutation } from '../../../features/auth/authApi';
 
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
-  const [items, setItems] = useState([
-    { label: 'Apple', value: 'apple' },
-    { label: 'Banana', value: 'banana' },
-  ]);
+export default function AddCustomItem({ navigation, route }) {
+  // 🔑 listId passed from previous screen
+  // const { listId } = route.params;
+
+  // form state
+  const [itemName, setItemName] = useState('');
+  const [description, setDescription] = useState('');
+
+  // API
+  const [addListItem, { isLoading }] = useAddListItemMutation();
+
+  // submit handler (ONE hit only)
+  const handleAddItem = async () => {
+    if (!itemName.trim()) return;
+
+    try {
+      const res = await addListItem({
+        listId:9,
+        custom_item_name: itemName.trim(),
+        custom_text: description.trim(),
+      }).unwrap();
+
+      // ✅ success message
+      Alert.alert('Success', res.message || 'Item added successfully', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate("Reorder"),
+        },
+      ]);
+    } catch (error: any) {
+      // ❌ error message
+      Alert.alert(
+        'Error',
+        error?.data?.message || 'Failed to add item. Please try again.',
+      );
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <Loader color='blue' visible={isLoading} />
+
       <StatusBar
         hidden={false}
         barStyle="dark-content"
         backgroundColor="#000"
       />
+
       <AppHeader
         onLeftPress={() => navigation.goBack()}
         title="Add Custom Item"
@@ -44,26 +74,20 @@ export default function AddCustomItem({ navigation }) {
       />
 
       <View style={styles.container}>
-        {/* FORM */}
-        {/* LIST TITLE */}
+        {/* ITEM NAME */}
         <AppInput
           placeholder="Enter item name"
+          value={itemName}
+          onChangeText={setItemName}
           label={
-            <Text style={{ ...styles.labeltxt }}>
+            <Text style={styles.labeltxt}>
               List Title
               <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
             </Text>
           }
         />
-        {/* <View style={[styles.fieldWrapper]}>
-          <Text style={styles.floatingLabel}>List Title</Text>
-          <TextInput
-            placeholder="e.g. Top 5 coffee shops in NYC"
-            placeholderTextColor="#B5B5B5"
-            style={styles.input}
-          />
-        </View> */}
 
+        {/* DESCRIPTION */}
         <View
           style={[
             styles.fieldWrapper,
@@ -75,11 +99,13 @@ export default function AddCustomItem({ navigation }) {
             multiline
             placeholder="Add a short description"
             placeholderTextColor="#B5B5B5"
-            style={[styles.input]}
+            value={description}
+            onChangeText={setDescription}
+            style={styles.input}
           />
         </View>
 
-        {/* GROUP TOGGLE */}
+        {/* INFO BOX */}
         <View style={styles.targetcontainer}>
           <View style={styles.switchcontainer}>
             <View style={styles.iconcontainer}>
@@ -100,7 +126,11 @@ export default function AddCustomItem({ navigation }) {
         </View>
 
         {/* BUTTON */}
-        <AppButton title="Add Item" onPress={() => {}} />
+        <AppButton
+          title={isLoading ? 'Adding...' : 'Add Item'}
+          onPress={handleAddItem}
+          disabled={isLoading || !itemName.trim()}
+        />
       </View>
     </View>
   );

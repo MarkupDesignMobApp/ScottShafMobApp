@@ -1,3 +1,26 @@
+export interface AddListItemRequest {
+  listId: number | string;
+  custom_item_name: string;
+  custom_text: string;
+}
+
+export interface ListItem {
+  id: number;
+  list_id: string;
+  catalog_item_id: number | null;
+  custom_item_name: string;
+  custom_text: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AddListItemResponse {
+  success: boolean;
+  message: string;
+  data: ListItem[];
+}
+
+
 export interface FeaturedListInterest {
   id: number;
   name: string;

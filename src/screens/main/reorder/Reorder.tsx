@@ -15,7 +15,7 @@ import {
 
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
@@ -70,7 +70,7 @@ export default function CreateListScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <StatusBar barStyle="dark-content" />
 
       <AppHeader
@@ -104,23 +104,23 @@ export default function CreateListScreen({ navigation }) {
         </Text>
       </View>
 
-      <NestableScrollContainer style={{ flex: 1 }}>
+      <NestableScrollContainer  style={{ flex: 1 }}>
         <NestableDraggableFlatList
+        removeClippedSubviews={false}
+        
           data={items}
           keyExtractor={item => item.id}
           renderItem={renderItem}
           onDragEnd={({ data }) => setItems(data)}
           dragItemOverflow
           activationDistance={5}
-          autoscrollSpeed={50}
-          autoscrollThreshold={50}
-          getItemLayout={(_, index) => ({
-            length: responsiveScreenHeight(10),
-            offset: responsiveScreenHeight(10) * index,
-            index,
-          })}
+          autoscrollThreshold={120}
+          autoscrollSpeed={40}
+          
+         
           contentContainerStyle={{
-            paddingBottom: responsiveScreenHeight(0),
+            paddingTop: responsiveScreenHeight(0),
+            paddingBottom: responsiveScreenHeight(2),
             marginHorizontal: responsiveScreenWidth(4),
           }}
         />
@@ -132,7 +132,7 @@ export default function CreateListScreen({ navigation }) {
           onPress={() => navigation.navigate('Browsecat')}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: responsiveScreenWidth(4),
-    paddingVertical: responsiveScreenHeight(0),
+    paddingVertical: responsiveScreenHeight(4),
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: '#fff',
