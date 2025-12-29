@@ -1,83 +1,99 @@
 import React from 'react';
+import { View, Text, StyleSheet, StatusBar, Alert } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  StatusBar,
-  Alert,
-} from 'react-native';
-import { responsiveScreenWidth } from 'react-native-responsive-dimensions';
+  responsiveScreenHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 
-export default function ListPublishedScreen() {
+export default function ListPublishedScreen({ navigation }) {
   return (
-    <View style={styles.container}>
-      <StatusBar hidden={false} barStyle="dark-content" />
-
-      <AppHeader
-        title="List Published"
-        leftImage={require('../../../../assets/image/left-icon.png')}
+    <SafeAreaProvider>
+      {/* STATUS BAR */}
+      <StatusBar
+        backgroundColor="#00C4FA" // Android
+        barStyle="light-content" // iOS
       />
-      <View
-        style={{
-          flex: 1,
-          padding: responsiveScreenWidth(4),
-          backgroundColor: '#fff',
-        }}
+
+      {/* MAIN CONTENT */}
+      <SafeAreaView
+        style={styles.container}
+        edges={['left', 'right', 'bottom']}
       >
-        {/* SUCCESS CARD */}
-        <View style={styles.card}>
-          <View style={styles.checkCircle}>
-            <Text style={styles.check}>✓</Text>
-          </View>
+        <AppHeader
+          title="List Published"
+          leftImage={require('../../../../assets/image/left-icon.png')}
+        />
 
-          <Text style={styles.title}>Your list is live!</Text>
-          <Text style={styles.desc}>
-            Best Coffee Spots in NYC has been published and is now visible to
-            your followers.
-          </Text>
-
-          <View style={styles.statsRow}>
-            <Text style={styles.stat}>👁 0 views</Text>
-            <Text style={styles.stat}>👍 0 likes</Text>
-            <Text style={styles.stat}>🔗 0 shares</Text>
-          </View>
-        </View>
-
-        {/* CAMPAIGN CONSENT */}
-        <View style={styles.consentCard}>
-          <View style={styles.consentIcon} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.consentTitle}>Campaign Consent</Text>
-            <Text style={styles.consentDesc}>
-              You've applied for coffee offers.
-            </Text>
-          </View>
-          <View style={styles.dot} />
-        </View>
-
-        {/* ACTION BUTTONS */}
-        <AppButton
+        <View
           style={{
+            flex: 1,
+            padding: responsiveScreenWidth(4),
             backgroundColor: '#fff',
-            borderColor: '#3478f6',
-            borderWidth: 1,
           }}
-          Textcolor="#3478f6"
-          title="Share List"
-          onPress={() => Alert.alert('hii')}
-        />
+        >
+          {/* SUCCESS CARD */}
+          <View style={styles.card}>
+            <View style={styles.checkCircle}>
+              <Text style={styles.check}>✓</Text>
+            </View>
 
-        <AppButton
-          title="Back To Home"
-          Textcolor="#fff"
-          onPress={() => Alert.alert('hii')}
-        />
-      </View>
-    </View>
+            <Text style={styles.title}>Your list is live!</Text>
+            <Text style={styles.desc}>
+              Best Coffee Spots in NYC has been published and is now visible to
+              your followers.
+            </Text>
+
+            <View style={styles.statsRow}>
+              <Text style={styles.stat}>👁 0 views</Text>
+              <Text style={styles.stat}>👍 0 likes</Text>
+              <Text style={styles.stat}>🔗 0 shares</Text>
+            </View>
+          </View>
+
+          {/* CAMPAIGN CONSENT */}
+          <View style={styles.consentCard}>
+            <View style={styles.consentIcon} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.consentTitle}>Campaign Consent</Text>
+              <Text style={styles.consentDesc}>
+                You've applied for coffee offers.
+              </Text>
+            </View>
+            <View style={styles.dot} />
+          </View>
+
+          {/* ACTION BUTTONS */}
+          <View
+            style={{
+              position: 'absolute',
+              width: '100%',
+              left: responsiveScreenWidth(4),
+              bottom: responsiveScreenHeight(2),
+            }}
+          >
+            <AppButton
+              style={{
+                backgroundColor: '#fff',
+                borderColor: '#3478f6',
+                borderWidth: 1,
+              }}
+              Textcolor="#3478f6"
+              title="Share List"
+              onPress={() => Alert.alert('hii')}
+            />
+
+            <AppButton
+              title="Back To Home"
+              Textcolor="#fff"
+              onPress={() => navigation.navigate('Home')}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -163,31 +179,5 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: '#1DA1F2',
-  },
-
-  outlineBtn: {
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1.5,
-    borderColor: '#1DA1F2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  outlineText: {
-    color: '#1DA1F2',
-    fontWeight: '600',
-  },
-
-  primaryBtn: {
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#1DA1F2',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryText: {
-    color: '#FFF',
-    fontWeight: '600',
   },
 });

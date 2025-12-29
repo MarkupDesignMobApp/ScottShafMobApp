@@ -27,3 +27,6 @@ export const FEATURED_LIST_ENDPOINTS = {
 } as const;
 
 
+export const LIST_ENDPOINTS = {
+  CREATE_LIST: '/scott-shafer/api/lists',
+} as const;

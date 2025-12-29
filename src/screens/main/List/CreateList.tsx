@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Keyboard,
   Image,
@@ -11,94 +10,151 @@ import {
   ScrollView,
   Pressable,
   StatusBar,
+  Alert,
 } from 'react-native';
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { AppInput } from '../../../components/ui/AppInput/AppInput';
-
+import { Switch } from 'react-native-paper';
 import {
-  responsiveFontSize,
   responsiveHeight,
   responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
-import AppHeader from '../../../components/ui/AppButton/AppHeader';
-import { Switch } from 'react-native-paper';
-import { styles as Homestyle } from '../../auth/Login/styles';
-export default function CreateListScreen({ navigation }) {
-  const [categories, setCategories] = useState([
-    { name: 'Apple', code: 'apple' },
-    { name: 'Banana', code: 'banana' },
-  ]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-  const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
-  const selectedLabel = selected
-    ? categories.find(c => c.code === selected)?.name ?? ''
-    : '';
 
+import AppHeader from '../../../components/ui/AppButton/AppHeader';
+import { AppButton } from '../../../components/ui/AppButton/AppButton';
+import { AppInput } from '../../../components/ui/AppInput/AppInput';
+import { styles as Homestyle } from '../../auth/Login/styles';
+import { useFocusEffect } from '@react-navigation/native';
+import {
+  useCreateListMutation,
+  useGetInviteUsersQuery,
+} from '../../../features/auth/authApi';
+
+export default function CreateListScreen({ navigation }) {
+  /* ================= STATES ================= */
+  const [title, setTitle] = useState('');
+  const [listSize, setListSize] = useState('');
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState<
+    string | null
+  >(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isGroup, setIsGroup] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<
+    { id: number; full_name: string }[]
+  >([]);
+
+  /* ================= API ================= */
+  const [createList, { isLoading }] = useCreateListMutation();
+  const { data: inviteUsersResponse, isLoading: inviteUsersLoading } =
+    useGetInviteUsersQuery(undefined, { skip: !isGroup });
+  const inviteUsers = inviteUsersResponse?.data ?? [];
+
+  /* ================= CATEGORY (STATIC) ================= */
+  const categories = [
+    { id: 1, name: 'Apple', code: 'apple' },
+    { id: 2, name: 'Banana', code: 'banana' },
+  ];
+  const selectedCategory = categories.find(
+    c => c.code === selectedCategoryCode,
+  );
+
+  /* ================= VALIDATION ================= */
+  const isFormValid =
+    title.trim().length > 0 &&
+    !!selectedCategory &&
+    listSize.trim().length > 0 &&
+    !isNaN(Number(listSize)) &&
+    (!isGroup || selectedUsers.length > 0);
+
+  /* ================= HANDLERS ================= */
+  const toggleUser = (user: { id: number; full_name: string }) => {
+    setSelectedUsers(prev =>
+      prev.some(u => u.id === user.id)
+        ? prev.filter(u => u.id !== user.id)
+        : [...prev, user],
+    );
+  };
+  useFocusEffect(
+    useCallback(() => {
+      setTitle('');
+      setListSize('');
+      setSelectedCategoryCode(null);
+      setModalVisible(false);
+      setIsGroup(false);
+      setSelectedUsers([]);
+    }, []),
+  );
+
+  const handleCreateList = async () => {
+    try {
+      const payload: any = {
+        title: title.trim(),
+        category_id: selectedCategory!.id,
+        list_size: Number(listSize),
+        is_group: isGroup,
+      };
+      if (isGroup) {
+        payload.user_ids = selectedUsers.map(u => u.id);
+      }
+
+      const res = await createList(payload).unwrap();
+
+      Alert.alert('Success', res?.message || 'List created successfully', [
+        {
+          text: 'OK',
+          onPress: () =>
+            navigation.navigate('Browsecat', { listId: res.data.id }),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to create list');
+    }
+  };
+
+  /* ================= UI ================= */
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      <StatusBar hidden={false} barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" />
       <AppHeader
-        onLeftPress={() => navigation.goBack()}
         title="Create List"
         leftImage={require('../../../../assets/image/left-icon.png')}
+        onLeftPress={() => navigation.goBack()}
       />
-      <View style={styles.container}>
-        {/* LIST TITLE */}
-        {/* <TouchableOpacity
-          style={{ width: '100%' }}
-          activeOpacity={0.8}
-          onPress={() => {
-            Keyboard.dismiss();
-            setTimeout(() => setModalVisible(true), 150);
-          }}
-        >
-          <View pointerEvents="none">
-            <AppInput
-                placeholder="e.g. Top 5 coffee shops in NYC"
-              label={
-                <Text style={Homestyle.labeltxt}>
-                  Country <Text style={{ color: 'red' }}>*</Text>
-                </Text>
-              }
-              // value={country}
-            />
-          </View>
-        </TouchableOpacity> */}
 
+      <ScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
+        {/* LIST TITLE */}
         <AppInput
+          value={title}
+          onChangeText={setTitle}
           placeholder="e.g. Top 5 coffee shops in NYC"
           label={
-            <Text style={{ ...Homestyle.labeltxt }}>
-              List Title
-              <Text style={{ color: 'red', fontSize: 16 }}>*</Text>
+            <Text style={Homestyle.labeltxt}>
+              List Title <Text style={{ color: 'red' }}>*</Text>
             </Text>
           }
         />
-        {/* <View style={[styles.fieldWrapper]}>
-                    <Text style={styles.floatingLabel}>List Title</Text>
-                    <TextInput
-                        placeholder="e.g. Top 5 coffee shops in NYC"
-                        placeholderTextColor="#B5B5B5"
-                        style={styles.input}
-                    />
-                </View> */}
 
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={Homestyle.prefix}>
+        {/* CATEGORY */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginTop: responsiveScreenHeight(2),
+          }}
+        >
+          <View style={styles.prefix}>
             <Image
               resizeMode="contain"
               style={{ width: '100%', height: '100%' }}
               source={require('../../../../assets/image/arrow-down.png')}
             />
           </View>
-
           <TouchableOpacity
             style={{ width: '100%' }}
-            activeOpacity={0.8}
             onPress={() => {
               Keyboard.dismiss();
               setTimeout(() => setModalVisible(true), 150);
@@ -106,143 +162,122 @@ export default function CreateListScreen({ navigation }) {
           >
             <View pointerEvents="none">
               <AppInput
+                value={selectedCategory?.name ?? ''}
                 placeholder="Select Category"
                 label={
                   <Text style={Homestyle.labeltxt}>
                     Category <Text style={{ color: 'red' }}>*</Text>
                   </Text>
                 }
-                //  value={country}
               />
             </View>
           </TouchableOpacity>
         </View>
-        {/* <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
-          <View style={styles.prefix}>
-            <Image
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="contain"
-              source={require('../../../../assets/image/arrow-down.png')}
-            />
-          </View>
 
-          <TouchableOpacity
-            style={{ width: '100%' }}
-            activeOpacity={0.8}
-            onPress={() => {
-              Keyboard.dismiss();
-              setTimeout(() => setModalVisible(true), 100);
-            }}
-          >
-            <AppInput
-              placeholder="Select Category"
-              label={
-                <Text style={{ ...styles.labeltxt }}>
-                  Category
-                  <Text style={{ color: 'red', fontSize: 18 }}>*</Text>
-                </Text>
-              }
-              value={selectedLabel}
-              editable={false}
-            />
-          </TouchableOpacity>
-        </View> */}
-
-        {/* GROUP TOGGLE */}
+        {/* GROUP SWITCH */}
         <View style={styles.targetcontainer}>
           <View style={styles.switchcontainer}>
             <Text style={styles.switchtxt}>Make it a group list?</Text>
             <Switch
               color="#FF04D7"
-              value={isSwitchOn}
-              onValueChange={onToggleSwitch}
+              value={isGroup}
+              onValueChange={setIsGroup}
             />
           </View>
-
           <Text style={styles.privacytxt2}>
             Let friends collaborate & add their own picks to your list.
           </Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center',paddingTop:responsiveScreenHeight(2) }}>
-          <View style={Homestyle.prefix}>
-            <Image
-              resizeMode="contain"
-              style={{ width: '100%', height: '100%' }}
-              source={require('../../../../assets/image/arrow-down.png')}
-            />
+        {/* INVITE USERS */}
+        {isGroup && (
+          <View style={styles.invitedBox}>
+            <Text style={styles.invitedTitle}>Invite Users</Text>
+            {inviteUsersLoading ? (
+              <Text>Loading users...</Text>
+            ) : (
+              <ScrollView contentContainerStyle={styles.chipContainer}>
+                {inviteUsers.map(user => {
+                  const selected = selectedUsers.some(u => u.id === user.id);
+                  return (
+                    <View
+                      key={user.id}
+                      style={[
+                        styles.chip,
+                        selected && { backgroundColor: '#E6F3FF' },
+                      ]}
+                    >
+                      <Text style={{ marginRight: 6 }}>{user.full_name}</Text>
+                      {selected && (
+                        <TouchableOpacity onPress={() => toggleUser(user)}>
+                          <Image
+                            source={require('../../../../assets/image/close.png')}
+                            style={styles.closeIcon}
+                          />
+                        </TouchableOpacity>
+                      )}
+                      {!selected && (
+                        <TouchableOpacity onPress={() => toggleUser(user)}>
+                          <Text
+                            style={{ color: '#0180FE', fontWeight: 'bold' }}
+                          >
+                            +
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
           </View>
+        )}
 
-          <TouchableOpacity
-            style={{ width: '100%' }}
-            activeOpacity={0.8}
-            onPress={() => {
-              Keyboard.dismiss();
-              setTimeout(() => setModalVisible(true), 150);
-            }}
-          >
-            <View pointerEvents="none">
-              <AppInput
-                placeholder="Select the top from list"
-                label={
-                  <Text style={Homestyle.labeltxt}>
-                    List Type <Text style={{ color: 'red' }}>*</Text>
-                  </Text>
-                }
-                //  value={country}
-              />
-            </View>
-          </TouchableOpacity>
+        {/* LIST SIZE */}
+        <View style={{ marginTop: responsiveScreenHeight(2) }}>
+          <AppInput
+            value={listSize}
+            onChangeText={setListSize}
+            keyboardType="numeric"
+            placeholder="e.g. 5"
+            label={
+              <Text style={Homestyle.labeltxt}>
+                List Size <Text style={{ color: 'red' }}>*</Text>
+              </Text>
+            }
+          />
         </View>
+      </ScrollView>
 
-        {/* BUTTON */}
-
-        <AppButton title="Create Group List" onPress={() => {}} />
-
-        {/* INVITED */}
-        <View style={styles.invitedBox}>
-          <Text style={styles.invitedTitle}>Invited (2)</Text>
-          <View style={styles.invitedRow}>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>Sarah M.</Text>
-              <Text style={styles.close}>✕</Text>
-            </View>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>Alex K.</Text>
-              <Text style={styles.close}>✕</Text>
-            </View>
-          </View>
-        </View>
+      {/* FOOTER BUTTON */}
+      <View style={styles.footer}>
+        <AppButton
+          title={isLoading ? 'Creating...' : 'Create List'}
+          disabled={!isFormValid || isLoading}
+          onPress={handleCreateList}
+        />
       </View>
 
-      {/* Simple modal selector for categories */}
+      {/* CATEGORY MODAL */}
       {modalVisible && (
-        <Modal transparent animationType="fade" visible={modalVisible}>
+        <Modal transparent animationType="fade">
           <Pressable
             style={styles.modalOverlay}
             onPress={() => setModalVisible(false)}
           >
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Select Category</Text>
-              <ScrollView>
-                {categories.map(item => (
-                  <TouchableOpacity
-                    key={item.code}
-                    style={styles.modalItem}
-                    onPress={() => {
-                      setSelected(item.code);
-                      setModalVisible(false);
-                    }}
-                  >
-                    <Text style={styles.modalItemText}>{item.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              {categories.map(cat => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setSelectedCategoryCode(cat.code);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text>{cat.name}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </Pressable>
         </Modal>
@@ -251,104 +286,75 @@ export default function CreateListScreen({ navigation }) {
   );
 }
 
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: responsiveScreenWidth(4) },
-
-  fieldWrapper: {
-    marginTop: responsiveScreenHeight(2),
-    zIndex: 10,
-  },
+  container: { flexGrow: 1, padding: responsiveScreenWidth(4) },
   prefix: {
     position: 'absolute',
-    paddingTop: responsiveScreenHeight(0.5),
     right: responsiveScreenWidth(8),
-    color: '#AEAEAE',
     width: responsiveScreenWidth(4),
     height: responsiveHeight(4),
   },
-  labeltxt: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2),
-  },
-
   targetcontainer: {
     borderWidth: 1,
     paddingHorizontal: responsiveScreenWidth(4),
     paddingVertical: responsiveScreenHeight(2),
     borderColor: '#0180FE',
     borderRadius: responsiveScreenWidth(4),
-    marginTop: responsiveScreenHeight(1),
+    marginTop: responsiveScreenHeight(2),
     backgroundColor: '#EFFCFF',
   },
   switchcontainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  switchtxt: {
-    fontFamily: 'samsungsharpsans-medium',
-    fontSize: responsiveScreenFontSize(1.9),
-    letterSpacing: 0.5,
-    color: '#00C4FA',
-  },
+  switchtxt: { fontSize: responsiveScreenFontSize(1.9), color: '#00C4FA' },
   privacytxt2: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.68),
+    fontSize: responsiveScreenFontSize(1.6),
     paddingTop: responsiveScreenHeight(2),
     color: '#535353',
   },
-
-  floatingLabel: {
-    position: 'absolute',
-    top: -9,
-    left: 18,
-    backgroundColor: '#FFFFFF', // must be solid
-    paddingHorizontal: 6,
-    fontSize: 12,
-    color: '#8A8A8A',
-    zIndex: 20, // ⭐ label ABOVE everything
-  },
-
-  input: {
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1.2,
-    borderColor: '#E4E6EB',
-    paddingHorizontal: 18,
-    fontSize: 14,
-    color: '#1A1A1A',
-    backgroundColor: '#FFFFFF',
-    zIndex: 1,
-  },
-
   invitedBox: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-
-    marginTop: responsiveScreenHeight(3),
+    marginTop: responsiveScreenHeight(2),
     borderColor: '#0180FE',
+    maxHeight: responsiveScreenHeight(25),
   },
   invitedTitle: {
-    fontSize: responsiveScreenFontSize(1.75),
+    fontSize: responsiveScreenFontSize(1.7),
     color: '#1DA1F2',
     marginBottom: responsiveHeight(1.5),
   },
-
-  invitedRow: { flexDirection: 'row' },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#CFE9FF',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    marginRight: 8,
+    marginBottom: 6,
+    borderColor: '#CFE9FF',
   },
-  chipText: { marginRight: 6 },
-  close: { color: '#999' },
+  closeIcon: {
+    width: responsiveHeight(2),
+    height: responsiveHeight(2),
+    resizeMode: 'contain',
+  },
+  footer: {
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(2),
+    borderTopWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#fff',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -362,7 +368,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
   },
-  modalTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
   modalItem: { paddingVertical: 12, borderBottomWidth: 1, borderColor: '#eee' },
-  modalItemText: { fontSize: 14 },
 });

@@ -10,6 +10,7 @@ import {
   StatusBar,
   ScrollView,
   Pressable,
+  Alert,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
@@ -68,7 +69,37 @@ const DATA = [
   },
 ];
 
-export default function BrowseCatalogScreen({navigation}) {
+export default function BrowseCatalogScreen({ navigation }) {
+  const handleSkip = () => {
+    // Optional: clear selections
+    const clearedItems = items.map(item => ({
+      ...item,
+      selected: false,
+    }));
+
+    setItems(clearedItems);
+
+    // Navigate to next screen
+    navigation.navigate('Addcustom');
+  };
+
+  const handleNext = () => {
+    const selectedItems = items.filter(item => item.selected);
+
+    if (selectedItems.length === 0) {
+      Alert.alert(
+        'No items selected',
+        'Please select at least one item to continue.',
+      );
+      return;
+    }
+
+    // Pass selected items to next screen
+    navigation.navigate('Addcustom', {
+      selectedItems,
+    });
+  };
+
   const [activeCat, setActiveCat] = useState('All');
   const [items, setItems] = useState(DATA);
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -105,23 +136,20 @@ export default function BrowseCatalogScreen({navigation}) {
   );
 
   return (
-    <SafeAreaProvider style={{ flex: 1, backgroundColor: 'red' }}>
+    <SafeAreaProvider style={{ flex: 1 }}>
       {/* STATUS BAR */}
-      <StatusBar
-        backgroundColor="#00C4FA" // ✅ Android
-        barStyle="light-content" // ✅ iOS text color
-      />
+      <StatusBar backgroundColor="#00C4FA" barStyle="light-content" />
 
       {/* iOS STATUS BAR BACKGROUND */}
-      <SafeAreaView
-        edges={['top']}
-        style={{
-          backgroundColor: '#00C4FA',
-        }}
-      />
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#00C4FA' }} />
+
+      {/* HEADER */}
       <View style={styles.header2}>
         <View style={styles.header}>
-          <Pressable onPress={()=>navigation.goBack()} style={styles.backarrow}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={styles.backarrow}
+          >
             <Image
               tintColor={'#fff'}
               resizeMode="contain"
@@ -131,15 +159,13 @@ export default function BrowseCatalogScreen({navigation}) {
           </Pressable>
 
           <Text style={styles.headerTitle}>Browser Catalogue</Text>
-          <View></View>
+          <View />
         </View>
+
         <View style={styles.serchmaincontainer}>
-          <SearchBar
-            placeholder="Search items..."
-            style={{ backgroundColor: '#00C4FA' }}
-            inputStyle={{}}
-          />
+          <SearchBar placeholder="Search items..." />
         </View>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -150,9 +176,9 @@ export default function BrowseCatalogScreen({navigation}) {
         >
           {CATEGORIES.map((item, index) => {
             const isActive = index === activeIndex;
-
             return (
               <Pressable
+                key={item}
                 onPress={() => setActiveIndex(index)}
                 style={[
                   Homestyle.scrollbox,
@@ -172,74 +198,34 @@ export default function BrowseCatalogScreen({navigation}) {
           })}
         </ScrollView>
       </View>
-      <View
-        style={{
-          backgroundColor: '#fff',
-          paddingTop: responsiveScreenHeight(2),
-        }}
-      >
+
+      {/* CONTENT + FOOTER */}
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        {/* LIST */}
         <FlatList
-        showsVerticalScrollIndicator={false}
-          bounces={false}
           data={items}
           keyExtractor={item => item.id}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: responsiveScreenWidth(4),
-            paddingBottom: responsiveScreenHeight(25),
+            paddingTop: responsiveScreenHeight(2),
+            paddingBottom: responsiveScreenHeight(16), // 👈 space for buttons
           }}
         />
+
+        {/* FIXED BOTTOM BUTTONS */}
+        <SafeAreaView edges={['bottom']} style={styles.footer}>
+          <Pressable style={styles.skipBtn} onPress={handleSkip}>
+            <Text style={styles.skipText}>Skip</Text>
+          </Pressable>
+
+          <Pressable style={styles.nextBtn} onPress={handleNext}>
+            <Text style={styles.nextText}>Next</Text>
+          </Pressable>
+        </SafeAreaView>
       </View>
-      <SafeAreaView />
     </SafeAreaProvider>
-    // <SafeAreaProvider>
-    //   <SafeAreaView
-    //     edges={['top', 'left', 'right']}
-    //     style={{ flex: 1, backgroundColor: '#fff' }}
-    //   >
-    //     <View style={styles.container}>
-    //       {/* HEADER */}
-    //       <View style={styles.header}>
-    //         <Text style={styles.headerTitle}>Browse Catalog</Text>
-
-    //         <View style={styles.searchWrap}>
-    //           <TextInput
-    //             placeholder="Search items…"
-    //             placeholderTextColor="#BEE9FF"
-    //             style={styles.search}
-    //           />
-    //         </View>
-
-    //         <View style={styles.categories}>
-    //           {CATEGORIES.map(cat => (
-    //             <TouchableOpacity
-    //               key={cat}
-    //               style={[styles.chip, activeCat === cat && styles.chipActive]}
-    //               onPress={() => setActiveCat(cat)}
-    //             >
-    //               <Text
-    //                 style={[
-    //                   styles.chipText,
-    //                   activeCat === cat && styles.chipTextActive,
-    //                 ]}
-    //               >
-    //                 {cat}
-    //               </Text>
-    //             </TouchableOpacity>
-    //           ))}
-    //         </View>
-    //       </View>
-
-    //       {/* LIST */}
-    //       <FlatList
-    //         data={items}
-    //         keyExtractor={item => item.id}
-    //         renderItem={renderItem}
-    //         contentContainerStyle={{ padding: 16 }}
-    //       />
-    //     </View>
-    //   </SafeAreaView>
-    // </SafeAreaProvider>
   );
 }
 
@@ -249,10 +235,8 @@ export const styles = StyleSheet.create({
   header: {
     backgroundColor: '#00C4FA',
     flexDirection: 'row',
-    alignItems:"center",
-    justifyContent:"space-between",
-   
-
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   header2: {
     backgroundColor: '#00C4FA',
@@ -335,6 +319,46 @@ export const styles = StyleSheet.create({
     color: '#777',
     marginTop: responsiveScreenHeight(1.25),
     fontFamily: 'Quicksand-Regular',
+  },
+  footer: {
+    flexDirection: 'row',
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(2),
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+
+  skipBtn: {
+    flex: 1,
+    height: responsiveScreenHeight(6),
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#00C4FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  skipText: {
+    color: '#00C4FA',
+    fontWeight: '600',
+    fontSize: responsiveScreenFontSize(1.8),
+  },
+
+  nextBtn: {
+    flex: 1,
+    height: responsiveScreenHeight(6),
+    borderRadius: 30,
+    backgroundColor: '#00C4FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  nextText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: responsiveScreenFontSize(1.8),
   },
 
   iconWrap: {

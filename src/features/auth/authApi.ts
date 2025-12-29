@@ -24,10 +24,33 @@ import {
   FeaturedListItem,
   FeaturedListItemsResponse,
   FeaturedList,
+  CreateListRequest,
+  CreateListResponse,
+  InviteUsersResponse,
 } from './authTypes';
-import { AUTH_ENDPOINTS, FEATURED_LIST_ENDPOINTS } from './endpoints';
+import {
+  AUTH_ENDPOINTS,
+  FEATURED_LIST_ENDPOINTS,
+  LIST_ENDPOINTS,
+} from './endpoints';
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+    /* 🔹 INVITE USERS LIST (GET) */
+   getInviteUsers: builder.query<InviteUsersResponse, void>({
+  query: () => '/scott-shafer/api/users/invite-list', // ✅ full path
+  providesTags: ['InviteUsers'],
+}),
+
+    /* 🔹 CREATE LIST (POST) */
+    createList: builder.mutation<CreateListResponse, CreateListRequest>({
+      query: body => ({
+        url: LIST_ENDPOINTS.CREATE_LIST,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FeaturedList'], // refresh lists automatically
+    }),
+
     // ✅ GET FEATURED LISTS BY INTEREST
     getFeaturedListsByInterest: builder.query<FeaturedList[], number | string>({
       query: interestId => ({
@@ -199,4 +222,6 @@ export const {
   useGetFeaturedListsQuery,
   useGetFeaturedListItemsQuery,
   useGetFeaturedListsByInterestQuery,
+  useCreateListMutation,
+  useGetInviteUsersQuery
 } = authApi;

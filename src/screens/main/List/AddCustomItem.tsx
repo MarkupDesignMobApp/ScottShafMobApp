@@ -19,7 +19,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
-export default function AddCustomItem() {
+export default function AddCustomItem({ navigation }) {
   const [isSwitchOn, setIsSwitchOn] = React.useState(false);
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
 
@@ -38,6 +38,7 @@ export default function AddCustomItem() {
         backgroundColor="#000"
       />
       <AppHeader
+        onLeftPress={() => navigation.goBack()}
         title="Add Custom Item"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />

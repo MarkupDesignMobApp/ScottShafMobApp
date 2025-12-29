@@ -55,17 +55,20 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 import { store } from './src/app/store';
+import InviteScreen from './src/screens/main/Invite&Refer/inviteScreen';
+import ListPublishedScreen from './src/screens/main/List/AddItems';
+import Reorder from './src/screens/main/reorder/Reorder';
 import RootNavigator from './src/navigation/stacks/RootNavigator';
 
 export default function App() {
-
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
+        {/* <Reorder/> */}
         <RootNavigator />
+        {/* <InviteScreen/> */}
+        {/* <ListPublishedScreen/> */}
       </GestureHandlerRootView>
     </Provider>
   );
 }
-
-

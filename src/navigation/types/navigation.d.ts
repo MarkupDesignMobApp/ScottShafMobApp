@@ -64,7 +64,10 @@ export type MainStackParamList = {
   Drawer: NavigatorScreenParams<DrawerParamList> | undefined;
   EditProfile:undefined;
   Notification:undefined;
-  Privacy:undefined
+  Privacy:undefined;
+  Browsecat:undefined;
+  Addcustom:undefined;
+  Offer:undefined
   
 };
 

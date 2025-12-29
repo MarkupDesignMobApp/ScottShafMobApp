@@ -25,14 +25,11 @@ export interface FeaturedListsResponse {
   data: FeaturedList[];
 }
 
-
-
-
 // =====================================================
 // INTEREST (USED EVERYWHERE)
 // =====================================================
 
-import { ImageSourcePropType } from "react-native/types";
+import { ImageSourcePropType } from 'react-native/types';
 
 export interface FeaturedListInterest {
   id: number;
@@ -122,7 +119,6 @@ export interface FeaturedListByInterestQuery {
   interest_id: number;
 }
 
-
 export interface FeaturedListItem {
   id: number;
   name: string;
@@ -135,8 +131,6 @@ export interface FeaturedListItemsResponse {
   success: boolean;
   data: FeaturedListItem[];
 }
-
-
 
 // ================= USER INTEREST =================
 
@@ -177,9 +171,6 @@ export interface SaveInterestsResponse {
   user_id: number;
   selected_interests: number[];
 }
-
-
-
 
 // ================= USER =================
 export interface User {
@@ -300,6 +291,32 @@ export interface TermsAndPrivacyResponse {
     updated_at: string;
   };
 }
+// ================= CREATE LIST =================
+// POST /scott-shafer/api/lists
+
+export interface CreateListRequest {
+  title: string;
+  category_id: number;
+  list_size: number;
+  is_group: boolean;
+  user_ids?: number[];
+}
+
+export interface CreateListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    user_id: number;
+    title: string;
+    category_id: number;
+    list_size: number;
+    is_group: boolean;
+    members: any[];
+    created_at: string;
+    updated_at: string;
+  };
+}
 
 // ================= USER PROFILE =================
 export interface UserProfileRequest {
@@ -351,6 +368,28 @@ export interface UpdateProfileResponse {
   };
 }
 
+export interface InviteUser {
+  id: number;
+  full_name: string;
+  email: string;
+}
+
+export interface InviteUsersResponse {
+  success: boolean;
+  data: InviteUser[];
+}
+export interface Campaign {
+  id: number;
+  name: string;
+  // add other fields returned by the campaign API here if available
+}
+
+export interface CampaignsResponse {
+  success: boolean;
+  campaigns: Campaign[];
+  message: string;
+}
+
 // ================= FULL PROFILE =================
 export interface ProfileResponse {
   success: boolean;
@@ -378,6 +417,7 @@ export interface ProfileResponse {
         campaign_marketing: string;
         accepted_at: string;
       };
+
       interests: {
         id: number;
         name: string;
