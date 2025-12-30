@@ -11,6 +11,8 @@ import {
   Pressable,
   StatusBar,
   Alert,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { Switch } from 'react-native-paper';
 import {
@@ -28,15 +30,18 @@ import { useFocusEffect } from '@react-navigation/native';
 import {
   useCreateListMutation,
   useGetInviteUsersQuery,
+  useGetCatalogCategoriesQuery,
 } from '../../../features/auth/authApi';
 
 export default function CreateListScreen({ navigation }) {
   /* ================= STATES ================= */
   const [title, setTitle] = useState('');
   const [listSize, setListSize] = useState('');
-  const [selectedCategoryCode, setSelectedCategoryCode] = useState<
-    string | null
-  >(null);
+  const [selectedCategory, setSelectedCategory] = useState<{
+    id: number;
+    name: string;
+    code: string;
+  } | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [isGroup, setIsGroup] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<
@@ -49,14 +54,8 @@ export default function CreateListScreen({ navigation }) {
     useGetInviteUsersQuery(undefined, { skip: !isGroup });
   const inviteUsers = inviteUsersResponse?.data ?? [];
 
-  /* ================= CATEGORY (STATIC) ================= */
-  const categories = [
-    { id: 1, name: 'Apple', code: 'apple' },
-    { id: 2, name: 'Banana', code: 'banana' },
-  ];
-  const selectedCategory = categories.find(
-    c => c.code === selectedCategoryCode,
-  );
+  const { data: categories = [], isLoading: categoryLoading } =
+    useGetCatalogCategoriesQuery();
 
   /* ================= VALIDATION ================= */
   const isFormValid =
@@ -74,11 +73,12 @@ export default function CreateListScreen({ navigation }) {
         : [...prev, user],
     );
   };
+
   useFocusEffect(
     useCallback(() => {
       setTitle('');
       setListSize('');
-      setSelectedCategoryCode(null);
+      setSelectedCategory(null);
       setModalVisible(false);
       setIsGroup(false);
       setSelectedUsers([]);
@@ -87,25 +87,31 @@ export default function CreateListScreen({ navigation }) {
 
   const handleCreateList = async () => {
     try {
+      if (!selectedCategory) return;
+
       const payload: any = {
         title: title.trim(),
-        category_id: selectedCategory!.id,
+        category_id: selectedCategory.id,
         list_size: Number(listSize),
         is_group: isGroup,
       };
+
       if (isGroup) {
         payload.user_ids = selectedUsers.map(u => u.id);
       }
 
       const res = await createList(payload).unwrap();
 
-      Alert.alert('Success', res?.message || 'List created successfully', [
-        {
-          text: 'OK',
-          onPress: () =>
-            navigation.navigate('Browsecat', { listId: res.data.id }),
-        },
-      ]);
+      Alert.alert('Success', res?.message || 'List created successfully');
+
+      navigation.navigate('Browsecat', {
+        listId: res.data.id,
+        categoryId: selectedCategory.id, // ✅ pass selected category id dynamically
+        isGroup,
+        userIds: isGroup ? selectedUsers.map(u => u.id) : [],
+        listSize: Number(listSize),
+        title: title.trim(),
+      });
     } catch (error: any) {
       Alert.alert('Error', error?.data?.message || 'Failed to create list');
     }
@@ -113,17 +119,25 @@ export default function CreateListScreen({ navigation }) {
 
   /* ================= UI ================= */
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      <StatusBar barStyle="dark-content" />
-      <AppHeader
-        title="Create List"
-        leftImage={require('../../../../assets/image/left-icon.png')}
-        onLeftPress={() => navigation.goBack()}
-      />
+  <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <StatusBar barStyle="dark-content" />
 
+    <AppHeader
+      title="Create List"
+      leftImage={require('../../../../assets/image/left-icon.png')}
+      onLeftPress={() => navigation.goBack()}
+    />
+
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
+    >
+      {/* CONTENT */}
       <ScrollView
         bounces={false}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.container}
       >
         {/* LIST TITLE */}
@@ -208,23 +222,20 @@ export default function CreateListScreen({ navigation }) {
                       ]}
                     >
                       <Text style={{ marginRight: 6 }}>{user.full_name}</Text>
-                      {selected && (
-                        <TouchableOpacity onPress={() => toggleUser(user)}>
+                      <TouchableOpacity onPress={() => toggleUser(user)}>
+                        {selected ? (
                           <Image
                             source={require('../../../../assets/image/close.png')}
                             style={styles.closeIcon}
                           />
-                        </TouchableOpacity>
-                      )}
-                      {!selected && (
-                        <TouchableOpacity onPress={() => toggleUser(user)}>
+                        ) : (
                           <Text
                             style={{ color: '#0180FE', fontWeight: 'bold' }}
                           >
                             +
                           </Text>
-                        </TouchableOpacity>
-                      )}
+                        )}
+                      </TouchableOpacity>
                     </View>
                   );
                 })}
@@ -249,7 +260,7 @@ export default function CreateListScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      {/* FOOTER BUTTON */}
+      {/* FOOTER */}
       <View style={styles.footer}>
         <AppButton
           title={isLoading ? 'Creating...' : 'Create List'}
@@ -257,33 +268,35 @@ export default function CreateListScreen({ navigation }) {
           onPress={handleCreateList}
         />
       </View>
+    </KeyboardAvoidingView>
 
-      {/* CATEGORY MODAL */}
-      {modalVisible && (
-        <Modal transparent animationType="fade">
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setModalVisible(false)}
-          >
-            <View style={styles.modalContainer}>
-              {categories.map(cat => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={styles.modalItem}
-                  onPress={() => {
-                    setSelectedCategoryCode(cat.code);
-                    setModalVisible(false);
-                  }}
-                >
-                  <Text>{cat.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </Pressable>
-        </Modal>
-      )}
-    </View>
-  );
+    {/* CATEGORY MODAL */}
+    {modalVisible && (
+      <Modal transparent animationType="fade">
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            {categories.map(cat => (
+              <TouchableOpacity
+                key={cat.id}
+                style={styles.modalItem}
+                onPress={() => {
+                  setSelectedCategory(cat);
+                  setModalVisible(false);
+                }}
+              >
+                <Text>{cat.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+    )}
+  </View>
+);
+
 }
 
 /* ================= STYLES ================= */

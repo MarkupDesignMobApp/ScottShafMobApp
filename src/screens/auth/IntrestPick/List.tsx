@@ -133,7 +133,7 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
         renderItem={renderItem}
         numColumns={2}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listmaincontainer}
+        contentContainerStyle={{...styles.listmaincontainer, }}
         ListFooterComponent={
           <>
             <View style={styles.bottomtxtcontainer}>

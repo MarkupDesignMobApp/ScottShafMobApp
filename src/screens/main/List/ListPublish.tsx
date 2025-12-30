@@ -7,8 +7,26 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-
+import Share from 'react-native-share';
+import { CommonActions } from '@react-navigation/native';
 export default function ListPublishedScreen({ navigation }) {
+  const handleShare = async () => {
+    try {
+      const shareOptions = {
+        title: 'Check out my list!',
+        message:
+          'I just published a list: Best Coffee Spots in NYC ☕🔥\nCheck it out!',
+        url: 'https://yourapp.com/list/123', // optional deep link
+      };
+
+      await Share.open(shareOptions);
+    } catch (error: any) {
+      if (error?.message !== 'User did not share') {
+        Alert.alert('Error', 'Unable to open share dialog');
+      }
+    }
+  };
+
   return (
     <SafeAreaProvider>
       {/* STATUS BAR */}
@@ -23,6 +41,7 @@ export default function ListPublishedScreen({ navigation }) {
         edges={['left', 'right', 'bottom']}
       >
         <AppHeader
+          onLeftPress={() => navigation.goback()}
           title="List Published"
           leftImage={require('../../../../assets/image/left-icon.png')}
         />
@@ -82,13 +101,20 @@ export default function ListPublishedScreen({ navigation }) {
               }}
               Textcolor="#3478f6"
               title="Share List"
-              onPress={() => Alert.alert('hii')}
+              onPress={handleShare}
             />
 
             <AppButton
               title="Back To Home"
               Textcolor="#fff"
-              onPress={() => navigation.navigate('Home')}
+              onPress={() => {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Tabs' }],
+                  }),
+                );
+              }}
             />
           </View>
         </View>

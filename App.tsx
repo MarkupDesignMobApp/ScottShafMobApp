@@ -56,8 +56,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 import { store } from './src/app/store';
 import InviteScreen from './src/screens/main/Invite&Refer/inviteScreen';
-import ListPublishedScreen from './src/screens/main/List/AddItems';
+import ListPublishedScreen from './src/screens/main/Invite&Refer/inviteScreen';
 import Reorder from './src/screens/main/reorder/Reorder';
+
 import RootNavigator from './src/navigation/stacks/RootNavigator';
 
 export default function App() {
@@ -66,6 +67,7 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         {/* <Reorder/> */}
         <RootNavigator />
+    {/* <ListPublishedScreen/> */}
         {/* <InviteScreen/> */}
         {/* <ListPublishedScreen/> */}
       </GestureHandlerRootView>

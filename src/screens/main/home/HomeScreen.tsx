@@ -23,7 +23,7 @@ import {
   useGetFeaturedListByIdQuery,
   useGetFeaturedListsQuery,
   useGetFeaturedListItemsQuery,
-  useGetFeaturedListsByInterestQuery 
+  useGetFeaturedListsByInterestQuery,
 } from '../../../features/auth/authApi';
 import {
   responsiveFontSize,
@@ -33,32 +33,42 @@ import {
 
 export default function HomeScreen({ navigation }) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
-
+  const [selectedInterestId, setSelectedInterestId] = useState<number | null>(
+    null,
+  );
   const { data: profileData, isLoading: profileLoading } =
     useGetUserProfileQuery();
 
-    // const { data, isLoading,refetch } =
-    // useGetFeaturedListsQuery();
-    // const { data, isLoading,  } =
-    // useGetFeaturedListByIdQuery(8);
-    // const { data, isLoading, } =
-    // useGetFeaturedListItemsQuery(8);
-    // const { data, isLoading,  } =
-    // useGetFeaturedListsByInterestQuery(interestId);
-    const { data, isLoading,  } =
-    useGetFeaturedListsByInterestQuery(6);
-    console.log("Feature",data)
+  // const { data, isLoading,refetch } =
+  // useGetFeaturedListsQuery();
+  // const { data, isLoading,  } =
+  // useGetFeaturedListByIdQuery(8);
+  // const { data, isLoading, } =
+  // useGetFeaturedListItemsQuery(8);
+  // const { data, isLoading,  } =
+  // useGetFeaturedListsByInterestQuery(interestId);
+  // const { data, isLoading } = useGetFeaturedListsByInterestQuery(6);
+  // console.log('Feature',profileData);
   const {
     data: interestsData,
     isLoading: interestsLoading, // 👈 THIS NAME YOU MUST USE
     error,
   } = useGetUserInterestsQuery();
-// console.log("eded",interestsData)
+  const interestsWithForYou = [
+    { id: 'for-you', name: 'For You', isForYou: true },
+    ...(interestsData ?? []),
+  ];
+
+  // console.log("eded",interestsData)
   const user = profileData?.data?.user;
   async function Gettoken() {
     let mytoken = await TokenService.get();
   }
-
+  // Dynamic interest selection handler
+  const handleSelectInterest = (index: number, interestId: number | null) => {
+    setActiveIndex(index);
+    setSelectedInterestId(interestId);
+  };
   async function Removetoken() {
     await removeTokenFromKeychain();
   }
@@ -160,13 +170,13 @@ export default function HomeScreen({ navigation }) {
             {interestsLoading && <Text>Loading...</Text>}
 
             {!interestsLoading &&
-              interestsData?.map((item, index) => {
+              interestsWithForYou.map((item, index) => {
                 const isActive = index === activeIndex;
 
                 return (
                   <Pressable
                     key={item.id}
-                    onPress={() => setActiveIndex(index)}
+                    onPress={() => handleSelectInterest(index, item.id)}
                     style={[
                       styles.scrollbox,
                       isActive && styles.activeScrollBox,
@@ -228,7 +238,7 @@ export default function HomeScreen({ navigation }) {
                 See All
               </Text>
             </View>
-            <ImageCarousel />
+            <ImageCarousel interestId={selectedInterestId} />
 
             <View style={styles.cardheading}>
               <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>

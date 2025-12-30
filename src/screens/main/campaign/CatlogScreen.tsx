@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   FlatList,
   Image,
@@ -22,71 +21,57 @@ import {
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
 
+import {
+  useGetCatalogItemsByCategoryQuery,
+  useAddCatalogItemToListMutation,
+} from '../../../features/auth/authApi';
+import Loader from '../../../components/ui/Loader/Loader';
 const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'Bars'];
 
-const DATA = [
-  {
-    id: '1',
-    name: 'Blue Bottle Coffee',
-    desc: 'Specialty coffee roaster',
-    image: 'https://via.placeholder.com/60',
-    selected: true,
-  },
-  {
-    id: '2',
-    name: 'Stumptown Coffee',
-    desc: 'Specialty coffee roaster',
-    image: 'https://via.placeholder.com/60',
-    selected: false,
-  },
-  {
-    id: '3',
-    name: 'La Colombe',
-    desc: 'Specialty coffee roaster',
-    image: 'https://via.placeholder.com/60',
-    selected: true,
-  },
-  {
-    id: '4',
-    name: 'Intelligentsia Coffee',
-    desc: 'Specialty coffee roaster',
-    image: 'https://via.placeholder.com/60',
-    selected: false,
-  },
-  {
-    id: '5',
-    name: 'Counter Culture',
-    desc: 'Specialty coffee roaster',
-    image: 'https://via.placeholder.com/60',
-    selected: false,
-  },
-  {
-    id: '6',
-    name: 'Counter Culture',
-    desc: 'Specialty coffee roaster',
-    image: 'https://via.placeholder.com/60',
-    selected: false,
-  },
-];
+export default function BrowseCatalogScreen({ navigation, route }) {
+  /* ================= PARAM ================= */
+  const { categoryId,listId } = route.params;
+  // alert(categoryId)
+  // alert("Routeparam :c", categoryId);
+  /* ================= API ================= */
+  const { data, isLoading } = useGetCatalogItemsByCategoryQuery(categoryId);
+  const [addCatalogItems, { isLoading: isAdding }] =
+    useAddCatalogItemToListMutation();
 
-export default function BrowseCatalogScreen({ navigation }) {
+  /* ================= STATE ================= */
+  const [items, setItems] = useState<any[]>([]);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  /* ================= MAP API → LOCAL ================= */
+  useEffect(() => {
+    if (data) {
+      setItems(
+        data.map(item => ({
+          ...item,
+          selected: false,
+        })),
+      );
+    }
+  }, [data]);
+
+  /* ================= ACTIONS ================= */
+  const toggleSelect = (id: number) => {
+    setItems(prev =>
+      prev.map(i => (i.id === id ? { ...i, selected: !i.selected } : i)),
+    );
+  };
+
   const handleSkip = () => {
-    // Optional: clear selections
-    const clearedItems = items.map(item => ({
-      ...item,
-      selected: false,
-    }));
-
-    setItems(clearedItems);
-
-    // Navigate to next screen
     navigation.navigate('Addcustom');
   };
 
-  const handleNext = () => {
-    const selectedItems = items.filter(item => item.selected);
+  const handleNext = async () => {
+    // Get only selected catalog item IDs
+    const selectedIds = items
+      .filter(item => item.selected) // only selected items
+      .map(item => item.id); // extract their IDs
 
-    if (selectedItems.length === 0) {
+    if (selectedIds.length === 0) {
       Alert.alert(
         'No items selected',
         'Please select at least one item to continue.',
@@ -94,21 +79,34 @@ export default function BrowseCatalogScreen({ navigation }) {
       return;
     }
 
-    // Pass selected items to next screen
-    navigation.navigate('Addcustom', {
-      selectedItems,
-    });
+    // 🔹 Build API payload dynamically
+    const payload = {
+      catalog_item_ids: selectedIds, // pass the selected IDs
+      listId: listId, // or dynamic listId if you have
+    };
+
+    try {
+      const res = await addCatalogItems(payload).unwrap();
+
+      Alert.alert('Success', res.message || 'Items added successfully', [
+        {
+          text: 'OK',
+          onPress: () =>
+            navigation.navigate('Addcustom', {
+              selectedItems: selectedIds, // pass to next screen if needed
+               listId: listId
+            }),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert(
+        'Error',
+        error?.data?.message || 'Failed to add items. Please try again.',
+      );
+    }
   };
 
-  const [activeCat, setActiveCat] = useState('All');
-  const [items, setItems] = useState(DATA);
-  const [activeIndex, setActiveIndex] = useState<number>(0);
-  const toggleSelect = id => {
-    setItems(prev =>
-      prev.map(i => (i.id === id ? { ...i, selected: !i.selected } : i)),
-    );
-  };
-
+  /* ================= RENDER ITEM (UNCHANGED UI) ================= */
   const renderItem = ({ item }) => (
     <TouchableOpacity
       key={item.id}
@@ -122,9 +120,10 @@ export default function BrowseCatalogScreen({ navigation }) {
           style={{ width: '100%', height: '100%' }}
         />
       </View>
+
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.desc}>{item.desc}</Text>
+        <Text style={styles.desc}>{item.description}</Text>
       </View>
 
       <View style={styles.iconWrap}>
@@ -135,97 +134,94 @@ export default function BrowseCatalogScreen({ navigation }) {
     </TouchableOpacity>
   );
 
+  /* ================= UI (UNCHANGED) ================= */
   return (
-    <SafeAreaProvider style={{ flex: 1 }}>
-      {/* STATUS BAR */}
-      <StatusBar backgroundColor="#00C4FA" barStyle="light-content" />
+    <>
+      <Loader color="blue" visible={isLoading || isAdding} />
+      <SafeAreaProvider style={{ flex: 1 }}>
+        <StatusBar backgroundColor="#00C4FA" barStyle="light-content" />
+        <SafeAreaView edges={['top']} style={{ backgroundColor: '#00C4FA' }} />
 
-      {/* iOS STATUS BAR BACKGROUND */}
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#00C4FA' }} />
+        <View style={styles.header2}>
+          <View style={styles.header}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={styles.backarrow}
+            >
+              <Image
+                tintColor={'#fff'}
+                resizeMode="contain"
+                style={styles.img}
+                source={require('../../../../assets/image/left-icon.png')}
+              />
+            </Pressable>
 
-      {/* HEADER */}
-      <View style={styles.header2}>
-        <View style={styles.header}>
-          <Pressable
-            onPress={() => navigation.goBack()}
-            style={styles.backarrow}
+            <Text style={styles.headerTitle}>Browser Catalogue</Text>
+            <View />
+          </View>
+
+          <View style={styles.serchmaincontainer}>
+            <SearchBar placeholder="Search items..." />
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              ...Homestyle.scrollcontainer,
+              paddingTop: responsiveScreenHeight(2.25),
+            }}
           >
-            <Image
-              tintColor={'#fff'}
-              resizeMode="contain"
-              style={styles.img}
-              source={require('../../../../assets/image/left-icon.png')}
-            />
-          </Pressable>
-
-          <Text style={styles.headerTitle}>Browser Catalogue</Text>
-          <View />
-        </View>
-
-        <View style={styles.serchmaincontainer}>
-          <SearchBar placeholder="Search items..." />
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            ...Homestyle.scrollcontainer,
-            paddingTop: responsiveScreenHeight(2.25),
-          }}
-        >
-          {CATEGORIES.map((item, index) => {
-            const isActive = index === activeIndex;
-            return (
-              <Pressable
-                key={item}
-                onPress={() => setActiveIndex(index)}
-                style={[
-                  Homestyle.scrollbox,
-                  isActive && Homestyle.activeScrollBox,
-                ]}
-              >
-                <Text
+            {CATEGORIES.map((item, index) => {
+              const isActive = index === activeIndex;
+              return (
+                <Pressable
+                  key={item}
+                  onPress={() => setActiveIndex(index)}
                   style={[
-                    Homestyle.boxtitle,
-                    isActive && Homestyle.activeBoxTitle,
+                    Homestyle.scrollbox,
+                    isActive && Homestyle.activeScrollBox,
                   ]}
                 >
-                  {item}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
+                  <Text
+                    style={[
+                      Homestyle.boxtitle,
+                      isActive && Homestyle.activeBoxTitle,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-      {/* CONTENT + FOOTER */}
-      <View style={{ flex: 1, backgroundColor: '#fff' }}>
-        {/* LIST */}
-        <FlatList
-          data={items}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: responsiveScreenWidth(4),
-            paddingTop: responsiveScreenHeight(2),
-            paddingBottom: responsiveScreenHeight(16), // 👈 space for buttons
-          }}
-        />
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+          <FlatList
+            data={items}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingHorizontal: responsiveScreenWidth(4),
+              paddingTop: responsiveScreenHeight(2),
+              paddingBottom: responsiveScreenHeight(16),
+            }}
+          />
 
-        {/* FIXED BOTTOM BUTTONS */}
-        <SafeAreaView edges={['bottom']} style={styles.footer}>
-          <Pressable style={styles.skipBtn} onPress={handleSkip}>
-            <Text style={styles.skipText}>Skip</Text>
-          </Pressable>
+          <SafeAreaView edges={['bottom']} style={styles.footer}>
+            <Pressable style={styles.skipBtn} onPress={handleSkip}>
+              <Text style={styles.skipText}>Skip</Text>
+            </Pressable>
 
-          <Pressable style={styles.nextBtn} onPress={handleNext}>
-            <Text style={styles.nextText}>Next</Text>
-          </Pressable>
-        </SafeAreaView>
-      </View>
-    </SafeAreaProvider>
+            <Pressable style={styles.nextBtn} onPress={handleNext}>
+              <Text style={styles.nextText}>Next</Text>
+            </Pressable>
+          </SafeAreaView>
+        </View>
+      </SafeAreaProvider>
+    </>
   );
 }
 

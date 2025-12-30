@@ -112,7 +112,7 @@ export default function AboutScreen({ navigation }) {
         // ✅ Best practice after setup
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Socialauth' }],
+          routes: [{ name: 'Login' }],
         });
       }
     } catch (err: any) {

@@ -8,7 +8,8 @@ import {
   OfferDetail,
   Browsecat,
   AddCustomItem,
-  Reorder
+  Reorder,
+  Invitescreen,Publish
 } from '../../screens/index';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -27,6 +28,8 @@ export default function MainNavigator() {
       <Stack.Screen name="Browsecat" component={Browsecat} />
       <Stack.Screen name="Addcustom" component={AddCustomItem} />
       <Stack.Screen name="Reorder" component={Reorder} />
+      <Stack.Screen name="Invitescreen" component={Invitescreen} />
+       <Stack.Screen name="Publish" component={Publish} />
     </Stack.Navigator>
   );
 }

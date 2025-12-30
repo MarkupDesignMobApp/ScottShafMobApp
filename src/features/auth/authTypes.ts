@@ -1,7 +1,8 @@
 export interface AddListItemRequest {
-  listId: number | string;
-  custom_item_name: string;
-  custom_text: string;
+  listId?: number | string;
+  custom_item_name?: string;
+  custom_text?: string;
+  catalog_item_ids?: number[];
 }
 
 export interface ListItem {
@@ -20,10 +21,13 @@ export interface AddListItemResponse {
   data: ListItem[];
 }
 
-
 export interface FeaturedListInterest {
   id: number;
   name: string;
+}
+export interface ListCatalogItemsResponse {
+  success: boolean;
+  data: CatalogItem[];
 }
 
 export interface FeaturedListCategory {
@@ -406,11 +410,51 @@ export interface Campaign {
   name: string;
   // add other fields returned by the campaign API here if available
 }
-
+export interface Category {
+  id: number;
+  name: string;
+}
 export interface CampaignsResponse {
   success: boolean;
   campaigns: Campaign[];
   message: string;
+}
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface CategoriesResponse {
+  success: boolean;
+  message: string;
+  data: Category[];
+}
+// features/catalog/types/catalog.types.ts
+
+export interface CatalogCategory {
+  id: number;
+  name: string;
+}
+// Categories API response
+export interface CategoriesResponse {
+  success: boolean;
+  message: string;
+  data: Category[];
+}
+// Catalog Item
+export interface CatalogItem {
+  id: number;
+  category_id: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  category: Category;
+}
+
+export interface CatalogItemsResponse {
+  success: boolean;
+  message: string;
+  data: CatalogItem[];
 }
 
 // ================= FULL PROFILE =================

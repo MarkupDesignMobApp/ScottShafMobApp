@@ -32,3 +32,7 @@ export const LIST_ENDPOINTS = {
   ADD_LIST_ITEM: (listId: number | string) =>
     `/scott-shafer/api/lists/${listId}/items`,
 } as const;
+export const CATALOG_ENDPOINTS = {
+  CATEGORIES: '/scott-shafer/api/catalog/categories',
+  ITEMS: '/scott-shafer/api/catalog/items', // 👈 NEW
+} as const;

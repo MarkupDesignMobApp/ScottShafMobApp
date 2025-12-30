@@ -67,8 +67,10 @@ export type MainStackParamList = {
   Privacy:undefined;
   Browsecat:undefined;
   Addcustom:undefined;
-  Offer:undefined
-  
+  Offer:undefined;
+  Invitescreen:undefined;
+  Reorder:undefined;
+  Publish:undefined;
 };
 
 /**

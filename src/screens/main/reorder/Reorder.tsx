@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -22,30 +22,46 @@ import {
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
 
-const DATA = [
-  { id: '1', name: 'Blue Bottle Coffee', desc: 'Specialty coffee roaster' },
-  { id: '2', name: 'Stumptown Coffee', desc: 'Specialty coffee roaster' },
-  { id: '3', name: 'La Colombe', desc: 'Specialty coffee roaster' },
-  { id: '4', name: 'Intelligentsia Coffee', desc: 'Specialty coffee roaster' },
-  { id: '5', name: 'Counter Culture', desc: 'Specialty coffee roaster' },
-];
+import { useGetCatalogItemsOfListQuery } from '../../../features/auth/authApi';
 
-export default function CreateListScreen({ navigation }) {
-  const [items, setItems] = useState(DATA);
+type ListItem = {
+  id: number;
+  type: 'catalog' | 'custom';
+  item_id: number | null;
+  name: string;
+  category: string | null;
+  description: string | null;
+};
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<any>) => (
+export default function CreateListScreen({ navigation, route }) {
+  const { listId } = route.params;
+
+  // 🔹 State for draggable list
+  const [items, setItems] = useState<ListItem[]>([]);
+
+  // 🔹 API call
+  const { data, isLoading } = useGetCatalogItemsOfListQuery(listId);
+
+  // 🔹 Sync API data → state
+  useEffect(() => {
+    if (data && Array.isArray(data)) {
+      setItems(data);
+    }
+  }, [data]);
+
+  // 🔹 Render draggable item
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<ListItem>) => (
     <TouchableOpacity
       activeOpacity={1}
-      onLongPress={drag} // entire card draggable
-      style={[
-        styles.card,
-        isActive && styles.cardActive, // highlight while dragging
-      ]}
+      onLongPress={drag}
+      style={[styles.card, isActive && styles.cardActive]}
     >
+      {/* Index / ID */}
       <View style={styles.countwrap}>
         <Text style={styles.countxt}>{item.id}</Text>
       </View>
 
+      {/* Image */}
       <View style={styles.image}>
         <Image
           resizeMode="contain"
@@ -54,12 +70,15 @@ export default function CreateListScreen({ navigation }) {
         />
       </View>
 
+      {/* Content */}
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.desc}>{item.desc}</Text>
+        <Text style={styles.desc}>
+          {item.description || item.category || 'No description'}
+        </Text>
       </View>
 
-      {/* Drag handle (optional visual) */}
+      {/* Drag handle */}
       <View style={{ position: 'absolute', right: 10, top: '40%' }}>
         <Image
           style={{ width: 20, height: 20 }}
@@ -79,6 +98,7 @@ export default function CreateListScreen({ navigation }) {
         leftImage={require('../../../../assets/image/close.png')}
       />
 
+      {/* Info Box */}
       <View
         style={{
           paddingHorizontal: responsiveScreenWidth(3),
@@ -104,32 +124,33 @@ export default function CreateListScreen({ navigation }) {
         </Text>
       </View>
 
-      <NestableScrollContainer  style={{ flex: 1 }}>
+      {/* Draggable List */}
+      <NestableScrollContainer style={{ flex: 1 }}>
         <NestableDraggableFlatList
-        removeClippedSubviews={false}
-        
           data={items}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.id.toString()}
           renderItem={renderItem}
           onDragEnd={({ data }) => setItems(data)}
+          removeClippedSubviews={false}
           dragItemOverflow
           activationDistance={5}
           autoscrollThreshold={120}
           autoscrollSpeed={40}
-          
-         
           contentContainerStyle={{
-            paddingTop: responsiveScreenHeight(0),
             paddingBottom: responsiveScreenHeight(2),
             marginHorizontal: responsiveScreenWidth(4),
           }}
         />
       </NestableScrollContainer>
 
+      {/* Footer */}
       <View style={styles.footer}>
         <AppButton
           title="Done"
-          onPress={() => navigation.navigate('Browsecat')}
+          onPress={() => {
+            // 🔜 later you can send reordered data to API here
+            navigation.navigate('Invitescreen');
+          }}
         />
       </View>
     </View>

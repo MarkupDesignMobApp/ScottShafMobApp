@@ -56,10 +56,10 @@ export const styles = StyleSheet.create({
     paddingTop: responsiveScreenHeight(0),
   },
   listmaincontainer: {
-    height: responsiveScreenHeight(55),
     paddingTop: responsiveScreenHeight(2),
-    // borderWidth:1
+    paddingBottom: responsiveScreenHeight(15), // 👈 space for button
   },
+
   img: {
     width: '100%',
     height: '100%',
