@@ -1,16 +1,14 @@
 import * as React from 'react';
-import { FlatList, View, Text, Image } from 'react-native';
+import { FlatList, View, Image, Text } from 'react-native';
 import { styles } from './styles';
-import {
-  useGetFeaturedListsQuery,
-  useGetFeaturedListsByInterestQuery,
-} from '../../../features/auth/authApi';
+import { useGetFeaturedListsQuery } from '../../../features/auth/authApi';
 import { FeaturedListSummary } from '../../../features/auth/authTypes';
+import Loader from '../../../components/ui/Loader/Loader';
 
 type OptimizedFlatListProps = {
   ListHeaderComponent?: React.ReactElement | null;
   ListFooterComponent?: React.ReactElement | null;
-  interestId?: number | null; // optional
+  interestId: number | null; // null = For You
 };
 
 export default function OptimizedFlatList({
@@ -18,48 +16,57 @@ export default function OptimizedFlatList({
   ListFooterComponent,
   interestId,
 }: OptimizedFlatListProps) {
-  // ✅ Decide which query to use based on interestId
-  const { data: featuredListsForYou, isLoading: loadingForYou } =
-    useGetFeaturedListsQuery();
-  const { data: featuredListsByInterest, isLoading: loadingByInterest } =
-    useGetFeaturedListsByInterestQuery(interestId ?? 0, {
-      skip: interestId === null, // skip if no interest selected
-    });
+  /**
+   * ✅ RTK Query
+   * - null → /featured-lists
+   * - number → /featured-lists?interest_id=x
+   */
+  const {
+    data = [],
+    isLoading,
+    isFetching,
+  } = useGetFeaturedListsQuery(interestId ? { interestId } : undefined);
 
-  const featuredLists = interestId
-    ? featuredListsByInterest
-    : featuredListsForYou;
-  const isLoading = interestId ? loadingByInterest : loadingForYou;
-
+  /**
+   * ✅ Stable renderItem
+   */
   const renderItem = React.useCallback(
     ({ item }: { item: FeaturedListSummary }) => <Row item={item} />,
     [],
   );
 
+  /**
+   * ✅ Stable key extractor
+   */
   const keyExtractor = React.useCallback(
     (item: FeaturedListSummary) => item.id.toString(),
     [],
   );
 
   return (
-    <FlatList
-      data={featuredLists ?? []}
-      renderItem={renderItem}
-      keyExtractor={keyExtractor}
-      contentContainerStyle={styles.content}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      ListHeaderComponent={ListHeaderComponent}
-      ListFooterComponent={ListFooterComponent}
-      initialNumToRender={5}
-      maxToRenderPerBatch={5}
-      windowSize={5}
-      removeClippedSubviews
-      updateCellsBatchingPeriod={50}
-      scrollEventThrottle={16}
-    />
+    <View>
+      {(isLoading || isFetching) && <Loader visible />}
+
+      <FlatList
+        data={data}
+        horizontal
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={ListHeaderComponent}
+        ListFooterComponent={ListFooterComponent}
+        extraData={interestId} // 🔑 re-render on tab change
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
+      />
+    </View>
   );
 }
+
+/* ---------------- ROW ITEM ---------------- */
 
 const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
   return (
@@ -71,6 +78,7 @@ const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
           source={{ uri: item.image }}
         />
       </View>
+
       <View>
         <View style={styles.cardtitlecontainer}>
           <View style={styles.imgcontainer4}>
@@ -80,49 +88,43 @@ const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
               source={require('../../../../assets/image/cofeeshop.png')}
             />
           </View>
+
           <View style={{ paddingLeft: '2%' }}>
             <Text style={styles.cardmaintitletxt}>{item.title}</Text>
+
+            {/* ✅ CORRECT DATA ACCESS */}
             <Text style={styles.cardsubtitletxt}>
-              {item.category?.name} · {item.category?.interest?.name}
+              {item.category?.name} · {item.interest?.name}
             </Text>
           </View>
         </View>
 
         <View style={styles.cardlike}>
-          <View style={styles.likecontainer}>
-            <View style={styles.imgcontainer3}>
-              <Image
-                resizeMode="contain"
-                style={styles.img}
-                source={require('../../../../assets/image/heart.png')}
-              />
-            </View>
-            <Text style={styles.liketxt}>355k</Text>
-          </View>
-
-          <View style={styles.likecontainer}>
-            <View style={styles.imgcontainer3}>
-              <Image
-                resizeMode="contain"
-                style={styles.img}
-                source={require('../../../../assets/image/bookmark.png')}
-              />
-            </View>
-            <Text style={styles.liketxt}>89</Text>
-          </View>
-
-          <View style={styles.likecontainer}>
-            <View style={styles.imgcontainer3}>
-              <Image
-                resizeMode="contain"
-                style={styles.img}
-                source={require('../../../../assets/image/share.png')}
-              />
-            </View>
-            <Text style={styles.liketxt}>15</Text>
-          </View>
+          <Like
+            icon={require('../../../../assets/image/heart.png')}
+            value="355k"
+          />
+          <Like
+            icon={require('../../../../assets/image/bookmark.png')}
+            value="89"
+          />
+          <Like
+            icon={require('../../../../assets/image/share.png')}
+            value="15"
+          />
         </View>
       </View>
     </View>
   );
 });
+
+/* ---------------- LIKE ITEM ---------------- */
+
+const Like = React.memo(({ icon, value }: { icon: any; value: string }) => (
+  <View style={styles.likecontainer}>
+    <View style={styles.imgcontainer3}>
+      <Image resizeMode="contain" style={styles.img} source={icon} />
+    </View>
+    <Text style={styles.liketxt}>{value}</Text>
+  </View>
+));

@@ -215,24 +215,16 @@ export const authApi = baseApi.injectEndpoints({
 
     /* ================= FEATURED LIST ================= */
 
-    getFeaturedLists: builder.query<FeaturedListSummary[], void>({
-      query: () => ({
+    getFeaturedLists: builder.query<
+      FeaturedListSummary[],
+      { interestId?: number } | void
+    >({
+      query: args => ({
         url: FEATURED_LIST_ENDPOINTS.FEATURED_LISTS,
         method: 'GET',
+        params: args?.interestId ? { interest_id: args.interestId } : undefined, // 👈 For You (no query param)
       }),
       transformResponse: (res: FeaturedListsResponse) => res.data,
-      providesTags: ['FeaturedList'],
-    }),
-
-    getFeaturedListsByInterest: builder.query<FeaturedList[], number | string>({
-      query: interestId => ({
-        url: FEATURED_LIST_ENDPOINTS.FEATURED_LISTS,
-        method: 'GET',
-        params: {
-          interest_id: interestId,
-        },
-      }),
-      transformResponse: (response: FeaturedListsResponse) => response.data,
       providesTags: ['FeaturedList'],
     }),
 
@@ -271,12 +263,12 @@ export const {
   useGetFeaturedListByIdQuery,
   useGetFeaturedListsQuery,
   useGetFeaturedListItemsQuery,
-  useGetFeaturedListsByInterestQuery,
+
   useCreateListMutation,
   useGetInviteUsersQuery,
   useAddListItemMutation,
   useGetCatalogCategoriesQuery,
   useGetCatalogItemsByCategoryQuery,
   useAddCatalogItemToListMutation,
-  useGetCatalogItemsOfListQuery
+  useGetCatalogItemsOfListQuery,
 } = authApi;

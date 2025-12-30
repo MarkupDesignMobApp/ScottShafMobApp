@@ -17,13 +17,13 @@ import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import ImageCarousel3 from './MyCarousel3';
+
 import {
   useGetUserProfileQuery,
   useGetUserInterestsQuery,
   useGetFeaturedListByIdQuery,
   useGetFeaturedListsQuery,
   useGetFeaturedListItemsQuery,
-  useGetFeaturedListsByInterestQuery,
 } from '../../../features/auth/authApi';
 import {
   responsiveFontSize,
@@ -55,7 +55,7 @@ export default function HomeScreen({ navigation }) {
     error,
   } = useGetUserInterestsQuery();
   const interestsWithForYou = [
-    { id: 'for-you', name: 'For You', isForYou: true },
+    { id: null, name: 'For You' },
     ...(interestsData ?? []),
   ];
 
@@ -239,14 +239,12 @@ export default function HomeScreen({ navigation }) {
               </Text>
             </View>
             <ImageCarousel interestId={selectedInterestId} />
-
             <View style={styles.cardheading}>
               <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
                 Sponsored Campaign
               </Text>
             </View>
-            <ImageCarousel2 />
-
+            <ImageCarousel2 />x
             <View style={styles.cardheading}>
               <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
                 Recommended For You
@@ -255,7 +253,7 @@ export default function HomeScreen({ navigation }) {
             <ImageCarousel3 />
           </ScrollView>
         </View>
-
+        {/* <Text>{`${selectedInterestId}`}</Text> */}
         {/* <ImageCarousel /> */}
         {/* <Button onPress={Removetoken} title="RemoveValue" />
         <Button onPress={Gettoken} title="GetValue" /> */}
