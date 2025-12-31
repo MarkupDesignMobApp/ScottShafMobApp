@@ -6,6 +6,7 @@ import {
   useGetFeaturedListsQuery,
   useLikeFeaturedItemMutation,
   useBookmarkFeaturedItemMutation,
+  useShareFeaturedItemMutation,
 } from '../../../features/auth/authApi';
 import { FeaturedListSummary } from '../../../features/auth/authTypes';
 
@@ -34,13 +35,15 @@ export default function OptimizedFlatList({
   ListFooterComponent,
   interestId,
 }: OptimizedFlatListProps) {
-  const { data = [] } = useGetFeaturedListsQuery(
+  const { data = [], refetch } = useGetFeaturedListsQuery(
     interestId ? { interestId } : undefined,
   );
 
   const renderItem = React.useCallback(
-    ({ item }: { item: FeaturedListSummary }) => <Row item={item} />,
-    [],
+    ({ item }: { item: FeaturedListSummary }) => (
+      <Row item={item} refetch={refetch} />
+    ),
+    [refetch],
   );
 
   const keyExtractor = React.useCallback(
@@ -68,103 +71,109 @@ export default function OptimizedFlatList({
 
 /* ---------------- ROW ITEM ---------------- */
 
-const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
-  const [liked, setLiked] = React.useState(false);
-  const [bookmarked, setBookmarked] = React.useState(false);
+const Row = React.memo(
+  ({ item, refetch }: { item: FeaturedListSummary; refetch: () => void }) => {
+    const [likeFeaturedItem] = useLikeFeaturedItemMutation();
+    const [bookmarkFeaturedItem] = useBookmarkFeaturedItemMutation();
+    const [shareFeaturedItem, { isLoading: isSharing }] =
+      useShareFeaturedItemMutation();
 
-  const [likeFeaturedItem] = useLikeFeaturedItemMutation();
-  const [bookmarkFeaturedItem] = useBookmarkFeaturedItemMutation();
+    /* ----------- HANDLERS ----------- */
 
-  const onLikePress = async () => {
-    try {
-      const res = await likeFeaturedItem(item.id).unwrap();
-      if (res.success) {
-        setLiked(res.liked);
+    const onLikePress = React.useCallback(async () => {
+      try {
+        const res = await likeFeaturedItem(item.id).unwrap();
+        if (res.success) refetch();
+      } catch (e) {
+        console.log('Like error', e);
       }
-    } catch (e) {
-      console.log('Like error', e);
-    }
-  };
+    }, [item.id, likeFeaturedItem, refetch]);
 
-  const onBookmarkPress = async () => {
-    try {
-      const res = await bookmarkFeaturedItem(item.id).unwrap();
-      if (res.success) {
-        setBookmarked(res.saved);
+    const onBookmarkPress = React.useCallback(async () => {
+      try {
+        const res = await bookmarkFeaturedItem(item.id).unwrap();
+        if (res.success) refetch();
+      } catch (e) {
+        console.log('Bookmark error', e);
       }
-    } catch (e) {
-      console.log('Bookmark error', e);
-    }
-  };
+    }, [item.id, bookmarkFeaturedItem, refetch]);
 
-  /* -------- SHARE HANDLER -------- */
+    const onSharePress = React.useCallback(async () => {
+      if (isSharing) return; // 🔒 PREVENT MULTI TAP
 
-  const onSharePress = async () => {
-    try {
-      await Share.share({
-        title: item.title,
-        message: `${item.title}\n\nCheck this out!\nhttps://yourapp.com/item/${item.id}`,
-        url: `https://yourapp.com/item/${item.id}`, // iOS support
-      });
-    } catch (error) {
-      console.log('Share error', error);
-    }
-  };
+      try {
+        const res = await shareFeaturedItem(item.id).unwrap();
+        if (!res?.share_url) return;
 
-  return (
-    <View style={styles.card}>
-      {/* IMAGE */}
-      <View style={styles.cardimgcontainer}>
-        <Image
-          resizeMode="cover"
-          style={styles.img2}
-          source={{ uri: item.image }}
-        />
-      </View>
+        await Share.share({
+          title: item.title,
+          message: `${item.title}\n\n${res.share_url}`,
+          url: res.share_url,
+        });
+      } catch (e) {
+        console.log('Share error', e);
+      }
+    }, [isSharing, item.id, item.title, shareFeaturedItem]);
 
-      {/* DETAILS */}
-      <View>
-        <View style={styles.cardtitlecontainer}>
-          <View style={styles.imgcontainer4}>
-            <Image
-              resizeMode="contain"
-              style={styles.img}
-              source={require('../../../../assets/image/cofeeshop.png')}
+    /* ----------- UI ----------- */
+
+    return (
+      <View style={styles.card}>
+        {/* IMAGE */}
+        <View style={styles.cardimgcontainer}>
+          <Image
+            resizeMode="cover"
+            style={styles.img2}
+            source={{ uri: item.image }}
+          />
+        </View>
+
+        {/* DETAILS */}
+        <View>
+          <View style={styles.cardtitlecontainer}>
+            <View style={styles.imgcontainer4}>
+              <Image
+                resizeMode="contain"
+                style={styles.img}
+                source={require('../../../../assets/image/cofeeshop.png')}
+              />
+            </View>
+
+            <View style={{ paddingLeft: '2%' }}>
+              <Text style={styles.cardmaintitletxt}>{item.title}</Text>
+              <Text style={styles.cardsubtitletxt}>
+                {item.category?.name} · {item.category?.interest?.name}
+              </Text>
+            </View>
+          </View>
+
+          {/* ACTIONS */}
+          <View style={styles.cardlike}>
+            <ActionButton
+              icon={item.is_liked ? icons.heartFilled : icons.heartOutline}
+              value="355k"
+              onPress={onLikePress}
+            />
+
+            <ActionButton
+              icon={
+                item.is_saved ? icons.bookmarkFilled : icons.bookmarkOutline
+              }
+              value="89"
+              onPress={onBookmarkPress}
+            />
+
+            <ActionButton
+              icon={icons.shareOutline}
+              value="15"
+              onPress={onSharePress}
             />
           </View>
-
-          <View style={{ paddingLeft: '2%' }}>
-            <Text style={styles.cardmaintitletxt}>{item.title}</Text>
-            <Text style={styles.cardsubtitletxt}>
-              {item.category?.name} · {item.category?.interest?.name}
-            </Text>
-          </View>
-        </View>
-
-        {/* ACTIONS */}
-        <View style={styles.cardlike}>
-          <ActionButton
-            icon={liked ? icons.heartFilled : icons.heartOutline}
-            value="355k"
-            onPress={onLikePress}
-          />
-
-          <ActionButton
-            icon={bookmarked ? icons.bookmarkFilled : icons.bookmarkOutline}
-            value="89"
-            onPress={onBookmarkPress}
-          />
-
-          <ActionButton
-            icon={icons.shareOutline}
-            value="15"
-            onPress={onSharePress}
-          />
         </View>
       </View>
-    </View>
-  );
-});
+    );
+  },
+);
 
 /* ---------------- ACTION BUTTON ---------------- */
 
@@ -173,18 +182,23 @@ const ActionButton = React.memo(
     icon,
     value,
     onPress,
+    disabled = false,
   }: {
     icon: any;
     value: string;
     onPress: () => void;
-  }) => {
-    return (
-      <Pressable onPress={onPress} style={styles.likecontainer} hitSlop={10}>
-        <View style={styles.imgcontainer3}>
-          <Image resizeMode="contain" style={styles.img} source={icon} />
-        </View>
-        <Text style={styles.liketxt}>{value}</Text>
-      </Pressable>
-    );
-  },
+    disabled?: boolean;
+  }) => (
+    <Pressable
+      onPress={disabled ? undefined : onPress}
+      disabled={disabled}
+      style={[styles.likecontainer, disabled && { opacity: 0.5 }]}
+      hitSlop={10}
+    >
+      <View style={styles.imgcontainer3}>
+        <Image resizeMode="contain" style={styles.img} source={icon} />
+      </View>
+      <Text style={styles.liketxt}>{value}</Text>
+    </Pressable>
+  ),
 );

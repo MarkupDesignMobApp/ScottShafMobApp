@@ -42,4 +42,6 @@ export const CATALOG_ENDPOINTS = {
 export const FEATURED_ITEM_ENDPOINTS = {
   LIKE_ITEM: (itemId: number | string) =>
     `/scott-shafer/api/featured-items/${itemId}/like`,
+    SHARE_LINK: (itemId: number | string) =>
+    `/scott-shafer/api/featured-items/${itemId}/share-link`,
 } as const;

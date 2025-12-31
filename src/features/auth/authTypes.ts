@@ -14,6 +14,13 @@ export interface ListItem {
   created_at: string;
   updated_at: string;
 }
+// features/auth/authTypes.ts
+
+export interface ShareFeaturedItemResponse {
+  success: boolean;
+  message: string;
+  share_url: string;
+}
 
 export interface AddListItemResponse {
   success: boolean;

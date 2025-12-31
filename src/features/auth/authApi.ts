@@ -33,6 +33,7 @@ import {
   ListCatalogItemsResponse,
   LikeFeaturedItemResponse,
   BookmarkFeaturedItemResponse,
+  ShareFeaturedItemResponse,
 } from './authTypes';
 
 import {
@@ -51,6 +52,16 @@ export interface AddCatalogItemsRequest {
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+    shareFeaturedItem: builder.mutation<
+      ShareFeaturedItemResponse,
+      number | string
+    >({
+      query: itemId => ({
+        url: `/scott-shafer/api/featured-items/${itemId}/share-link`,
+        method: 'GET', // ✅ BACKEND EXPECTS GET
+      }),
+    }),
+
     bookmarkFeaturedItem: builder.mutation<
       BookmarkFeaturedItemResponse,
       number | string
@@ -296,4 +307,5 @@ export const {
   useGetCatalogItemsOfListQuery,
   useLikeFeaturedItemMutation,
   useBookmarkFeaturedItemMutation,
+  useShareFeaturedItemMutation,
 } = authApi;
