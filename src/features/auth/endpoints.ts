@@ -36,3 +36,10 @@ export const CATALOG_ENDPOINTS = {
   CATEGORIES: '/scott-shafer/api/catalog/categories',
   ITEMS: '/scott-shafer/api/catalog/items', // 👈 NEW
 } as const;
+
+// features/auth/endpoints/authEndpoints.ts
+
+export const FEATURED_ITEM_ENDPOINTS = {
+  LIKE_ITEM: (itemId: number | string) =>
+    `/scott-shafer/api/featured-items/${itemId}/like`,
+} as const;

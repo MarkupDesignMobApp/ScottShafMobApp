@@ -72,28 +72,7 @@ export default function HomeScreen({ navigation }) {
   async function Removetoken() {
     await removeTokenFromKeychain();
   }
-  const Data = [
-    {
-      id: '1',
-      title: 'For You',
-    },
-    {
-      id: '2',
-      title: 'Movies',
-    },
-    {
-      id: '3',
-      title: 'Tech',
-    },
-    {
-      id: '4',
-      title: 'Books',
-    },
-    {
-      id: '5',
-      title: 'Movie',
-    },
-  ];
+
   return (
     <SafeAreaProvider>
       {/* STATUS BAR */}

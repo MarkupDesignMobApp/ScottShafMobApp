@@ -31,6 +31,8 @@ import {
   CatalogItem,
   CatalogItemsResponse,
   ListCatalogItemsResponse,
+  LikeFeaturedItemResponse,
+  BookmarkFeaturedItemResponse,
 } from './authTypes';
 
 import {
@@ -38,6 +40,7 @@ import {
   FEATURED_LIST_ENDPOINTS,
   LIST_ENDPOINTS,
   CATALOG_ENDPOINTS,
+  FEATURED_ITEM_ENDPOINTS,
 } from './endpoints';
 
 /* ✅ NEW REQUEST TYPE FOR CATALOG ITEMS */
@@ -48,6 +51,26 @@ export interface AddCatalogItemsRequest {
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+    bookmarkFeaturedItem: builder.mutation<
+      BookmarkFeaturedItemResponse,
+      number | string
+    >({
+      query: itemId => ({
+        url: `/scott-shafer/api/featured-items/${itemId}/bookmark`,
+        method: 'POST',
+      }),
+    }),
+
+    likeFeaturedItem: builder.mutation<
+      LikeFeaturedItemResponse,
+      number | string
+    >({
+      query: itemId => ({
+        url: FEATURED_ITEM_ENDPOINTS.LIKE_ITEM(itemId),
+        method: 'POST',
+      }),
+      invalidatesTags: ['FeaturedList'], // optional but recommended
+    }),
     /* ================= AUTH ================= */
 
     requestOtp: builder.mutation<RequestOtpResponse, RequestOtpRequest>({
@@ -271,4 +294,6 @@ export const {
   useGetCatalogItemsByCategoryQuery,
   useAddCatalogItemToListMutation,
   useGetCatalogItemsOfListQuery,
+  useLikeFeaturedItemMutation,
+  useBookmarkFeaturedItemMutation,
 } = authApi;

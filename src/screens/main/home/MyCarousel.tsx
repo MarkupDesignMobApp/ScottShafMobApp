@@ -1,76 +1,119 @@
 import * as React from 'react';
-import { FlatList, View, Image, Text } from 'react-native';
+import { FlatList, View, Image, Text, Pressable, Share } from 'react-native';
+
 import { styles } from './styles';
-import { useGetFeaturedListsQuery } from '../../../features/auth/authApi';
+import {
+  useGetFeaturedListsQuery,
+  useLikeFeaturedItemMutation,
+  useBookmarkFeaturedItemMutation,
+} from '../../../features/auth/authApi';
 import { FeaturedListSummary } from '../../../features/auth/authTypes';
-import Loader from '../../../components/ui/Loader/Loader';
+
+/* ---------------- ICONS ---------------- */
+
+const icons = {
+  heartFilled: require('../../../../assets/image/heart.png'),
+  heartOutline: require('../../../../assets/image/unfillheart.png'),
+  bookmarkFilled: require('../../../../assets/image/bookmark.png'),
+  bookmarkOutline: require('../../../../assets/image/unfillbookmark.png'),
+  shareOutline: require('../../../../assets/image/unfillshare.png'),
+};
+
+/* ---------------- TYPES ---------------- */
 
 type OptimizedFlatListProps = {
   ListHeaderComponent?: React.ReactElement | null;
   ListFooterComponent?: React.ReactElement | null;
-  interestId: number | null; // null = For You
+  interestId: number | null;
 };
+
+/* ---------------- MAIN LIST ---------------- */
 
 export default function OptimizedFlatList({
   ListHeaderComponent,
   ListFooterComponent,
   interestId,
 }: OptimizedFlatListProps) {
-  /**
-   * ✅ RTK Query
-   * - null → /featured-lists
-   * - number → /featured-lists?interest_id=x
-   */
-  const {
-    data = [],
-    isLoading,
-    isFetching,
-  } = useGetFeaturedListsQuery(interestId ? { interestId } : undefined);
+  const { data = [] } = useGetFeaturedListsQuery(
+    interestId ? { interestId } : undefined,
+  );
 
-  /**
-   * ✅ Stable renderItem
-   */
   const renderItem = React.useCallback(
     ({ item }: { item: FeaturedListSummary }) => <Row item={item} />,
     [],
   );
 
-  /**
-   * ✅ Stable key extractor
-   */
   const keyExtractor = React.useCallback(
     (item: FeaturedListSummary) => item.id.toString(),
     [],
   );
 
   return (
-    <View>
-      {(isLoading || isFetching) && <Loader visible />}
-
-      <FlatList
-        data={data}
-        horizontal
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-        ListHeaderComponent={ListHeaderComponent}
-        ListFooterComponent={ListFooterComponent}
-        extraData={interestId} // 🔑 re-render on tab change
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews
-      />
-    </View>
+    <FlatList
+      horizontal
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.content}
+      ListHeaderComponent={ListHeaderComponent}
+      ListFooterComponent={ListFooterComponent}
+      initialNumToRender={5}
+      maxToRenderPerBatch={5}
+      windowSize={5}
+      removeClippedSubviews
+    />
   );
 }
 
 /* ---------------- ROW ITEM ---------------- */
 
 const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
+  const [liked, setLiked] = React.useState(false);
+  const [bookmarked, setBookmarked] = React.useState(false);
+
+  const [likeFeaturedItem] = useLikeFeaturedItemMutation();
+  const [bookmarkFeaturedItem] = useBookmarkFeaturedItemMutation();
+
+  const onLikePress = async () => {
+    try {
+      const res = await likeFeaturedItem(item.id).unwrap();
+      if (res.success) {
+        setLiked(res.liked);
+      }
+    } catch (e) {
+      console.log('Like error', e);
+    }
+  };
+
+  const onBookmarkPress = async () => {
+    try {
+      const res = await bookmarkFeaturedItem(item.id).unwrap();
+      if (res.success) {
+        setBookmarked(res.saved);
+      }
+    } catch (e) {
+      console.log('Bookmark error', e);
+    }
+  };
+
+  /* -------- SHARE HANDLER -------- */
+
+  const onSharePress = async () => {
+    try {
+      await Share.share({
+        title: item.title,
+        message: `${item.title}\n\nCheck this out!\nhttps://yourapp.com/item/${item.id}`,
+        url: `https://yourapp.com/item/${item.id}`, // iOS support
+      });
+    } catch (error) {
+      console.log('Share error', error);
+    }
+  };
+
   return (
     <View style={styles.card}>
+      {/* IMAGE */}
       <View style={styles.cardimgcontainer}>
         <Image
           resizeMode="cover"
@@ -79,6 +122,7 @@ const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
         />
       </View>
 
+      {/* DETAILS */}
       <View>
         <View style={styles.cardtitlecontainer}>
           <View style={styles.imgcontainer4}>
@@ -91,26 +135,30 @@ const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
 
           <View style={{ paddingLeft: '2%' }}>
             <Text style={styles.cardmaintitletxt}>{item.title}</Text>
-
-            {/* ✅ CORRECT DATA ACCESS */}
             <Text style={styles.cardsubtitletxt}>
-              {item.category?.name} · {item.interest?.name}
+              {item.category?.name} · {item.category?.interest?.name}
             </Text>
           </View>
         </View>
 
+        {/* ACTIONS */}
         <View style={styles.cardlike}>
-          <Like
-            icon={require('../../../../assets/image/heart.png')}
+          <ActionButton
+            icon={liked ? icons.heartFilled : icons.heartOutline}
             value="355k"
+            onPress={onLikePress}
           />
-          <Like
-            icon={require('../../../../assets/image/bookmark.png')}
+
+          <ActionButton
+            icon={bookmarked ? icons.bookmarkFilled : icons.bookmarkOutline}
             value="89"
+            onPress={onBookmarkPress}
           />
-          <Like
-            icon={require('../../../../assets/image/share.png')}
+
+          <ActionButton
+            icon={icons.shareOutline}
             value="15"
+            onPress={onSharePress}
           />
         </View>
       </View>
@@ -118,13 +166,25 @@ const Row = React.memo(({ item }: { item: FeaturedListSummary }) => {
   );
 });
 
-/* ---------------- LIKE ITEM ---------------- */
+/* ---------------- ACTION BUTTON ---------------- */
 
-const Like = React.memo(({ icon, value }: { icon: any; value: string }) => (
-  <View style={styles.likecontainer}>
-    <View style={styles.imgcontainer3}>
-      <Image resizeMode="contain" style={styles.img} source={icon} />
-    </View>
-    <Text style={styles.liketxt}>{value}</Text>
-  </View>
-));
+const ActionButton = React.memo(
+  ({
+    icon,
+    value,
+    onPress,
+  }: {
+    icon: any;
+    value: string;
+    onPress: () => void;
+  }) => {
+    return (
+      <Pressable onPress={onPress} style={styles.likecontainer} hitSlop={10}>
+        <View style={styles.imgcontainer3}>
+          <Image resizeMode="contain" style={styles.img} source={icon} />
+        </View>
+        <Text style={styles.liketxt}>{value}</Text>
+      </Pressable>
+    );
+  },
+);

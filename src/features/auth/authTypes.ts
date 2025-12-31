@@ -51,7 +51,31 @@ export interface FeaturedListsResponse {
   success: boolean;
   data: FeaturedList[];
 }
+// features/auth/authTypes.ts
 
+export interface LikeFeaturedItemResponse {
+  success: boolean;
+  liked: boolean;
+  data: {
+    id: number;
+    user_id: number;
+    featured_list_item_id: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface BookmarkFeaturedItemResponse {
+  success: boolean;
+  saved: boolean;
+  data: {
+    id: number;
+    user_id: number;
+    featured_list_item_id: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
 // =====================================================
 // INTEREST (USED EVERYWHERE)
 // =====================================================
