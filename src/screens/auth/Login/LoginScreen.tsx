@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -24,24 +24,28 @@ import Social from '../../../components/ui/SocialButton/Button';
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
 import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 
+import { navigateDeepLink } from '../../../navigation/navigateDeepLink';
+import { consumePendingDeepLink } from '../../../utils/pendingDeepLink'; // your utility file
+
+type LoginScreenProps = {
+  onLoginSuccess?: () => void;
+};
+
 /* 🔹 Keyboard hook */
 const useKeyboardOpen = () => {
   const [open, setOpen] = useState(false);
-
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => setOpen(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
-
     return () => {
       show.remove();
       hide.remove();
     };
   }, []);
-
   return open;
 };
 
-export default function LoginScreen() {
+export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const {
     country,
     countryCode,
@@ -60,6 +64,27 @@ export default function LoginScreen() {
   const navigation = useNavigation();
   const keyboardOpen = useKeyboardOpen();
 
+  // Handle OTP login button press
+  const handleLoginPress = async () => {
+    const success = await handleLogin(); // your existing login logic
+    if (success) {
+      // Call optional callback from RootNavigator
+      onLoginSuccess?.();
+
+      // Consume pending deep link
+      const url = consumePendingDeepLink();
+      if (url) {
+        navigateDeepLink(url); // <-- navigate inside app, not open Safari
+      } else {
+        // Default navigation if no pending link
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Tabs' }],
+        });
+      }
+    }
+  };
+
   return (
     <View style={styles.maincontainer}>
       <StatusBar
@@ -75,7 +100,6 @@ export default function LoginScreen() {
           resizeMode="cover"
           style={styles.banner}
         >
-          {/* Blur overlay */}
           <Image
             source={require('../../../../assets/image/blur.png')}
             resizeMode="cover"
@@ -167,10 +191,11 @@ export default function LoginScreen() {
                 </View>
               </View>
 
+              {/* Send OTP Button */}
               <AppButton
                 title="Send OTP"
-                onPress={handleLogin}
-                disabled={!isFormComplete}
+                onPress={handleLoginPress}
+                disabled={!isFormComplete || isLoading}
               />
 
               {/* OR */}

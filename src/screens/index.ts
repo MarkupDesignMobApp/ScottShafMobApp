@@ -28,3 +28,4 @@ export { default as Browsecat } from './main/campaign/CatlogScreen';
 export { default as Reorder } from './main/reorder/Reorder';
 export { default as Invitescreen } from './main/Invite&Refer/inviteScreen';
 export { default as Publish } from './main/List/ListPublish';
+export { default as FeaturedDetailScreen} from './main/home/FeaturedDetailScreen';

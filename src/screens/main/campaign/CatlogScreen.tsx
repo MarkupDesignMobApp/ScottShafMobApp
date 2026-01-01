@@ -12,7 +12,6 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import { styles as Homestyle } from '../home/styles';
 import {
@@ -26,13 +25,12 @@ import {
   useAddCatalogItemToListMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
+
 const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'Bars'];
 
 export default function BrowseCatalogScreen({ navigation, route }) {
-  /* ================= PARAM ================= */
-  const { categoryId,listId } = route.params;
-  // alert(categoryId)
-  // alert("Routeparam :c", categoryId);
+  const { categoryId, listId } = route.params;
+
   /* ================= API ================= */
   const { data, isLoading } = useGetCatalogItemsByCategoryQuery(categoryId);
   const [addCatalogItems, { isLoading: isAdding }] =
@@ -62,14 +60,27 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   };
 
   const handleSkip = () => {
-    navigation.navigate('Addcustom');
+    if (!items || items.length === 0) {
+      // No items available, go back
+      navigation.goBack();
+    } else {
+      // Some items exist, go to Addcustom screen
+      navigation.navigate('Addcustom');
+    }
   };
 
   const handleNext = async () => {
-    // Get only selected catalog item IDs
+    if (!items || items.length === 0) {
+      Alert.alert(
+        'No items available',
+        'There are no items in this category to select.',
+      );
+      return;
+    }
+
     const selectedIds = items
-      .filter(item => item.selected) // only selected items
-      .map(item => item.id); // extract their IDs
+      .filter(item => item.selected)
+      .map(item => item.id);
 
     if (selectedIds.length === 0) {
       Alert.alert(
@@ -79,10 +90,9 @@ export default function BrowseCatalogScreen({ navigation, route }) {
       return;
     }
 
-    // 🔹 Build API payload dynamically
     const payload = {
-      catalog_item_ids: selectedIds, // pass the selected IDs
-      listId: listId, // or dynamic listId if you have
+      catalog_item_ids: selectedIds,
+      listId: listId,
     };
 
     try {
@@ -93,8 +103,8 @@ export default function BrowseCatalogScreen({ navigation, route }) {
           text: 'OK',
           onPress: () =>
             navigation.navigate('Addcustom', {
-              selectedItems: selectedIds, // pass to next screen if needed
-               listId: listId
+              selectedItems: selectedIds,
+              listId: listId,
             }),
         },
       ]);
@@ -106,7 +116,7 @@ export default function BrowseCatalogScreen({ navigation, route }) {
     }
   };
 
-  /* ================= RENDER ITEM (UNCHANGED UI) ================= */
+  /* ================= RENDER ITEM ================= */
   const renderItem = ({ item }) => (
     <TouchableOpacity
       key={item.id}
@@ -134,7 +144,6 @@ export default function BrowseCatalogScreen({ navigation, route }) {
     </TouchableOpacity>
   );
 
-  /* ================= UI (UNCHANGED) ================= */
   return (
     <>
       <Loader color="blue" visible={isLoading || isAdding} />
@@ -156,7 +165,7 @@ export default function BrowseCatalogScreen({ navigation, route }) {
               />
             </Pressable>
 
-            <Text style={styles.headerTitle}>Browser Catalogue</Text>
+            <Text style={styles.headerTitle}>Browse Catalogue</Text>
             <View />
           </View>
 
@@ -172,7 +181,7 @@ export default function BrowseCatalogScreen({ navigation, route }) {
               paddingTop: responsiveScreenHeight(2.25),
             }}
           >
-            {CATEGORIES.map((item, index) => {
+            {/* {CATEGORIES.map((item, index) => {
               const isActive = index === activeIndex;
               return (
                 <Pressable
@@ -193,7 +202,7 @@ export default function BrowseCatalogScreen({ navigation, route }) {
                   </Text>
                 </Pressable>
               );
-            })}
+            })} */}
           </ScrollView>
         </View>
 
@@ -238,8 +247,6 @@ export const styles = StyleSheet.create({
     backgroundColor: '#00C4FA',
     paddingHorizontal: responsiveScreenWidth(4),
     paddingBottom: responsiveScreenHeight(2),
-
-    //  borderWidth:1
   },
   serchmaincontainer: {
     paddingTop: responsiveScreenHeight(2.25),
@@ -254,37 +261,11 @@ export const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-
     fontFamily: 'samsungsharpsans-medium',
     fontSize: responsiveScreenFontSize(2),
     fontWeight: '600',
     letterSpacing: 0.5,
   },
-
-  searchWrap: {
-    marginTop: 16,
-    backgroundColor: '#3FC3F7',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-  },
-  search: { height: 44, color: '#fff' },
-
-  categories: {
-    flexDirection: 'row',
-    marginTop: 12,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: '#7DD3FC',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  chipActive: { backgroundColor: '#1EAAF1', borderColor: '#1EAAF1' },
-  chipText: { color: '#E8F7FF', fontSize: 12 },
-  chipTextActive: { color: '#fff', fontWeight: '600' },
-
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -296,14 +277,12 @@ export const styles = StyleSheet.create({
     borderColor: '#C5C5C5',
   },
   cardActive: { borderColor: '#0180FE', backgroundColor: '#ECF6FF' },
-
   image: {
     width: responsiveScreenWidth(12),
     height: responsiveScreenHeight(6),
     borderRadius: 8,
     marginRight: 12,
   },
-
   title: {
     fontSize: responsiveScreenFontSize(1.85),
     fontFamily: 'Quicksand-Regular',
@@ -324,7 +303,6 @@ export const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
-
   skipBtn: {
     flex: 1,
     height: responsiveScreenHeight(6),
@@ -335,13 +313,11 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-
   skipText: {
     color: '#00C4FA',
     fontWeight: '600',
     fontSize: responsiveScreenFontSize(1.8),
   },
-
   nextBtn: {
     flex: 1,
     height: responsiveScreenHeight(6),
@@ -350,13 +326,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   nextText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: responsiveScreenFontSize(1.8),
   },
-
   iconWrap: {
     width: 32,
     height: 32,

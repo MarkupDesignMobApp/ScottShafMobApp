@@ -67,6 +67,7 @@ export default function EditProfile({ navigation }: any) {
       setAge(user.profile?.age_band ?? '');
       setBudgetText(user.profile?.dining_budget ?? '');
       setProfileImage(user.profile?.profile_image ?? null);
+      setAge(user.profile?.age_band ?? '');
     }
   }, [profileResponse]);
 
@@ -244,8 +245,10 @@ export default function EditProfile({ navigation }: any) {
             //   setTimeout(() => setModalVisible(true), 150);
             // }}
           >
+            {/* <Text>{user}ededed</Text> */}
             <View pointerEvents="none">
               <AppInput
+                
                 onChangeText={setAge}
                 placeholder="Select Age"
                 label={
@@ -281,11 +284,10 @@ export default function EditProfile({ navigation }: any) {
             {budgetText.trim() ? budgetText.trim().split(/\s+/).length : 0}
             /200 Words
           </Text>
-
         </ScrollView>
-           <View style={styles2.bottomButtonContainer}>
-      <AppButton title="Save Changes" onPress={handleSaveChanges} />
-    </View>
+        <View style={styles2.bottomButtonContainer}>
+          <AppButton title="Save Changes" onPress={handleSaveChanges} />
+        </View>
       </KeyboardAvoidingView>
     </View>
   );

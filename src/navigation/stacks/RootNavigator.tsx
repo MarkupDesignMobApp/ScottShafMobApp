@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
+import { Linking } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import Splashscreen from '../../screens/Splash/Splashscreen';
 import OnboardingScreen from '../../screens/auth/Onboarding/onBoardingScreen';
-import { loadTokenFromKeychain } from '../../app/keychain';
+import {
+  loadTokenFromKeychain,
+  removeTokenFromKeychain,
+} from '../../app/keychain';
 import { AppStorage } from '../../services/storage/storage.services';
-import { removeTokenFromKeychain } from '../../app/keychain';
+import { linking } from '../Linking/linking';
+import { navigationRef } from '../NavigationRef';
+import {
+  setPendingDeepLink,
+  consumePendingDeepLink,
+} from '../../utils/pendingDeepLink';
+
 const FIRST_LAUNCH_KEY = 'FIRST_LAUNCH_DONE';
 const ONBOARDING_KEY = 'HAS_SEEN_ONBOARDING';
 
@@ -19,21 +29,19 @@ export default function RootNavigator() {
     null,
   );
 
+  // --- Splash + onboarding + token loading ---
   useEffect(() => {
     const init = async () => {
       const isFirstLaunch = !(await AppStorage.getItem(FIRST_LAUNCH_KEY));
 
       if (isFirstLaunch) {
-        // 🔥 Clear secure storage on fresh install
         await removeTokenFromKeychain();
         await AppStorage.setItem(FIRST_LAUNCH_KEY, 'true');
       } else {
-        // ✅ Only load token if NOT first launch
         await loadTokenFromKeychain();
       }
 
-      // Artificial splash delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 800)); // splash delay
 
       const seen = await AppStorage.getItem(ONBOARDING_KEY);
       setHasSeenOnboarding(seen === 'true');
@@ -44,12 +52,33 @@ export default function RootNavigator() {
     init();
   }, []);
 
+  // --- Handle incoming deep links (cold start & foreground) ---
+  useEffect(() => {
+    const handleUrl = ({ url }: { url: string }) => {
+      if (!token) {
+        // store pending deep link for replay after login
+        setPendingDeepLink(url);
+      } else {
+        // token exists → navigate immediately
+        navigateDeepLink(url);
+      }
+    };
+
+    const sub = Linking.addEventListener('url', handleUrl);
+
+    Linking.getInitialURL().then(url => {
+      if (url) handleUrl({ url });
+    });
+
+    return () => sub.remove();
+  }, [token]);
+
   if (!isReady || hasSeenOnboarding === null) {
     return <Splashscreen />;
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking} ref={navigationRef}>
       {!hasSeenOnboarding ? (
         <OnboardingScreen
           onFinish={async () => {
@@ -60,8 +89,47 @@ export default function RootNavigator() {
       ) : token ? (
         <MainNavigator />
       ) : (
-        <AuthNavigator />
+        <AuthNavigator
+          onLoginSuccess={() => {
+            // replay pending deep link after login
+            const url = consumePendingDeepLink();
+            if (url) {
+              setTimeout(() => navigateDeepLink(url), 50); // small delay to ensure MainNavigator is mounted
+            }
+          }}
+        />
       )}
     </NavigationContainer>
   );
 }
+
+// --- Helper function to navigate to nested FeaturedDetail ---
+export const navigateDeepLink = (url: string) => {
+  const match = url.match(/featured-lists\/(\d+)/);
+  const itemId = match ? match[1] : null;
+  if (!itemId) return;
+
+  navigationRef.current?.reset({
+    index: 0,
+    routes: [
+      {
+        name: 'Tabs',
+        state: {
+          routes: [
+            {
+              name: 'Home',
+              state: {
+                routes: [
+                  {
+                    name: 'FeaturedDetail',
+                    params: { itemId },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    ],
+  });
+};

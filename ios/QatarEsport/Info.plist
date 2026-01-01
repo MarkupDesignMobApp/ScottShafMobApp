@@ -64,12 +64,32 @@
 		<true/>
 	</dict>
 
+	<!-- ✅ App-to-app sharing -->
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>fb</string>
 		<string>instagram</string>
 		<string>twitter</string>
 		<string>tiktoksharesdk</string>
+	</array>
+
+	<!-- ✅ Deep link: custom scheme -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>markupdesigns</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>markupdesigns</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- ✅ Universal Links -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:www.markupdesigns.net</string>
 	</array>
 
 	<key>RCTNewArchEnabled</key>

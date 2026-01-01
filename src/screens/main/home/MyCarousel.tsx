@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { FlatList, View, Image, Text, Pressable, Share } from 'react-native';
-
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { styles } from './styles';
 import {
   useGetFeaturedListsQuery,
@@ -9,9 +11,10 @@ import {
   useShareFeaturedItemMutation,
 } from '../../../features/auth/authApi';
 import { FeaturedListSummary } from '../../../features/auth/authTypes';
+import { formatCount } from '../../../utils/numberFormatter';
+import { MainStackParamList } from '../../../navigation/types/navigation';
 
 /* ---------------- ICONS ---------------- */
-
 const icons = {
   heartFilled: require('../../../../assets/image/heart.png'),
   heartOutline: require('../../../../assets/image/unfillheart.png'),
@@ -21,7 +24,6 @@ const icons = {
 };
 
 /* ---------------- TYPES ---------------- */
-
 type OptimizedFlatListProps = {
   ListHeaderComponent?: React.ReactElement | null;
   ListFooterComponent?: React.ReactElement | null;
@@ -29,15 +31,19 @@ type OptimizedFlatListProps = {
 };
 
 /* ---------------- MAIN LIST ---------------- */
-
 export default function OptimizedFlatList({
   ListHeaderComponent,
   ListFooterComponent,
   interestId,
 }: OptimizedFlatListProps) {
-  const { data = [], refetch } = useGetFeaturedListsQuery(
-    interestId ? { interestId } : undefined,
-  );
+  const {
+    data = [],
+    refetch,
+    isLoading,
+  } = useGetFeaturedListsQuery(interestId ? { interestId } : undefined, {
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   const renderItem = React.useCallback(
     ({ item }: { item: FeaturedListSummary }) => (
@@ -49,6 +55,12 @@ export default function OptimizedFlatList({
   const keyExtractor = React.useCallback(
     (item: FeaturedListSummary) => item.id.toString(),
     [],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
   );
 
   return (
@@ -70,16 +82,17 @@ export default function OptimizedFlatList({
 }
 
 /* ---------------- ROW ITEM ---------------- */
-
 const Row = React.memo(
   ({ item, refetch }: { item: FeaturedListSummary; refetch: () => void }) => {
+    const navigation =
+      useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+
     const [likeFeaturedItem] = useLikeFeaturedItemMutation();
     const [bookmarkFeaturedItem] = useBookmarkFeaturedItemMutation();
     const [shareFeaturedItem, { isLoading: isSharing }] =
       useShareFeaturedItemMutation();
 
     /* ----------- HANDLERS ----------- */
-
     const onLikePress = React.useCallback(async () => {
       try {
         const res = await likeFeaturedItem(item.id).unwrap();
@@ -115,68 +128,72 @@ const Row = React.memo(
       }
     }, [isSharing, item.id, item.title, shareFeaturedItem]);
 
+    const onPressCard = () => {
+      navigation.navigate('FeaturedDetail', { item }); // <-- Navigate to detail screen
+    };
+
     /* ----------- UI ----------- */
-
     return (
-      <View style={styles.card}>
-        {/* IMAGE */}
-        <View style={styles.cardimgcontainer}>
-          <Image
-            resizeMode="cover"
-            style={styles.img2}
-            source={{ uri: item.image }}
-          />
-        </View>
+      <Pressable onPress={onPressCard}>
+        <View style={styles.card}>
+          {/* IMAGE */}
+          <View style={styles.cardimgcontainer}>
+            <Image
+              resizeMode="cover"
+              style={styles.img2}
+              source={{ uri: item.image }}
+            />
+          </View>
 
-        {/* DETAILS */}
-        <View>
-          <View style={styles.cardtitlecontainer}>
-            <View style={styles.imgcontainer4}>
-              <Image
-                resizeMode="contain"
-                style={styles.img}
-                source={require('../../../../assets/image/cofeeshop.png')}
+          {/* DETAILS */}
+          <View>
+            <View style={styles.cardtitlecontainer}>
+              <View style={styles.imgcontainer4}>
+                <Image
+                  resizeMode="contain"
+                  style={styles.img}
+                  source={require('../../../../assets/image/cofeeshop.png')}
+                />
+              </View>
+
+              <View style={{ paddingLeft: '2%' }}>
+                <Text style={styles.cardmaintitletxt}>{item.title}</Text>
+                <Text style={styles.cardsubtitletxt}>
+                  {item.category?.name} · {item.category?.interest?.name}
+                </Text>
+              </View>
+            </View>
+
+            {/* ACTIONS */}
+            <View style={styles.cardlike}>
+              <ActionButton
+                icon={item.is_liked ? icons.heartFilled : icons.heartOutline}
+                value={formatCount(item.likes_count)}
+                onPress={onLikePress}
+              />
+
+              <ActionButton
+                icon={
+                  item.is_saved ? icons.bookmarkFilled : icons.bookmarkOutline
+                }
+                value={formatCount(item.saves_count)}
+                onPress={onBookmarkPress}
+              />
+
+              <ActionButton
+                icon={icons.shareOutline}
+                value={formatCount(item.shares_count)}
+                onPress={onSharePress}
               />
             </View>
-
-            <View style={{ paddingLeft: '2%' }}>
-              <Text style={styles.cardmaintitletxt}>{item.title}</Text>
-              <Text style={styles.cardsubtitletxt}>
-                {item.category?.name} · {item.category?.interest?.name}
-              </Text>
-            </View>
-          </View>
-
-          {/* ACTIONS */}
-          <View style={styles.cardlike}>
-            <ActionButton
-              icon={item.is_liked ? icons.heartFilled : icons.heartOutline}
-              value="355k"
-              onPress={onLikePress}
-            />
-
-            <ActionButton
-              icon={
-                item.is_saved ? icons.bookmarkFilled : icons.bookmarkOutline
-              }
-              value="89"
-              onPress={onBookmarkPress}
-            />
-
-            <ActionButton
-              icon={icons.shareOutline}
-              value="15"
-              onPress={onSharePress}
-            />
           </View>
         </View>
-      </View>
+      </Pressable>
     );
   },
 );
 
 /* ---------------- ACTION BUTTON ---------------- */
-
 const ActionButton = React.memo(
   ({
     icon,
