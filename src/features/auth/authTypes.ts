@@ -111,6 +111,27 @@ export interface FeaturedListCategory {
   name: string;
 }
 
+export interface Campaign {
+  id: number;
+  name: string;
+  title: string;
+  subtitle: string;
+  image_url: string;
+  cta_text: string;
+  cta_url: string;
+  status: string;
+  requires_consent: boolean;
+  starts_at: string;
+  ends_at: string;
+}
+
+export interface CampaignsResponse {
+  success: boolean;
+  campaigns: Campaign[];
+  message: string;
+}
+
+
 // =====================================================
 // LIST API
 // GET /scott-shafer/api/featured-lists

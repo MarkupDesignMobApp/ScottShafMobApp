@@ -17,7 +17,7 @@ import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import ImageCarousel3 from './MyCarousel3';
-
+import Recommend from './Recommend';
 import {
   useGetUserProfileQuery,
   useGetUserInterestsQuery,
@@ -224,12 +224,13 @@ export default function HomeScreen({ navigation }) {
               </Text>
             </View>
             <ImageCarousel2 />x
-            <View style={styles.cardheading}>
+            {/* <View style={styles.cardheading}>
               <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
                 Recommended For You
               </Text>
-            </View>
-            <ImageCarousel3 />
+            </View> */}
+            {/* <ImageCarousel3 /> */}
+            <Recommend />
           </ScrollView>
         </View>
         {/* <Text>{`${selectedInterestId}`}</Text> */}

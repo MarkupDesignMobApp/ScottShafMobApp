@@ -81,7 +81,7 @@ export default function ProfileScreen() {
         </View>
 
         <Pressable
-          onPress={() => navigation.navigate('ProfileEdit')}
+          onPress={() => navigation.navigate('ProfileEdit',{Edit:'edit'})}
           style={styles.edit}
         >
           <Text style={styles.edittxt}>Edit</Text>

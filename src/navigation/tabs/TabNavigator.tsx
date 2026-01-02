@@ -8,12 +8,11 @@ import {
   FeaturedLists,
   CreateList,
   MyList,
-
 } from '../../screens';
 import ProfileStackNavigator from '../stacks/InternalNavigator/ProfileStackNavigator';
 import HomeStackNavigator from '../stacks/InternalNavigator/HomeStackNavigator';
 import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
-
+import Recommend_Screen from '../../screens/main/home/Recommend_Screen';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const getTabIcon = (routeName: string, focused: boolean) => {
@@ -66,11 +65,10 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeStackNavigator} />
-      <Tab.Screen name="Discover" component={BrowseCatalogScreen} />
+      <Tab.Screen name="Discover" component={Recommend_Screen} />
       <Tab.Screen name="Create" component={CreateList} />
       <Tab.Screen name="MyLists" component={MyList} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
-     
     </Tab.Navigator>
   );
 }

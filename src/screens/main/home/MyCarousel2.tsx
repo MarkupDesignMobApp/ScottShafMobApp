@@ -1,64 +1,47 @@
 import * as React from 'react';
-import { FlatList, View, Text, Image } from 'react-native';
-import { carouselData } from './dummydata';
+import { FlatList, View, Text, Image, ActivityIndicator } from 'react-native';
 import { styles } from './styles';
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
+import { useGetCampaignsQuery } from '../../../features/auth/authApi';
 
-type ItemType = {
-  id: string;
-  title: string;
-  image: string;
-};
+/* ---------------- PROPS ---------------- */
 type OptimizedFlatListProps = {
   ListHeaderComponent?: React.ReactElement | null;
   ListFooterComponent?: React.ReactElement | null;
 };
+
+/* ---------------- MAIN LIST ---------------- */
 export default function OptimizedFlatList2({
   ListHeaderComponent,
   ListFooterComponent,
 }: OptimizedFlatListProps) {
-  /** API-ready state */
-  const [data, setData] = React.useState<ItemType[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const { data, isLoading } = useGetCampaignsQuery();
 
-  /** Simulate API response (replace later) */
-  React.useEffect(() => {
-    setLoading(true);
-
-    // Simulating API call
-    const timer = setTimeout(() => {
-      setData(carouselData);
-      setLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  /** Memoized renderItem */
   const renderItem = React.useCallback(
-    ({ item }: { item: ItemType }) => <Row item={item} />,
+    ({ item }: { item: any }) => <Row item={item} />,
     [],
   );
 
-  /** Stable key */
-  const keyExtractor = React.useCallback((item: ItemType) => item.id, []);
+  const keyExtractor = React.useCallback((item: any) => item.id.toString(), []);
+
+  if (isLoading) {
+    return <ActivityIndicator style={{ marginTop: 20 }} />;
+  }
 
   return (
     <FlatList
-      data={data}
+      data={data ?? []}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      contentContainerStyle={styles.content}
       horizontal
       showsHorizontalScrollIndicator={false}
-      /** Header & Footer from props */
+      contentContainerStyle={styles.content}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooterComponent}
-      /** 🔥 Performance */
       initialNumToRender={5}
       maxToRenderPerBatch={5}
       windowSize={5}
@@ -69,20 +52,34 @@ export default function OptimizedFlatList2({
   );
 }
 
-/** Memoized row (UI placeholder only) */
-const Row = React.memo(({ item }: { item: ItemType }) => {
+/* ---------------- ROW ---------------- */
+
+const FALLBACK_IMAGE = require('../../../../assets/image/cofee.png');
+
+const Row = React.memo(({ item }: { item: any }) => {
+  const [imageError, setImageError] = React.useState(false);
+
+  const imageSource =
+    item?.image_url && !imageError
+      ? { uri: `https://www.markupdesigns.net/scott-shafer/${item.image_url}` }
+      : FALLBACK_IMAGE;
+
   return (
     <View style={styles.card2}>
+      {/* IMAGE */}
       <View style={styles.cardimgcontainer}>
         <Image
           resizeMode="cover"
-          style={{ ...styles.img2 }}
-          source={require('../../../../assets/image/cofee.png')}
+          style={styles.img2}
+          source={imageSource}
+          onError={() => setImageError(true)}
         />
       </View>
 
+      {/* CONTENT */}
       <View style={{ height: '40%' }}>
         <View style={{ paddingHorizontal: responsiveScreenWidth(2) }}>
+          {/* SPONSORED BADGE (STATIC) */}
           <View
             style={{
               paddingVertical: responsiveScreenHeight(0.75),
@@ -96,24 +93,26 @@ const Row = React.memo(({ item }: { item: ItemType }) => {
           >
             <Text>Sponsored</Text>
           </View>
+
+          {/* TITLE */}
           <View style={{ paddingLeft: '2%' }}>
-            <Text style={styles.cardmaintitletxt}>
-              Get 20% off your next coffee
+            <Text style={styles.cardmaintitletxt} numberOfLines={2}>
+              {item?.title ?? ''}
             </Text>
+
+            {/* SUBTITLE */}
             <Text
               style={{
                 ...styles.cardsubtitletxt,
                 fontSize: responsiveScreenFontSize(1.5),
               }}
+              numberOfLines={3}
             >
-              Exclusive offer for Top List members. Valid at participating
-              locations.
+              {item?.subtitle ?? ''}
             </Text>
           </View>
         </View>
       </View>
-      {/* <Image source={{ uri: item.image }} />
-      <Text>{item.title}</Text> */}
     </View>
   );
 });

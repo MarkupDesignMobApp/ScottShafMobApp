@@ -7,9 +7,9 @@ import { Switch } from 'react-native-paper';
 import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 
 import { OpenLinkInApp } from '../../../components/ui/Browser/browser';
-const Privacy = ({navigation}) => {
+const Privacy = ({ navigation }) => {
   const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-  
+
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
 
   const Data = [
@@ -69,7 +69,7 @@ const Privacy = ({navigation}) => {
     <View style={styles.container}>
       {/* 🔒 Fixed Header */}
       <AppHeader
-      onLeftPress={()=>navigation.goBack()}
+        onLeftPress={() => navigation.goBack()}
         title="Privacy & Consent"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
@@ -130,10 +130,14 @@ const Privacy = ({navigation}) => {
       <View style={styles.fixedBottom}>
         <AppButton
           title="Save Changes"
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => navigation.navigate('Login')}
         />
         <Text
-          onPress={() => OpenLinkInApp('https://www.wwe.com')}
+          onPress={() =>
+            OpenLinkInApp(
+              'https://www.markupdesigns.net/scott-shafer/api/termsandpolicy',
+            )
+          }
           style={styles.privacytxt}
         >
           View Privacy Policy

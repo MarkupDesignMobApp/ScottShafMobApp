@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Keyboard
+  Keyboard,
 } from 'react-native';
 
 import {
@@ -78,7 +78,6 @@ export default function AddCustomItem({ navigation, route }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 56 : 0}
       >
-
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -137,11 +136,10 @@ export default function AddCustomItem({ navigation, route }) {
               title={isLoading ? 'Adding...' : 'Add Item'}
               disabled={isLoading || !itemName.trim()}
               onPress={() => {
-                Keyboard.dismiss();   // ✅ DISMISS KEYBOARD
+                Keyboard.dismiss(); // ✅ DISMISS KEYBOARD
                 handleAddItem();
               }}
             />
-
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

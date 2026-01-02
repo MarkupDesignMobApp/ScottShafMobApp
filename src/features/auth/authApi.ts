@@ -34,6 +34,8 @@ import {
   LikeFeaturedItemResponse,
   BookmarkFeaturedItemResponse,
   ShareFeaturedItemResponse,
+  CampaignsResponse,
+  Campaign
 } from './authTypes';
 
 import {
@@ -52,6 +54,18 @@ export interface AddCatalogItemsRequest {
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+
+getCampaigns: builder.query<Campaign[], void>({
+  query: () => ({
+    url: '/scott-shafer/api/campaigns',
+    method: 'GET',
+  }),
+  transformResponse: (res: CampaignsResponse) => res.campaigns,
+  providesTags: ['Campaigns'],
+}),
+
+
+
     shareFeaturedItem: builder.mutation<
       ShareFeaturedItemResponse,
       number | string
@@ -308,4 +322,5 @@ export const {
   useLikeFeaturedItemMutation,
   useBookmarkFeaturedItemMutation,
   useShareFeaturedItemMutation,
+  useGetCampaignsQuery
 } = authApi;

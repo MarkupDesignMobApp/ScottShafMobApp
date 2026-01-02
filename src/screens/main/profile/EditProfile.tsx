@@ -11,6 +11,8 @@ import {
   Platform,
   PermissionsAndroid,
   TouchableOpacity,
+  Modal,
+  Keyboard,
 } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
@@ -30,51 +32,53 @@ import {
 import Loader from '../../../components/ui/Loader/Loader';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function EditProfile({ navigation }: any) {
+export default function EditProfile({ navigation, route }: any) {
+  // -------------------- TOP LEVEL HOOKS --------------------
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
   const [age, setAge] = useState('');
   const [budgetText, setBudgetText] = useState('');
   const [profileImage, setProfileImage] = useState<any>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const [ageModalVisible, setAgeModalVisible] = useState(false);
+  const [budgetModalVisible, setBudgetModalVisible] = useState(false);
 
+  const scrollRef = useRef<ScrollView>(null);
   const MAX_WORDS = 200;
-  useFocusEffect(
-    useCallback(() => {
-      // Small timeout ensures layout is ready
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          y: 0,
-          animated: true,
-        });
-      }, 100);
-    }, []),
-  );
+  const userParam = route?.params?.Edit;
+
+  const AGE_OPTIONS = ['18-24', '25-35', '36-50', '50+'];
+  const BUDGET_OPTIONS = ['Below 100$', '100$-400$', '500$-1000$'];
 
   const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
   const { data: profileResponse, isLoading: profileLoading } =
     useGetUserProfileQuery();
 
-  /* ------------------ LOAD PROFILE ------------------ */
+  // -------------------- FOCUS SCROLL --------------------
+  useFocusEffect(
+    useCallback(() => {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      }, 100);
+    }, []),
+  );
+
+  // -------------------- LOAD PROFILE --------------------
   useEffect(() => {
     if (profileResponse?.success) {
-      const user = profileResponse.data.user;
-
-      setName(user.full_name ?? '');
-      setEmail(user.email ?? '');
-      setCity(user.profile?.city ?? '');
-      setAge(user.profile?.age_band ?? '');
-      setBudgetText(user.profile?.dining_budget ?? '');
-      setProfileImage(user.profile?.profile_image ?? null);
-      setAge(user.profile?.age_band ?? '');
+      const userData = profileResponse.data.user; // rename to avoid shadowing
+      setName(userData.full_name ?? '');
+      setEmail(userData.email ?? '');
+      setCity(userData.profile?.city ?? '');
+      setAge(userData.profile?.age_band ?? '');
+      setBudgetText(userData.profile?.dining_budget ?? '');
+      setProfileImage(userData.profile?.profile_image ?? null);
     }
   }, [profileResponse]);
 
-  /* ------------------ CAMERA PERMISSION ------------------ */
+  // -------------------- CAMERA PERMISSION --------------------
   const requestCameraPermission = async () => {
     if (Platform.OS !== 'android') return true;
-
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CAMERA,
       {
@@ -86,7 +90,7 @@ export default function EditProfile({ navigation }: any) {
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  /* ------------------ IMAGE PICKERS ------------------ */
+  // -------------------- IMAGE PICKERS --------------------
   const openCamera = async () => {
     const granted = await requestCameraPermission();
     if (!granted) return;
@@ -94,14 +98,12 @@ export default function EditProfile({ navigation }: any) {
     launchCamera(
       {
         mediaType: 'photo',
-        quality: 0.5, // 🔥 LOWER QUALITY
-        maxWidth: 800, // 🔥 RESIZE
+        quality: 0.5,
+        maxWidth: 800,
         maxHeight: 800,
       },
       response => {
-        if (response.assets?.length) {
-          setProfileImage(response.assets[0]);
-        }
+        if (response.assets?.length) setProfileImage(response.assets[0]);
       },
     );
   };
@@ -110,27 +112,23 @@ export default function EditProfile({ navigation }: any) {
     launchImageLibrary(
       {
         mediaType: 'photo',
-        quality: 0.5, // 🔥 LOWER QUALITY
-        maxWidth: 800, // 🔥 RESIZE
+        quality: 0.5,
+        maxWidth: 800,
         maxHeight: 800,
       },
       response => {
-        if (response.assets?.length) {
-          setProfileImage(response.assets[0]);
-        }
+        if (response.assets?.length) setProfileImage(response.assets[0]);
       },
     );
   };
 
-  /* ------------------ BUDGET WORD LIMIT ------------------ */
+  // -------------------- BUDGET WORD LIMIT --------------------
   const handleBudgetChange = (text: string) => {
     const words = text.trim().split(/\s+/);
-    if (words.length <= MAX_WORDS) {
-      setBudgetText(text);
-    }
+    if (words.length <= MAX_WORDS) setBudgetText(text);
   };
 
-  /* ------------------ SAVE PROFILE ------------------ */
+  // -------------------- SAVE PROFILE --------------------
   const handleSaveChanges = async () => {
     try {
       const formData = new FormData();
@@ -140,11 +138,8 @@ export default function EditProfile({ navigation }: any) {
       formData.append('dining_budget', budgetText);
       formData.append('has_dogs', '0');
 
-      if (age) {
-        formData.append('age_band', age);
-      }
+      if (age) formData.append('age_band', age);
 
-      // ✅ only when user selected new image
       if (profileImage && typeof profileImage === 'object') {
         formData.append('profile_image', {
           uri:
@@ -165,14 +160,14 @@ export default function EditProfile({ navigation }: any) {
     }
   };
 
-  /* ====================== UI ====================== */
+  // -------------------- UI --------------------
   return (
     <View style={styles2.container}>
       <StatusBar barStyle="dark-content" />
       <Loader visible={isLoading || profileLoading} />
 
       <AppHeader
-        title="Edit Profile"
+        title={userParam ? 'Edit Profile' : 'My Profile'}
         onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
@@ -221,35 +216,33 @@ export default function EditProfile({ navigation }: any) {
 
           {/* NAME */}
           <AppInput
+            inputStyle={{ color: 'black' }}
             editable={false}
             value={name}
-            onChangeText={setName}
             placeholder="e.g. Sarah Johnson"
             label={<Text style={Homestyle.labeltxt}>Name *</Text>}
           />
 
           {/* EMAIL */}
           <AppInput
+            inputStyle={{ color: 'black' }}
             value={email}
             editable={false}
             label={<Text style={Homestyle.labeltxt}>Email *</Text>}
           />
 
           {/* AGE */}
-
           <TouchableOpacity
             style={{ width: '100%' }}
             activeOpacity={0.8}
-            // onPress={() => {
-            //   Keyboard.dismiss();
-            //   setTimeout(() => setModalVisible(true), 150);
-            // }}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => setAgeModalVisible(true), 150);
+            }}
           >
-            {/* <Text>{user}ededed</Text> */}
             <View pointerEvents="none">
               <AppInput
-                
-                onChangeText={setAge}
+                inputStyle={{ color: 'black' }}
                 placeholder="Select Age"
                 label={
                   <Text style={Homestyle.labeltxt}>
@@ -260,16 +253,41 @@ export default function EditProfile({ navigation }: any) {
               />
             </View>
           </TouchableOpacity>
+
           {/* CITY */}
           <AppInput
+            inputStyle={{ color: 'black' }}
             value={city}
             onChangeText={setCity}
             placeholder="e.g. San Francisco"
             label={<Text style={Homestyle.labeltxt}>City *</Text>}
           />
 
-          {/* BUDGET */}
-          <Text style={styles2.labeltxt}>Budget Preference *</Text>
+          {/* BUDGET MODAL INPUT */}
+          <TouchableOpacity
+            style={{ width: '100%' }}
+            activeOpacity={0.8}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => setBudgetModalVisible(true), 150);
+            }}
+          >
+            <View pointerEvents="none">
+              <AppInput
+                inputStyle={{ color: 'black' }}
+                placeholder="Select Budget Preference"
+                label={
+                  <Text style={Homestyle.labeltxt}>
+                    Budget Preference <Text style={{ color: 'red' }}>*</Text>
+                  </Text>
+                }
+                value={budgetText}
+              />
+            </View>
+          </TouchableOpacity>
+
+          {/* BUDGET TEXTAREA (optional description) */}
+          <Text style={styles2.labeltxt}>Describe your budget *</Text>
           <View style={styles2.paragraph}>
             <TextInput
               value={budgetText}
@@ -281,14 +299,135 @@ export default function EditProfile({ navigation }: any) {
             />
           </View>
           <Text style={styles2.wordcapacity}>
-            {budgetText.trim() ? budgetText.trim().split(/\s+/).length : 0}
-            /200 Words
+            {budgetText.trim() ? budgetText.trim().split(/\s+/).length : 0}/200
+            Words
           </Text>
         </ScrollView>
+
         <View style={styles2.bottomButtonContainer}>
           <AppButton title="Save Changes" onPress={handleSaveChanges} />
         </View>
       </KeyboardAvoidingView>
+
+      {/* ---------------- AGE SELECTION MODAL ---------------- */}
+      <Modal
+        visible={ageModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setAgeModalVisible(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'flex-end',
+          }}
+          onPress={() => setAgeModalVisible(false)}
+        >
+          <View
+            style={{
+              backgroundColor: '#fff',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingVertical: 20,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 10,
+              }}
+            >
+              Select Age
+            </Text>
+
+            {AGE_OPTIONS.map(item => (
+              <Pressable
+                key={item}
+                onPress={() => {
+                  setAge(item);
+                  setAgeModalVisible(false);
+                }}
+                style={{
+                  paddingVertical: 14,
+                  paddingHorizontal: 20,
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>{item}</Text>
+              </Pressable>
+            ))}
+
+            <Pressable
+              onPress={() => setAgeModalVisible(false)}
+              style={{ paddingVertical: 14, marginTop: 5 }}
+            >
+              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* ---------------- BUDGET SELECTION MODAL ---------------- */}
+      <Modal
+        visible={budgetModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setBudgetModalVisible(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'flex-end',
+          }}
+          onPress={() => setBudgetModalVisible(false)}
+        >
+          <View
+            style={{
+              backgroundColor: '#fff',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingVertical: 20,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 10,
+              }}
+            >
+              Select Budget
+            </Text>
+
+            {BUDGET_OPTIONS.map(item => (
+              <Pressable
+                key={item}
+                onPress={() => {
+                  setBudgetText(item);
+                  setBudgetModalVisible(false);
+                }}
+                style={{
+                  paddingVertical: 14,
+                  paddingHorizontal: 20,
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>{item}</Text>
+              </Pressable>
+            ))}
+
+            <Pressable
+              onPress={() => setBudgetModalVisible(false)}
+              style={{ paddingVertical: 14, marginTop: 5 }}
+            >
+              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

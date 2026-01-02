@@ -21,6 +21,7 @@ export const baseApi = createApi({
     'Lists',
     'Categories',
     'CatalogItems',
+    'Campaigns'
   ],
   endpoints: () => ({}),
 });
