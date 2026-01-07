@@ -12,7 +12,8 @@ import {
   StatusBar,
   Alert,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  FlatList
 } from 'react-native';
 import { Switch } from 'react-native-paper';
 import {
@@ -119,183 +120,189 @@ export default function CreateListScreen({ navigation }) {
 
   /* ================= UI ================= */
   return (
-  <View style={{ flex: 1, backgroundColor: '#fff' }}>
-    <StatusBar barStyle="dark-content" />
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <StatusBar barStyle="dark-content" />
 
-    <AppHeader
-      title="Create List"
-      leftImage={require('../../../../assets/image/left-icon.png')}
-      onLeftPress={() => navigation.goBack()}
-    />
+      <AppHeader
+        title="Create List"
+        leftImage={require('../../../../assets/image/left-icon.png')}
+        onLeftPress={() => navigation.goBack()}
+      />
 
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
-    >
-      {/* CONTENT */}
-      <ScrollView
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.container}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
       >
-        {/* LIST TITLE */}
-        <AppInput
-          value={title}
-          onChangeText={setTitle}
-          placeholder="e.g. Top 5 coffee shops in NYC"
-          label={
-            <Text style={Homestyle.labeltxt}>
-              List Title <Text style={{ color: 'red' }}>*</Text>
-            </Text>
-          }
-        />
-
-        {/* CATEGORY */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: responsiveScreenHeight(2),
-          }}
+        {/* CONTENT */}
+        <ScrollView
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.container}
         >
-          <View style={styles.prefix}>
-            <Image
-              resizeMode="contain"
-              style={{ width: '100%', height: '100%' }}
-              source={require('../../../../assets/image/arrow-down.png')}
-            />
-          </View>
-          <TouchableOpacity
-            style={{ width: '100%' }}
-            onPress={() => {
-              Keyboard.dismiss();
-              setTimeout(() => setModalVisible(true), 150);
+          {/* LIST TITLE */}
+          <AppInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="e.g. Top 5 coffee shops in NYC"
+            label={
+              <Text style={Homestyle.labeltxt}>
+                List Title <Text style={{ color: 'red' }}>*</Text>
+              </Text>
+            }
+          />
+
+          {/* CATEGORY */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: responsiveScreenHeight(2),
             }}
           >
-            <View pointerEvents="none">
-              <AppInput
-                value={selectedCategory?.name ?? ''}
-                placeholder="Select Category"
-                label={
-                  <Text style={Homestyle.labeltxt}>
-                    Category <Text style={{ color: 'red' }}>*</Text>
-                  </Text>
-                }
+            <View style={styles.prefix}>
+              <Image
+                resizeMode="contain"
+                style={{ width: '100%', height: '100%' }}
+                source={require('../../../../assets/image/arrow-down.png')}
               />
             </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* GROUP SWITCH */}
-        <View style={styles.targetcontainer}>
-          <View style={styles.switchcontainer}>
-            <Text style={styles.switchtxt}>Make it a group list?</Text>
-            <Switch
-              color="#FF04D7"
-              value={isGroup}
-              onValueChange={setIsGroup}
-            />
+            <TouchableOpacity
+              style={{ width: '100%' }}
+              onPress={() => {
+                Keyboard.dismiss();
+                setTimeout(() => setModalVisible(true), 150);
+              }}
+            >
+              <View pointerEvents="none">
+                <AppInput
+                  value={selectedCategory?.name ?? ''}
+                  placeholder="Select Category"
+                  label={
+                    <Text style={Homestyle.labeltxt}>
+                      Category <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                  }
+                />
+              </View>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.privacytxt2}>
-            Let friends collaborate & add their own picks to your list.
-          </Text>
-        </View>
 
-        {/* INVITE USERS */}
-        {isGroup && (
-          <View style={styles.invitedBox}>
-            <Text style={styles.invitedTitle}>Invite Users</Text>
-            {inviteUsersLoading ? (
-              <Text>Loading users...</Text>
-            ) : (
-              <ScrollView contentContainerStyle={styles.chipContainer}>
-                {inviteUsers.map(user => {
-                  const selected = selectedUsers.some(u => u.id === user.id);
-                  return (
-                    <View
-                      key={user.id}
-                      style={[
-                        styles.chip,
-                        selected && { backgroundColor: '#E6F3FF' },
-                      ]}
-                    >
-                      <Text style={{ marginRight: 6 }}>{user.full_name}</Text>
-                      <TouchableOpacity onPress={() => toggleUser(user)}>
+          {/* GROUP SWITCH */}
+          <View style={styles.targetcontainer}>
+            <View style={styles.switchcontainer}>
+              <Text style={styles.switchtxt}>Make it a group list?</Text>
+              <Switch
+                color="#FF04D7"
+                value={isGroup}
+                onValueChange={setIsGroup}
+              />
+            </View>
+            <Text style={styles.privacytxt2}>
+              Let friends collaborate & add their own picks to your list.
+            </Text>
+          </View>
+          {/* INVITE USERS */}
+          {isGroup && (
+            <View style={styles.invitedBox}>
+              <Text style={styles.invitedTitle}>Invite Users</Text>
+
+              {inviteUsersLoading ? (
+                <Text>Loading users...</Text>
+              ) : (
+                <FlatList
+                  data={inviteUsers}
+                  keyExtractor={item => item.id.toString()}
+                  nestedScrollEnabled
+                  contentContainerStyle={styles.chipContainer}
+                  renderItem={({ item }) => {
+                    const selected = selectedUsers.some(u => u.id === item.id);
+
+                    return (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => toggleUser(item)}
+                        style={[
+                          styles.chip,
+                          selected && { backgroundColor: '#E6F3FF' },
+                        ]}
+                      >
+                        <Text style={{ marginRight: 6 }}>
+                          {item.full_name}
+                        </Text>
+
                         {selected ? (
                           <Image
                             source={require('../../../../assets/image/close.png')}
                             style={styles.closeIcon}
                           />
                         ) : (
-                          <Text
-                            style={{ color: '#0180FE', fontWeight: 'bold' }}
-                          >
-                            +
-                          </Text>
+                          <View style={styles.plusCircle}>
+                            <Text style={styles.plusText}>+</Text>
+                          </View>
                         )}
                       </TouchableOpacity>
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            )}
-          </View>
-        )}
+                    );
+                  }}
+                />
+              )}
+            </View>
+          )}
 
-        {/* LIST SIZE */}
-        <View style={{ marginTop: responsiveScreenHeight(2) }}>
-          <AppInput
-            value={listSize}
-            onChangeText={setListSize}
-            keyboardType="numeric"
-            placeholder="e.g. 5"
-            label={
-              <Text style={Homestyle.labeltxt}>
-                List Size <Text style={{ color: 'red' }}>*</Text>
-              </Text>
-            }
+
+          {/* LIST SIZE */}
+          <View style={{ marginTop: responsiveScreenHeight(2) }}>
+            <AppInput
+              value={listSize}
+              onChangeText={setListSize}
+              keyboardType="numeric"
+              placeholder="e.g. 5"
+              label={
+                <Text style={Homestyle.labeltxt}>
+                  List Size <Text style={{ color: 'red' }}>*</Text>
+                </Text>
+              }
+            />
+          </View>
+        </ScrollView>
+
+        {/* FOOTER */}
+        <View style={styles.footer}>
+          <AppButton
+            title={isLoading ? 'Creating...' : 'Create List'}
+            disabled={!isFormValid || isLoading}
+            onPress={handleCreateList}
           />
         </View>
-      </ScrollView>
+      </KeyboardAvoidingView>
 
-      {/* FOOTER */}
-      <View style={styles.footer}>
-        <AppButton
-          title={isLoading ? 'Creating...' : 'Create List'}
-          disabled={!isFormValid || isLoading}
-          onPress={handleCreateList}
-        />
-      </View>
-    </KeyboardAvoidingView>
-
-    {/* CATEGORY MODAL */}
-    {modalVisible && (
-      <Modal transparent animationType="fade">
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            {categories.map(cat => (
-              <TouchableOpacity
-                key={cat.id}
-                style={styles.modalItem}
-                onPress={() => {
-                  setSelectedCategory(cat);
-                  setModalVisible(false);
-                }}
-              >
-                <Text>{cat.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Pressable>
-      </Modal>
-    )}
-  </View>
-);
+      {/* CATEGORY MODAL */}
+      {modalVisible && (
+        <Modal transparent animationType="fade">
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              {categories.map(cat => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setSelectedCategory(cat);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text>{cat.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Pressable>
+        </Modal>
+      )}
+    </View>
+  );
 
 }
 
@@ -357,10 +364,22 @@ const styles = StyleSheet.create({
     borderColor: '#CFE9FF',
   },
   closeIcon: {
-    width: responsiveHeight(2),
-    height: responsiveHeight(2),
+    width: responsiveHeight(1),
+    height: responsiveHeight(1),
     resizeMode: 'contain',
   },
+  plusCircle: {
+
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  plusText: {
+    color: '#0180FE',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+
   footer: {
     paddingHorizontal: responsiveScreenWidth(4),
     paddingVertical: responsiveScreenHeight(2),

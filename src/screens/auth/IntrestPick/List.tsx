@@ -33,6 +33,9 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
 
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
+
   // ✅ PRESELECT USER INTERESTS
   useEffect(() => {
     if (userInterests) {
@@ -105,23 +108,27 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
         interests: selectedItems,
       }).unwrap();
 
-      // ✅ res = API RESPONSE
-      // {
-      //   success: true,
-      //   message: "Interests saved successfully",
-      //   user_id: 38,
-      //   Data: [6,7,8,9,10]
-      // }
-
-      Alert.alert('Success', res.message);
-
-      navigation.navigate('About', {
-        userId: res.user_id, // ✅ always trust backend
-      });
+      Alert.alert(
+        'Success',
+        res.message,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate('About', {
+                userId: res.user_id,
+              });
+            },
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (err: any) {
       Alert.alert('Error', err?.data?.message || 'Failed to save interests');
     }
   };
+
+
 
   return (
     <>
@@ -133,7 +140,7 @@ const TwoColumnList: React.FC<TwoColumnListProps> = () => {
         renderItem={renderItem}
         numColumns={2}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{...styles.listmaincontainer, }}
+        contentContainerStyle={{ ...styles.listmaincontainer, }}
         ListFooterComponent={
           <>
             <View style={styles.bottomtxtcontainer}>

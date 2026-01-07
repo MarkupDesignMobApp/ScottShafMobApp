@@ -41,7 +41,7 @@ export default function CreateListScreen({ navigation, route }) {
 
   // 🔹 API call
   const { data, isLoading } = useGetCatalogItemsOfListQuery(listId);
-
+ 
   // 🔹 Sync API data → state
   useEffect(() => {
     if (data && Array.isArray(data)) {
@@ -120,7 +120,7 @@ export default function CreateListScreen({ navigation, route }) {
           />
         </View>
         <Text style={styles.switchtxt}>
-          Drag items to reorder your list. Rankings update automatically.
+        Hold to Drag items to reorder your list. Rankings update Automatically
         </Text>
       </View>
 

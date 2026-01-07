@@ -9,6 +9,7 @@ import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import Share from 'react-native-share';
 import { CommonActions } from '@react-navigation/native';
+
 export default function ListPublishedScreen({ navigation }) {
   const handleShare = async () => {
     try {
@@ -41,7 +42,7 @@ export default function ListPublishedScreen({ navigation }) {
         edges={['left', 'right', 'bottom']}
       >
         <AppHeader
-          onLeftPress={() => navigation.goback()}
+          onLeftPress={() => navigation.goBack()}
           title="List Published"
           leftImage={require('../../../../assets/image/left-icon.png')}
         />

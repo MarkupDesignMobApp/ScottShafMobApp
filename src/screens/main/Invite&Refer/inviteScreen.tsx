@@ -9,6 +9,8 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+ 
+
 const COLORS = {
   primary: '#1DA1F2',
   lightBlue: '#E8F4FF',

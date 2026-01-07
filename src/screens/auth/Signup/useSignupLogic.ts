@@ -12,10 +12,10 @@ const COUNTRIES: Country[] = [
   { name: 'India', code: '+91' },
   { name: 'USA', code: '+1' },
   { name: 'UK', code: '+44' },
-  { name: 'Germany', code: '+49' },
-  { name: 'France', code: '+33' },
-  { name: 'Canada', code: '+1' },
-  { name: 'Australia', code: '+61' },
+  // { name: 'Germany', code: '+49' },
+  // { name: 'France', code: '+33' },
+  // { name: 'Canada', code: '+1' },
+  // { name: 'Australia', code: '+61' },
 ];
 
 export const useSignupLogic = () => {

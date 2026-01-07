@@ -260,7 +260,7 @@ export default function EditProfile({ navigation, route }: any) {
             value={city}
             onChangeText={setCity}
             placeholder="e.g. San Francisco"
-            label={<Text style={Homestyle.labeltxt}>City *</Text>}
+            label={<Text style={Homestyle.labeltxt}>Country  <Text style={{ color: 'red' }}>*</Text></Text>}
           />
 
           {/* BUDGET MODAL INPUT */}

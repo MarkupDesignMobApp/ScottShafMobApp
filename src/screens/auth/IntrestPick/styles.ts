@@ -115,4 +115,22 @@ export const styles = StyleSheet.create({
     fontFamily: 'Ubuntu-Medium',
     fontSize: responsiveScreenFontSize(2),
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    minWidth: '70%',
+    alignItems: 'center',
+  },
+  successText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'green',
+  },
 });

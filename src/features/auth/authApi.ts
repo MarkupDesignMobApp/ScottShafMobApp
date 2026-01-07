@@ -35,7 +35,8 @@ import {
   BookmarkFeaturedItemResponse,
   ShareFeaturedItemResponse,
   CampaignsResponse,
-  Campaign
+  Campaign,
+  CatalogItemsPublishList
 } from './authTypes';
 
 import {
@@ -55,14 +56,14 @@ export interface AddCatalogItemsRequest {
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
 
-getCampaigns: builder.query<Campaign[], void>({
-  query: () => ({
-    url: '/scott-shafer/api/campaigns',
-    method: 'GET',
-  }),
-  transformResponse: (res: CampaignsResponse) => res.campaigns,
-  providesTags: ['Campaigns'],
-}),
+    getCampaigns: builder.query<Campaign[], void>({
+      query: () => ({
+        url: '/scott-shafer/api/campaigns',
+        method: 'GET',
+      }),
+      transformResponse: (res: CampaignsResponse) => res.campaigns,
+      providesTags: ['Campaigns'],
+    }),
 
 
 
@@ -261,6 +262,17 @@ getCampaigns: builder.query<Campaign[], void>({
       providesTags: ['CatalogItems'],
     }),
 
+    
+    publishList: builder.mutation<CatalogItemsPublishList[],{ list_ids: number[] }>({
+      query: body => ({
+        url: CATALOG_ENDPOINTS.PUBLISH_LIST,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FeaturedList'],
+    }),
+
+
     /* ================= FEATURED LIST ================= */
 
     getFeaturedLists: builder.query<
@@ -292,6 +304,8 @@ getCampaigns: builder.query<Campaign[], void>({
       }),
       providesTags: ['FeaturedList'],
     }),
+
+
   }),
 });
 

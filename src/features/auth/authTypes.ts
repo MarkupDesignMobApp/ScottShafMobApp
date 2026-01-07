@@ -550,3 +550,8 @@ export interface ProfileResponse {
     };
   };
 }
+
+//ListPublist
+export interface CatalogItemsPublishList {
+  list_ids: number[];
+}
