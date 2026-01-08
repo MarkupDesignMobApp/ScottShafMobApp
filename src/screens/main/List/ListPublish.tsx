@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Alert } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Alert, Image } from 'react-native';
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
@@ -17,11 +17,11 @@ export default function ListPublishedScreen({ navigation }) {
         title: 'Check out my list!',
         message:
           'I just published a list: Best Coffee Spots in NYC ☕🔥\nCheck it out!',
-        url: 'https://yourapp.com/list/123', // optional deep link
+        url: 'https://yourapp.com/list/123',
       };
 
       await Share.open(shareOptions);
-    } catch (error: any) {
+    } catch (error) {
       if (error?.message !== 'User did not share') {
         Alert.alert('Error', 'Unable to open share dialog');
       }
@@ -30,13 +30,11 @@ export default function ListPublishedScreen({ navigation }) {
 
   return (
     <SafeAreaProvider>
-      {/* STATUS BAR */}
       <StatusBar
-        backgroundColor="#00C4FA" // Android
-        barStyle="light-content" // iOS
+        backgroundColor="#00C4FA"
+        barStyle="light-content"
       />
 
-      {/* MAIN CONTENT */}
       <SafeAreaView
         style={styles.container}
         edges={['left', 'right', 'bottom']}
@@ -47,52 +45,75 @@ export default function ListPublishedScreen({ navigation }) {
           leftImage={require('../../../../assets/image/left-icon.png')}
         />
 
-        <View
-          style={{
-            flex: 1,
-            padding: responsiveScreenWidth(4),
-            backgroundColor: '#fff',
-          }}
-        >
+        <View style={styles.mainContent}>
           {/* SUCCESS CARD */}
           <View style={styles.card}>
             <View style={styles.checkCircle}>
-              <Text style={styles.check}>✓</Text>
+              <Image
+                source={require('../../../../assets/image/circlue.png')}
+                style={styles.checkIconImg}
+              />
             </View>
-
             <Text style={styles.title}>Your list is live!</Text>
-            <Text style={styles.desc}>
-              Best Coffee Spots in NYC has been published and is now visible to
-              your followers.
-            </Text>
 
+            <Text style={styles.description}>
+              Best Coffee Spots in NYC has been{'\n'}
+              published and is now visible to your{'\n'}
+              followers.
+            </Text>
             <View style={styles.statsRow}>
-              <Text style={styles.stat}>👁 0 views</Text>
-              <Text style={styles.stat}>👍 0 likes</Text>
-              <Text style={styles.stat}>🔗 0 shares</Text>
+              <View style={styles.statItem}>
+                <Image
+                  source={require('../../../../assets/image/eye.png')}
+                  style={styles.statIconImg}
+                />
+                <Text style={styles.statText}>0 views</Text>
+              </View>
+
+              <View style={styles.statItem}>
+                <Image
+                  source={require('../../../../assets/image/like.png')}
+                  style={styles.statIconImg}
+                />
+                <Text style={styles.statText}>0 likes</Text>
+              </View>
+
+              <View style={styles.statItem}>
+                <Image
+                  source={require('../../../../assets/image/share2.png')}
+                  style={styles.statIconImg}
+                />
+                <Text style={styles.statText}>0 shares</Text>
+              </View>
             </View>
+
           </View>
 
-          {/* CAMPAIGN CONSENT */}
+          {/* CAMPAIGN CONSENT CARD */}
           <View style={styles.consentCard}>
-            <View style={styles.consentIcon} />
-            <View style={{ flex: 1 }}>
+            <View style={styles.consentIconContainer}>
+              <View style={styles.consentIconInner}>
+                <Image
+                  source={require('../../../../assets/image/Ellipse.png')}
+                  style={styles.consentIconImg}
+                />
+
+              </View>
+            </View>
+
+            <View style={styles.consentTextContainer}>
               <Text style={styles.consentTitle}>Campaign Consent</Text>
-              <Text style={styles.consentDesc}>
+              <Text style={styles.consentDescription}>
                 You've applied for coffee offers.
               </Text>
             </View>
-            <View style={styles.dot} />
+
+            <View style={styles.blueDot} />
           </View>
 
           {/* ACTION BUTTONS */}
           <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              left: responsiveScreenWidth(4),
-              bottom: responsiveScreenHeight(2),
-            }}
+
           >
             <AppButton
               style={{
@@ -130,81 +151,157 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7FBFF',
   },
 
+  mainContent: {
+    flex: 1,
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingTop: 16,
+    backgroundColor: '#FFFFFF',
+  },
+
+  // Success Card Styles
   card: {
-    backgroundColor: '#F0FAFF',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: '#EBF7FF',
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#BFE7FF',
+    borderWidth: 1.5,
+    borderColor: '#B8E3FF',
     marginBottom: 16,
   },
+
   checkCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#1DA1F2',
+    width: 60,
+    height: 60,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 20
   },
-  check: {
-    color: '#FFF',
-    fontSize: 26,
+
+  checkIconImg: {
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
+  },
+
+
+  statsRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 10,
+  },
+
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  statIconImg: {
+    width: 16,
+    height: 16,
+    resizeMode: 'contain',
+    marginRight: 6,
+  },
+  consentIconImg: {
+    width: 44,
+    height: 44,
+    resizeMode: 'contain',
+  },
+
+  statText: {
+    fontSize: 12,
+     fontFamily:'Quicksand-medium'
+  },
+
+
+  checkIcon: {
+    color: '#FFFFFF',
+    fontSize: 32,
     fontWeight: '700',
   },
 
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 6,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 8,
+    letterSpacing: 0.2,
+     fontFamily:'Quicksand-Bold'
   },
-  desc: {
+
+  description: {
     textAlign: 'center',
     color: '#6B7280',
-    fontSize: 13,
-    marginBottom: 16,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 20,
+    letterSpacing: 0.1,
+     fontFamily:'Quicksand-medium'
   },
 
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  stat: {
-    fontSize: 12,
-    color: '#374151',
+  statIcon: {
+    fontSize: 16,
   },
 
+
+  // Consent Card Styles
   consentCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#CFE9FF',
-    marginBottom: 32,
+    backgroundColor: '#EBF7FF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#B8E3FF',
+    marginBottom: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
   },
-  consentIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#E6F6FF',
+
+  consentIconContainer: {
     marginRight: 12,
   },
+
+  consentIconInner: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#EBF7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  consentIconText: {
+    fontSize: 20,
+  },
+
+  consentTextContainer: {
+    flex: 1,
+  },
+
   consentTitle: {
-    fontWeight: '600',
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 2,
+    letterSpacing: 0.1,
+     fontFamily:'Quicksand-Bold'
   },
-  consentDesc: {
-    fontSize: 12,
+
+  consentDescription: {
+    fontSize: 13,
     color: '#6B7280',
+    letterSpacing: 0.1,
+     fontFamily:'Quicksand-Medium'
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#1DA1F2',
+
+  blueDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#3B9DFF',
   },
+
+
 });

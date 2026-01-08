@@ -25,6 +25,8 @@ import {
   useAddCatalogItemToListMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
+import { CommonActions } from '@react-navigation/native';
+
 
 const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'Bars'];
 
@@ -61,13 +63,18 @@ export default function BrowseCatalogScreen({ navigation, route }) {
 
   const handleSkip = () => {
     if (!items || items.length === 0) {
-      // No items available, go back
+      // No items available → go back
       navigation.goBack();
-    } else {
-      // Some items exist, go to Addcustom screen
-      navigation.navigate('Addcustom');
+      return;
     }
+  
+    // Items exist → go to Addcustom screen
+    navigation.navigate('Addcustom', {
+      selectedItems: items.filter(item => item.selected).map(item => item.id),
+      listId: listId,
+    });
   };
+  
 
   const handleNext = async () => {
     if (!items || items.length === 0) {
