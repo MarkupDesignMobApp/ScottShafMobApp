@@ -1,4 +1,4 @@
-// features/auth/authApi.ts
+  // features/auth/authApi.ts
 import { baseApi } from '../../app/api';
 import {
   RequestOtpRequest,
@@ -36,7 +36,7 @@ import {
   ShareFeaturedItemResponse,
   CampaignsResponse,
   Campaign,
-  CatalogItemsPublishList
+  CatalogItemsPublishList,
 } from './authTypes';
 
 import {
@@ -45,6 +45,8 @@ import {
   LIST_ENDPOINTS,
   CATALOG_ENDPOINTS,
   FEATURED_ITEM_ENDPOINTS,
+  Notification,
+  Recommended
 } from './endpoints';
 
 /* ✅ NEW REQUEST TYPE FOR CATALOG ITEMS */
@@ -64,8 +66,6 @@ export const authApi = baseApi.injectEndpoints({
       transformResponse: (res: CampaignsResponse) => res.campaigns,
       providesTags: ['Campaigns'],
     }),
-
-
 
     shareFeaturedItem: builder.mutation<
       ShareFeaturedItemResponse,
@@ -262,8 +262,8 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['CatalogItems'],
     }),
 
-    
-    publishList: builder.mutation<CatalogItemsPublishList[],{ list_ids: number[] }>({
+
+    publishList: builder.mutation<CatalogItemsPublishList[], { list_ids: number[] }>({
       query: body => ({
         url: CATALOG_ENDPOINTS.PUBLISH_LIST,
         method: 'POST',
@@ -297,6 +297,42 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['FeaturedList'],
     }),
 
+
+    // 🔹 GET Notification List
+    getNotifications: builder.query<any[], void>({
+      query: () => ({
+        url: Notification.NOTIFICATION_LIST,
+        method: 'GET',
+      }),
+      providesTags: ['Notifications'],
+    }),
+
+    // 🔹 Accept Notification
+    acceptNotification: builder.mutation<
+      any,
+      { list_id: number }
+    >({
+      query: (body) => ({
+        url: Notification.ACCEPT_NOTIFICATION,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
+    // 🔹 Reject Notification
+    rejectNotification: builder.mutation<
+      any,
+      { list_id: number }
+    >({
+      query: (body) => ({
+        url: Notification.REJECT_NOTIFICATION,  
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
     getFeaturedListById: builder.query<FeaturedListsResponse, number | string>({
       query: id => ({
         url: FEATURED_LIST_ENDPOINTS.FEATURED_LIST_BY_ID(id),
@@ -305,6 +341,14 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['FeaturedList'],
     }),
 
+    getRecommendItems: builder.query<any[], void>({
+      query: () => ({
+        url: Recommended.RECOMMENDED_LIST,
+        method: 'GET',
+      }),
+      providesTags: ['RecommendItems'],
+    }),
+    
 
   }),
 });
@@ -325,7 +369,6 @@ export const {
   useGetFeaturedListByIdQuery,
   useGetFeaturedListsQuery,
   useGetFeaturedListItemsQuery,
-
   useCreateListMutation,
   useGetInviteUsersQuery,
   useAddListItemMutation,
@@ -336,5 +379,9 @@ export const {
   useLikeFeaturedItemMutation,
   useBookmarkFeaturedItemMutation,
   useShareFeaturedItemMutation,
-  useGetCampaignsQuery
+  useGetCampaignsQuery,
+  useAcceptNotificationMutation,
+  useGetNotificationsQuery,
+  useRejectNotificationMutation,
+  useGetRecommendItemsQuery
 } = authApi;

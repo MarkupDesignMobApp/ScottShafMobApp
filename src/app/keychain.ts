@@ -5,6 +5,7 @@ import { TokenService } from '../services/storage/keychain.services';
 
 export const loadTokenFromKeychain = async () => {
   const token = await TokenService.get();
+  console.log(token)
 
   if (token) {
     store.dispatch(setCredentials({ token }));

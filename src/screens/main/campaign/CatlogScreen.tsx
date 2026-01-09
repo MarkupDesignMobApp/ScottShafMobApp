@@ -38,6 +38,7 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   const [addCatalogItems, { isLoading: isAdding }] =
     useAddCatalogItemToListMutation();
 
+
   /* ================= STATE ================= */
   const [items, setItems] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -45,6 +46,7 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   /* ================= MAP API → LOCAL ================= */
   useEffect(() => {
     if (data) {
+     
       setItems(
         data.map(item => ({
           ...item,

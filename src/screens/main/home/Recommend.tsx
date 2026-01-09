@@ -1,22 +1,26 @@
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   Image,
+  Share,
+  Pressable,
 } from 'react-native'
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions'
+import {useGetRecommendItemsQuery} from '../../../features/auth/authApi'
 
-/* -------- ICONS (same as OptimizedFlatList) -------- */
+/* -------- ICONS -------- */
 const icons = {
   heartFilled: require('../../../../assets/image/heart.png'),
-  bookmarkFilled: require('../../../../assets/image/bookmark.png'),
+  heartOutline: require('../../../../assets/image/unfillheart.png'),
   shareOutline: require('../../../../assets/image/unfillshare.png'),
+  more: require('../../../../assets/image/dots.png'),
 }
 
 /* -------- STATIC DATA -------- */
@@ -26,16 +30,18 @@ const DATA = [
     user: 'Alex Chen',
     time: '2 hour ago',
     title: 'Top 5 Sci-Fi Movies of 2024',
+    likes: 355000,
+    isLiked: false,
     items: [
       {
         id: 'a',
         name: 'Dune: Part Two',
-        image: 'https://via.placeholder.com/50',
+        image: require('../../../../assets/image/movie1.png'),
       },
       {
         id: 'b',
         name: 'Civil War',
-        image: 'https://via.placeholder.com/50',
+        image: require('../../../../assets/image/movie2.png'),
       },
     ],
   },
@@ -44,69 +50,109 @@ const DATA = [
     user: 'Alex Chen',
     time: '2 hour ago',
     title: "3 Coding tools I can’t live without",
+    likes: 1200,
+    isLiked: false,
     items: [
       {
         id: 'c',
         name: 'VS Code',
-        image: 'https://via.placeholder.com/50',
+        image: require('../../../../assets/image/movie3.png'),
       },
     ],
   },
 ]
 
-/* -------- MAIN COMPONENT -------- */
+/* -------- MAIN -------- */
 export default function Recommend() {
+  const [posts, setPosts] = useState(DATA)
+
+  const { data, isLoading, error, refetch } = useGetRecommendItemsQuery();
+  console.log(data)
+
+  const onLikePress = useCallback((postId: string) => {
+    setPosts(prev =>
+      prev.map(p => {
+        if (p.id === postId) {
+          const newLike = !p.isLiked
+          return {
+            ...p,
+            isLiked: newLike,
+            likes: newLike ? p.likes + 1 : p.likes - 1,
+          }
+        }
+        return p
+      }),
+    )
+  }, [])
+
+  const onSharePress = async (title: string) => {
+    try {
+      await Share.share({
+        message: `Check this out: ${title}`,
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <View style={styles.container}>
-      {/* Heading */}
       <View style={styles.cardheading}>
         <Text style={styles.cardheadingtxt}>Recommended For You</Text>
       </View>
 
-      {/* Feed */}
       <FlatList
-        data={DATA}
+        data={posts}
         keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <PostCard
+            item={item}
+            onLikePress={onLikePress}
+            onSharePress={onSharePress}
+          />
+        )}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <PostCard item={item} />}
       />
     </View>
   )
 }
 
 /* -------- POST CARD -------- */
-function PostCard({ item }) {
+function PostCard({ item, onLikePress, onSharePress }) {
   return (
     <View style={styles.card}>
-      {/* Header */}
       <View style={styles.userRow}>
         <Image
-          source={{ uri: 'https://i.pravatar.cc/100' }}
+          source={require('../../../../assets/image/women1.png')}
           style={styles.avatar}
         />
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>{item.user}</Text>
           <Text style={styles.time}>{item.time}</Text>
         </View>
-        <Text style={styles.menu}>⋮</Text>
+        <Image source={icons.more} style={styles.menuIcon} />
       </View>
 
-      {/* Title */}
       <Text style={styles.title}>{item.title}</Text>
 
-      {/* Items */}
       {item.items.map(listItem => (
         <View key={listItem.id} style={styles.itemRow}>
-          <Image source={{ uri: listItem.image }} style={styles.itemImage} />
+          <Image source={listItem.image} style={styles.itemImage} />
           <Text style={styles.itemText}>{listItem.name}</Text>
         </View>
       ))}
 
-      {/* ACTION BAR (SAME AS OPTIMIZED FLATLIST UI) */}
       <View style={styles.cardlike}>
-        <ActionButton icon={icons.heartFilled} value="355k" />
-        <ActionButton icon={icons.bookmarkFilled} value="120" />
-        <ActionButton icon={icons.shareOutline} value="200" />
+        <Pressable onPress={() => onLikePress(item.id)}>
+          <ActionButton
+            icon={item.isLiked ? icons.heartFilled : icons.heartOutline}
+            value={formatNumber(item.likes)}
+          />
+        </Pressable>
+
+        <Pressable onPress={() => onSharePress(item.title)}>
+          <ActionButton icon={icons.shareOutline} value="Share" />
+        </Pressable>
       </View>
     </View>
   )
@@ -122,15 +168,16 @@ const ActionButton = React.memo(({ icon, value }) => (
   </View>
 ))
 
-/* -------- STYLES -------- */
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
- 
-  },
+/* -------- HELPERS -------- */
+const formatNumber = num => {
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
+  return num.toString()
+}
 
-  /* Heading */
+/* -------- STYLES (UNCHANGED) -------- */
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff' },
+
   cardheading: {
     paddingTop: responsiveScreenHeight(2.5),
     paddingBottom: responsiveScreenHeight(2),
@@ -142,7 +189,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  /* Card */
+  menuIcon: {
+    width: responsiveScreenWidth(5),
+    height: responsiveScreenWidth(5),
+    resizeMode: 'contain',
+  },
+
   card: {
     borderWidth: 1.5,
     borderColor: '#2F6BFF',
@@ -151,7 +203,6 @@ const styles = StyleSheet.create({
     marginBottom: responsiveScreenHeight(2),
   },
 
-  /* Header */
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -171,11 +222,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveScreenFontSize(1.4),
     color: '#777',
   },
-  menu: {
-    fontSize: responsiveScreenFontSize(2.4),
-  },
 
-  /* Content */
   title: {
     fontSize: responsiveScreenFontSize(1.9),
     fontWeight: '600',
@@ -201,7 +248,6 @@ const styles = StyleSheet.create({
     fontSize: responsiveScreenFontSize(1.7),
   },
 
-  /* Action Bar */
   cardlike: {
     flexDirection: 'row',
     borderTopWidth: 1,
