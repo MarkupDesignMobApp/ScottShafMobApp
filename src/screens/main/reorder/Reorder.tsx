@@ -41,7 +41,7 @@ export default function CreateListScreen({ navigation, route }) {
 
   // 🔹 API call
   const { data, isLoading } = useGetCatalogItemsOfListQuery(listId);
- 
+
   // 🔹 Sync API data → state
   useEffect(() => {
     if (data && Array.isArray(data)) {
@@ -50,7 +50,14 @@ export default function CreateListScreen({ navigation, route }) {
   }, [data]);
 
   // 🔹 Render draggable item
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<ListItem>) => (
+  const renderItem = ({
+    item,
+    drag,
+    isActive,
+    getIndex,
+  }: RenderItemParams<ListItem>) => {
+    const index = getIndex?.() ?? 0;
+    return(
     <TouchableOpacity
       activeOpacity={1}
       onLongPress={drag}
@@ -58,7 +65,7 @@ export default function CreateListScreen({ navigation, route }) {
     >
       {/* Index / ID */}
       <View style={styles.countwrap}>
-        <Text style={styles.countxt}>{item.id}</Text>
+        <Text style={styles.countxt}>{index + 1}</Text>
       </View>
 
       {/* Image */}
@@ -86,7 +93,7 @@ export default function CreateListScreen({ navigation, route }) {
         />
       </View>
     </TouchableOpacity>
-  );
+  )};
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -95,7 +102,7 @@ export default function CreateListScreen({ navigation, route }) {
       <AppHeader
         title="Reorder Items"
         onLeftPress={() => navigation.goBack()}
-        leftImage={require('../../../../assets/image/close.png')}
+        leftImage={require('../../../../assets/image/left-icon.png')}
       />
 
       {/* Info Box */}
@@ -120,7 +127,7 @@ export default function CreateListScreen({ navigation, route }) {
           />
         </View>
         <Text style={styles.switchtxt}>
-        Hold to Drag items to reorder your list. Rankings update Automatically
+          Hold to Drag items to reorder your list. Rankings update Automatically
         </Text>
       </View>
 

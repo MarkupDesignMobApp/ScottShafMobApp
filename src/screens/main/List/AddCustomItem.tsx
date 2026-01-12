@@ -23,7 +23,10 @@ import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import Loader from '../../../components/ui/Loader/Loader';
-import { useAddListItemMutation } from '../../../features/auth/authApi';
+import {
+  useAddListItemMutation,
+  useAddCatalogItemsMutation,
+} from '../../../features/auth/authApi';
 
 export default function AddCustomItem({ navigation, route }) {
   const { listId } = route.params;
@@ -31,35 +34,37 @@ export default function AddCustomItem({ navigation, route }) {
   const [itemName, setItemName] = useState('');
   const [description, setDescription] = useState('');
 
-  const [addListItem, { isLoading }] = useAddListItemMutation();
+  const [addListItem, { isLoading }] = useAddCatalogItemsMutation();
 
   const handleAddItem = async () => {
-    if (!itemName.trim()) return;
+    if (!itemName.trim()) {
+      Alert.alert('Required', 'Item name is required');
+      return;
+    }
 
     try {
-      const res = await addListItem({
-        listId: listId,
+      await addListItem({
+        listId,
         custom_item_name: itemName,
         custom_text: description,
-        // position: 11,
       }).unwrap();
 
-      console.log('SUCCESS:', res);
+      Alert.alert('Success', 'Item added successfully', [
+        {
+          text: 'OK',
+          onPress: () =>
+            navigation.navigate('Reorder', {
+              listId: listId,
+            }),
+        },
+      ]);
     } catch (err: any) {
-      console.log('ERROR:', err);
-
-      if (err?.status === 404) {
-        console.log('❌ API NOT FOUND (wrong URL)');
-      } else if (err?.status === 405) {
-        console.log('❌ Method not allowed');
-      } else if (err?.status === 422) {
-        console.log('❌ Validation error', err.data);
-      } else if (err?.status === 500) {
-        console.log('❌ Backend crash');
-      }
+      Alert.alert(
+        'Error',
+        err?.data?.message || err?.error || 'Something went wrong',
+      );
     }
   };
-
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <Loader color="blue" visible={isLoading} />

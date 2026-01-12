@@ -35,7 +35,7 @@ export default function InviteScreen({ navigation }) {
     { id: 2, text: "Scarr's Pizza" },
     { id: 3, text: '' },
   ]);
-  const [showSuccess, setShowSuccess] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const updateItem = (id, value) => {
     setItems(list => list.map(i => (i.id === id ? { ...i, text: value } : i)));

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,34 +8,33 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-
-} from 'react-native'
+  ActivityIndicator,
+} from 'react-native';
 import {
   responsiveScreenHeight as h,
   responsiveScreenWidth as w,
   responsiveScreenFontSize as f,
-} from 'react-native-responsive-dimensions'
-import AppHeader from '../../../components/ui/AppButton/AppHeader'
+} from 'react-native-responsive-dimensions';
+import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import {
   useGetMyBookFeaturedQuery,
   useDeleteMyBookFeaturedMutation,
-} from '../../../features/auth/authApi'
-import { useFocusEffect } from '@react-navigation/native'
+} from '../../../features/auth/authApi';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Mybookmark({ navigation }: any) {
-  const { data, isLoading, refetch } = useGetMyBookFeaturedQuery()
-  const [deleteMyBookFeatured] = useDeleteMyBookFeaturedMutation()
-  useFocusEffect(()=>{
+  const { data, isLoading, refetch } = useGetMyBookFeaturedQuery();
+  const [deleteMyBookFeatured] = useDeleteMyBookFeaturedMutation();
+  useFocusEffect(() => {
     refetch();
-  })
+  });
 
-  const [showModal, setShowModal] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<any>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-
+  const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // search state
-  const [searchText, setSearchText] = useState('')
+  const [searchText, setSearchText] = useState('');
 
   const openModal = (item: any) => {
     setSelectedItem(item);
@@ -43,34 +42,38 @@ export default function Mybookmark({ navigation }: any) {
   };
 
   const deleteItem = async () => {
-    if (!selectedItem) return
-    setIsDeleting(true)
+    if (!selectedItem) return;
+    setIsDeleting(true);
     try {
-      await deleteMyBookFeatured(selectedItem.id).unwrap()
-      setShowModal(false)
-      refetch()
+      await deleteMyBookFeatured(selectedItem.id).unwrap();
+      setShowModal(false);
+      refetch();
     } catch (err) {
-      console.log('Delete error', err)
+      console.log('Delete error', err);
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
-  
+  };
+
   // show search only when original data exists and has items
-  const hasData = !!(data?.data && Array.isArray(data.data) && data.data.length > 0)
+  const hasData = !!(
+    data?.data &&
+    Array.isArray(data.data) &&
+    data.data.length > 0
+  );
 
   // filtered data based on search input
   const filteredData = useMemo(() => {
-    const items = data?.data || []
-    if (!searchText) return items
-    const q = searchText.toLowerCase()
+    const items = data?.data || [];
+    if (!searchText) return items;
+    const q = searchText.toLowerCase();
     return items.filter(item => {
-      const title = (item.title || '').toString().toLowerCase()
-      const category = (item.category?.name || '').toString().toLowerCase()
-      const interest = (item.interest?.name || '').toString().toLowerCase()
-      return title.includes(q) || category.includes(q) || interest.includes(q)
-    })
-  }, [data?.data, searchText])
+      const title = (item.title || '').toString().toLowerCase();
+      const category = (item.category?.name || '').toString().toLowerCase();
+      const interest = (item.interest?.name || '').toString().toLowerCase();
+      return title.includes(q) || category.includes(q) || interest.includes(q);
+    });
+  }, [data?.data, searchText]);
 
   const renderItem = ({ item }: any) => (
     <View>
@@ -101,102 +104,110 @@ export default function Mybookmark({ navigation }: any) {
   );
 
   return (
-    <View style={styles.container}>
+    <>
       <AppHeader
         title="My Bookmark"
         onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
-
-      {/* Search -> only render when we have data */}
-      {hasData && (
-        <View style={styles.searchBox}>
-          <Image
-            source={require('../../../../assets/image/search.png')}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            placeholder="Search articles"
-            placeholderTextColor="#9CA3AF"
-            style={styles.searchInput}
-            value={searchText}
-            onChangeText={setSearchText}
-            returnKeyType="search"
-            underlineColorAndroid="transparent"
-          />
-        </View>
-      )}
-
-      {/* Loader */}
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#0180FE" style={{ flex:1 }} />
-      ) : (
-        <FlatList
-        data={filteredData}
-        keyExtractor={item => item.id.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingHorizontal: w(4), paddingBottom: h(4) }}
-        ListEmptyComponent={
-          <View style={{ alignItems: 'center', marginTop: h(10) }}>
+      <View style={styles.container}>
+        {/* Search -> only render when we have data */}
+        {hasData && (
+          <View style={styles.searchBox}>
             <Image
-              source={require('../../../../assets/image/notificationnotfount.jpg')}
-              style={{ width: 300, height: 300, resizeMode: 'contain' }}
+              source={require('../../../../assets/image/search.png')}
+              style={styles.searchIcon}
             />
-            <Text style={{ textAlign: 'center', marginTop: h(2), color: '#6B7280' }}>
-              {hasData ? 'No results found' : 'No Bookmarks Found'}
-            </Text>
+            <TextInput
+              placeholder="Search articles"
+              placeholderTextColor="#9CA3AF"
+              style={styles.searchInput}
+              value={searchText}
+              onChangeText={setSearchText}
+              returnKeyType="search"
+              underlineColorAndroid="transparent"
+            />
           </View>
-        }
-      />
-      
-      )}
+        )}
 
-      {/* Delete Modal */}
-      <Modal transparent visible={showModal} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Image
-              source={require('../../../../assets/image/bookmarkdelete.png')}
-              style={styles.deleteIcon}
-            />
+        {/* Loader */}
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#0180FE" style={{ flex: 1 }} />
+        ) : (
+          <FlatList
+            data={filteredData}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{
+              paddingHorizontal: w(4),
+              paddingBottom: h(4),
+            }}
+            ListEmptyComponent={
+              <View style={{ alignItems: 'center', marginTop: h(10) }}>
+                <Image
+                  source={require('../../../../assets/image/notificationnotfount.jpg')}
+                  style={{ width: 300, height: 300, resizeMode: 'contain' }}
+                />
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    marginTop: h(2),
+                    color: '#6B7280',
+                  }}
+                >
+                  {hasData ? 'No results found' : 'No Bookmarks Found'}
+                </Text>
+              </View>
+            }
+          />
+        )}
 
-            <Text
-              style={styles.modalTitle}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              Delete {selectedItem?.title}
-            </Text>
+        {/* Delete Modal */}
+        <Modal transparent visible={showModal} animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <Image
+                source={require('../../../../assets/image/bookmarkdelete.png')}
+                style={styles.deleteIcon}
+              />
 
-            <Text style={styles.modalDesc}>
-              Are you sure you want to delete this bookmark?
-            </Text>
-
-            <View style={styles.modalRow}>
-              <TouchableOpacity
-                style={styles.keepBtn}
-                onPress={() => setShowModal(false)}
+              <Text
+                style={styles.modalTitle}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
-                <Text style={styles.keepText}>No, Keep It</Text>
-              </TouchableOpacity>
+                Delete {selectedItem?.title}
+              </Text>
 
-              <TouchableOpacity
-  style={styles.deleteBtn}
-  onPress={deleteItem}
-  disabled={isDeleting}
->
-  {isDeleting ? (
-    <ActivityIndicator color="#fff" />
-  ) : (
-    <Text style={styles.deleteText}>Yes, Delete</Text>
-  )}
-</TouchableOpacity>
+              <Text style={styles.modalDesc}>
+                Are you sure you want to delete this bookmark?
+              </Text>
 
+              <View style={styles.modalRow}>
+                <TouchableOpacity
+                  style={styles.keepBtn}
+                  onPress={() => setShowModal(false)}
+                >
+                  <Text style={styles.keepText}>No, Keep It</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={deleteItem}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.deleteText}>Yes, Delete</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </>
   );
 }
 
@@ -204,8 +215,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: w(5),
-    paddingTop: h(3),
+    // paddingHorizontal: w(5),
   },
 
   searchBox: {
@@ -213,8 +223,8 @@ const styles = StyleSheet.create({
     borderRadius: h(3),
     borderWidth: 1,
     borderColor: '#ACACAC',
-    paddingHorizontal: w(3), 
-    marginHorizontal: w(4), 
+    paddingHorizontal: w(3),
+    marginHorizontal: w(4),
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: h(2),
@@ -239,7 +249,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: w(1), 
+    paddingHorizontal: w(1),
   },
 
   image: {

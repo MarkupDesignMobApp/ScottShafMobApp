@@ -20,11 +20,9 @@ import {
   FeaturedListSummary,
   FeaturedListItem,
   FeaturedListItemsResponse,
-  FeaturedList,
   CreateListRequest,
   CreateListResponse,
   InviteUsersResponse,
-  AddListItemRequest,
   AddListItemResponse,
   Category,
   CategoriesResponse,
@@ -37,8 +35,7 @@ import {
   CampaignsResponse,
   Campaign,
   CatalogItemsPublishList,
- FeaturedBookmarkItem,
- FeaturedBookmarksResponse
+  FeaturedBookmarksResponse
 } from './authTypes';
 
 import {
@@ -53,53 +50,43 @@ import {
   FeaturedBookmarks
 } from './endpoints';
 
-/* ✅ NEW REQUEST TYPE FOR CATALOG ITEMS */
-export interface AddCatalogItemsRequest {
-  listId: number;
-  catalog_item_ids: number[];
-}
+/* ================= API ================= */
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
+
+    /* ================= CAMPAIGNS ================= */
+
     getCampaigns: builder.query<Campaign[], void>({
-      query: () => ({
-        url: '/scott-shafer/api/campaigns',
-        method: 'GET',
-      }),
+      query: () => ({ url: '/scott-shafer/api/campaigns', method: 'GET' }),
       transformResponse: (res: CampaignsResponse) => res.campaigns,
       providesTags: ['Campaigns'],
     }),
 
-    shareFeaturedItem: builder.mutation<
-      ShareFeaturedItemResponse,
-      number | string
-    >({
+    /* ================= FEATURED ITEMS ================= */
+
+    shareFeaturedItem: builder.mutation<ShareFeaturedItemResponse, number | string>({
       query: itemId => ({
         url: `/scott-shafer/api/featured-items/${itemId}/share-link`,
-        method: 'GET', // ✅ BACKEND EXPECTS GET
+        method: 'GET',
       }),
     }),
 
-    bookmarkFeaturedItem: builder.mutation<
-      BookmarkFeaturedItemResponse,
-      number | string
-    >({
+    bookmarkFeaturedItem: builder.mutation<BookmarkFeaturedItemResponse, number | string>({
       query: itemId => ({
         url: `/scott-shafer/api/featured-items/${itemId}/bookmark`,
         method: 'POST',
       }),
     }),
 
-    likeFeaturedItem: builder.mutation<
-      LikeFeaturedItemResponse,
-      number | string
-    >({
+    likeFeaturedItem: builder.mutation<LikeFeaturedItemResponse, number | string>({
       query: itemId => ({
         url: FEATURED_ITEM_ENDPOINTS.LIKE_ITEM(itemId),
         method: 'POST',
       }),
-      invalidatesTags: ['FeaturedList'], // optional but recommended
+      invalidatesTags: ['FeaturedList'],
     }),
+
     /* ================= AUTH ================= */
 
     requestOtp: builder.mutation<RequestOtpResponse, RequestOtpRequest>({
@@ -127,10 +114,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    updateTermsAndPrivacy: builder.mutation<
-      TermsAndPrivacyResponse,
-      TermsAndPrivacyRequest
-    >({
+    updateTermsAndPrivacy: builder.mutation<TermsAndPrivacyResponse, TermsAndPrivacyRequest>({
       query: body => ({
         url: AUTH_ENDPOINTS.TERMS_AND_PRIVACY,
         method: 'POST',
@@ -141,10 +125,7 @@ export const authApi = baseApi.injectEndpoints({
     /* ================= PROFILE ================= */
 
     getUserProfile: builder.query<ProfileResponse, void>({
-      query: () => ({
-        url: AUTH_ENDPOINTS.GET_PROFILE,
-        method: 'GET',
-      }),
+      query: () => ({ url: AUTH_ENDPOINTS.GET_PROFILE, method: 'GET' }),
       providesTags: ['Profile'],
     }),
 
@@ -168,27 +149,16 @@ export const authApi = baseApi.injectEndpoints({
     /* ================= INTERESTS ================= */
 
     getAllInterests: builder.query<Interest[], void>({
-      query: () => ({
-        url: AUTH_ENDPOINTS.ALL_INTEREST,
-        method: 'GET',
-      }),
-      transformResponse: (res: { success: boolean; data: Interest[] }) =>
-        res.data,
+      query: () => ({ url: AUTH_ENDPOINTS.ALL_INTEREST, method: 'GET' }),
+      transformResponse: (res: { data: Interest[] }) => res.data,
     }),
 
     getUserInterests: builder.query<Interest[], void>({
-      query: () => ({
-        url: AUTH_ENDPOINTS.USE_INTEREST,
-        method: 'GET',
-      }),
-      transformResponse: (res: { success: boolean; data: Interest[] }) =>
-        res.data,
+      query: () => ({ url: AUTH_ENDPOINTS.USE_INTEREST, method: 'GET' }),
+      transformResponse: (res: { data: Interest[] }) => res.data,
     }),
 
-    saveUserInterests: builder.mutation<
-      SaveInterestsResponse,
-      SaveInterestsRequest
-    >({
+    saveUserInterests: builder.mutation<SaveInterestsResponse, SaveInterestsRequest>({
       query: body => ({
         url: AUTH_ENDPOINTS.ADD_INTEREST,
         method: 'POST',
@@ -212,61 +182,20 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['InviteUsers'],
     }),
 
-  addListItem: builder.mutation<
-  AddListItemResponse,
-  {
-    listId: number | string;
-    custom_item_name: string;
-    custom_text?: string;
-    position?: number;
-  }
->({
-  query: ({ listId, custom_item_name, custom_text, position }) => ({
-    url: `/scott-shafer/api/lists/${listId}/items`,
-    method: 'POST',
-    body: {
-      custom_item_name,
-      custom_text,
-      position,
-    },
-  }),
-}),
-
-
-    /* ✅ FIXED: ADD CATALOG ITEMS TO LIST */
-export const authApi = baseApi.injectEndpoints({
-  endpoints: builder => ({
-
-    /* ================= LIST ================= */
-
     addListItem: builder.mutation<
       AddListItemResponse,
-      {
-        listId: number | string;
-        custom_item_name: string;
-        custom_text?: string;
-        position?: number;
-      }
+      { listId: number | string; custom_item_name: string; custom_text?: string; position?: number }
     >({
-      query: ({ listId, custom_item_name, custom_text, position }) => ({
+      query: ({ listId, ...body }) => ({
         url: `/scott-shafer/api/lists/${listId}/items`,
         method: 'POST',
-        body: {
-          custom_item_name,
-          custom_text,
-          position,
-        },
+        body,
       }),
     }),
 
-    /* ✅ ADD CATALOG ITEMS TO LIST (THIS WAS MISSING) */
     addCatalogItems: builder.mutation<
       AddListItemResponse,
-      {
-        listId: number;
-        catalog_item_ids: number[];
-        position?: number;
-      }
+      { listId: number; catalog_item_ids: number[]; position?: number }
     >({
       query: body => ({
         url: '/scott-shafer/api/lists/items',
@@ -277,25 +206,8 @@ export const authApi = baseApi.injectEndpoints({
 
     getCatalogItemsOfList: builder.query<CatalogItem[], number>({
       query: listId => ({
-        url: `/scott-shafer/api/lists/${listId}/items`,
+        url: LIST_ENDPOINTS.ADD_LIST_ITEM(listId),
         method: 'GET',
-      }),
-      transformResponse: (res: ListCatalogItemsResponse) => res.data,
-    }),
-
-    // ⬇️ other endpoints continue here…
-
-  }),
-}),
-
-
-  
-
-
-    getCatalogItemsOfList: builder.query<CatalogItem[], number>({
-      query: listId => ({
-        url: LIST_ENDPOINTS.ADD_LIST_ITEM(listId), // ✅ SAME URL
-        method: 'GET', // ✅ GET instead of POST
       }),
       transformResponse: (res: ListCatalogItemsResponse) => res.data,
       providesTags: ['CatalogItems'],
@@ -305,23 +217,20 @@ export const authApi = baseApi.injectEndpoints({
 
     getCatalogCategories: builder.query<Category[], void>({
       query: () => CATALOG_ENDPOINTS.CATEGORIES,
-      transformResponse: (response: CategoriesResponse) => response.data ?? [],
+      transformResponse: (res: CategoriesResponse) => res.data ?? [],
       providesTags: ['Categories'],
     }),
 
     getCatalogItemsByCategory: builder.query<CatalogItem[], number>({
-      query: categoryId => ({
-        url: `/scott-shafer/api/catalog/items/${categoryId}`,
+      query: id => ({
+        url: `/scott-shafer/api/catalog/items/${id}`,
         method: 'GET',
       }),
-      transformResponse: (response: CatalogItemsResponse) => response.data,
+      transformResponse: (res: CatalogItemsResponse) => res.data,
       providesTags: ['CatalogItems'],
     }),
 
-    publishList: builder.mutation<
-      CatalogItemsPublishList[],
-      { list_ids: number[] }
-    >({
+    publishList: builder.mutation<CatalogItemsPublishList[], { list_ids: number[] }>({
       query: body => ({
         url: CATALOG_ENDPOINTS.PUBLISH_LIST,
         method: 'POST',
@@ -332,14 +241,11 @@ export const authApi = baseApi.injectEndpoints({
 
     /* ================= FEATURED LIST ================= */
 
-    getFeaturedLists: builder.query<
-      FeaturedListSummary[],
-      { interestId?: number } | void
-    >({
+    getFeaturedLists: builder.query<FeaturedListSummary[], { interestId?: number } | void>({
       query: args => ({
         url: FEATURED_LIST_ENDPOINTS.FEATURED_LISTS,
         method: 'GET',
-        params: args?.interestId ? { interest_id: args.interestId } : undefined, // 👈 For You (no query param)
+        params: args?.interestId ? { interest_id: args.interestId } : undefined,
       }),
       transformResponse: (res: FeaturedListsResponse) => res.data,
       providesTags: ['FeaturedList'],
@@ -354,16 +260,21 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['FeaturedList'],
     }),
 
-    // 🔹 GET Notification List
-    getNotifications: builder.query<any[], void>({
-      query: () => ({
-        url: Notification.NOTIFICATION_LIST,
+    getFeaturedListById: builder.query<FeaturedListsResponse, number | string>({
+      query: id => ({
+        url: FEATURED_LIST_ENDPOINTS.FEATURED_LIST_BY_ID(id),
         method: 'GET',
       }),
+      providesTags: ['FeaturedList'],
+    }),
+
+    /* ================= NOTIFICATIONS ================= */
+
+    getNotifications: builder.query<any[], void>({
+      query: () => ({ url: Notification.NOTIFICATION_LIST, method: 'GET' }),
       providesTags: ['Notifications'],
     }),
 
-    // 🔹 Accept Notification
     acceptNotification: builder.mutation<any, { list_id: number }>({
       query: body => ({
         url: Notification.ACCEPT_NOTIFICATION,
@@ -373,7 +284,6 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Notifications'],
     }),
 
-    // 🔹 Reject Notification
     rejectNotification: builder.mutation<any, { list_id: number }>({
       query: body => ({
         url: Notification.REJECT_NOTIFICATION,
@@ -383,72 +293,54 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Notifications'],
     }),
 
-    getFeaturedListById: builder.query<FeaturedListsResponse, number | string>({
-      query: id => ({
-        url: FEATURED_LIST_ENDPOINTS.FEATURED_LIST_BY_ID(id),
-        method: 'GET',
-      }),
-      providesTags: ['FeaturedList'],
-    }),
+    /* ================= RECOMMENDED ================= */
 
     getRecommendItems: builder.query<any[], void>({
-      query: () => ({
-        url: Recommended.RECOMMENDED_LIST,
-        method: 'GET',
-      }),
+      query: () => ({ url: Recommended.RECOMMENDED_LIST, method: 'GET' }),
       providesTags: ['RecommendItems'],
     }),
 
-
-    // features/auth/authApi.ts
-    shareList: builder.query<ShareListResponse, number | string>({
-      query: listId => ({
-        url: SHARE_LIST_ENDPOINT(listId),
-        method: 'GET',
-      }),
-    }),
-
-    likeRecommended: builder.mutation({
+    likeRecommended: builder.mutation<any, number>({
       query: id => ({
         url: Recommended.RECOMMENDED_WISHLIST(id),
         method: 'POST',
       }),
-      providesTags: ['RecommendItems'],
+      invalidatesTags: ['RecommendItems'],
     }),
 
-    shareRecommended: builder.mutation({
+    shareRecommended: builder.mutation<any, { id: number; platform: string }>({
       query: ({ id, platform }) => ({
         url: Recommended.RECOMMENDED_SHARE(id),
         method: 'POST',
-        data: {
-          platform,
-        },
+        body: { platform },
       }),
-      providesTags: ['RecommendItems'],
+      invalidatesTags: ['RecommendItems'],
     }),
-    // shareList: builder.query<ShareListResponse, number | string>({
-    //   query: listId => ({
-    //     url: Recommended.SHARE_LIST(listId),
-    //     method: 'GET',
-    //   }),
-    // }),
 
-// Featured Bookmarks (My Book)
-getMyBookFeatured: builder.query({
-  query: () => ({
-    url: FeaturedBookmarks.FEATURED_BOOKMARKS_LIST,
-    method: 'GET',
-  }),
-  providesTags: ['Mybookmark'],
-}),
+    shareList: builder.query<any, number | string>({
+      query: id => ({
+        url: SHARE_LIST_ENDPOINT(id),
+        method: 'GET',
+      }),
+    }),
 
-deleteMyBookFeatured: builder.mutation({
-  query: (bookmarkId: number | string) => ({
-    url: FeaturedBookmarks.FEATURED_BOOKMARK_DELETE(bookmarkId),
-    method: 'DELETE',
-  }),
-  invalidatesTags: ['Mybookmark'], 
-}),
+    /* ================= BOOKMARKS ================= */
+
+    getMyBookFeatured: builder.query<FeaturedBookmarksResponse, void>({
+      query: () => ({
+        url: FeaturedBookmarks.FEATURED_BOOKMARKS_LIST,
+        method: 'GET',
+      }),
+      providesTags: ['Mybookmark'],
+    }),
+
+    deleteMyBookFeatured: builder.mutation<any, number | string>({
+      query: id => ({
+        url: FeaturedBookmarks.FEATURED_BOOKMARK_DELETE(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Mybookmark'],
+    }),
 
   }),
 });
@@ -472,10 +364,10 @@ export const {
   useCreateListMutation,
   useGetInviteUsersQuery,
   useAddListItemMutation,
-  useGetCatalogCategoriesQuery,
-  useGetCatalogItemsByCategoryQuery,
   useAddCatalogItemsMutation,
   useGetCatalogItemsOfListQuery,
+  useGetCatalogCategoriesQuery,
+  useGetCatalogItemsByCategoryQuery,
   useLikeFeaturedItemMutation,
   useBookmarkFeaturedItemMutation,
   useShareFeaturedItemMutation,
@@ -490,5 +382,4 @@ export const {
   useShareListQuery,
   useGetMyBookFeaturedQuery,
   useDeleteMyBookFeaturedMutation,
-
 } = authApi;

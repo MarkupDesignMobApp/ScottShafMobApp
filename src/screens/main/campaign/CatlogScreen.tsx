@@ -37,9 +37,8 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   // console.log("ef",result);
 
   const { data, isLoading } = useGetCatalogItemsByCategoryQuery(categoryId);
-const [addCatalogItems, { isLoading: isAdding }] =
-  useAddCatalogItemsMutation();
-
+  const [addCatalogItems, { isLoading: isAdding }] =
+    useAddCatalogItemsMutation();
 
   /* ================= STATE ================= */
   const [items, setItems] = useState<any[]>([]);
@@ -135,7 +134,7 @@ const [addCatalogItems, { isLoading: isAdding }] =
       <View style={styles.image}>
         <Image
           resizeMode="contain"
-          source={require('../../../../assets/image/glass.png')}
+          source={{uri:item.image_url}}
           style={{ width: '100%', height: '100%' }}
         />
       </View>
