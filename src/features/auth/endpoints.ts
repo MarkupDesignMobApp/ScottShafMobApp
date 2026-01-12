@@ -57,16 +57,9 @@ export const Notification = {
 } as const;
 
 export const Recommended = {
-<<<<<<< HEAD
-
-  SHARE_LIST: (listId: number | string) =>
-    `/scott-shafer/api/lists/${listId}/share-link`,
-  
-=======
   SHARE_LIST: (listId: number | string) =>
     `/scott-shafer/api/lists/${listId}/share-link`,
 
->>>>>>> 5bcb889afeb85fbf9bfa322891d83d261e1db887
   RECOMMENDED_LIST: '/scott-shafer/api/recommeditems',
 
   RECOMMENDED_WISHLIST: (itemId: number | string) =>

@@ -37,7 +37,8 @@ import {
   CampaignsResponse,
   Campaign,
   CatalogItemsPublishList,
-  ShareListResponse,
+ FeaturedBookmarkItem,
+ FeaturedBookmarksResponse
 } from './authTypes';
 
 import {
@@ -49,6 +50,7 @@ import {
   Notification,
   Recommended,
   SHARE_LIST_ENDPOINT,
+  FeaturedBookmarks
 } from './endpoints';
 
 /* ✅ NEW REQUEST TYPE FOR CATALOG ITEMS */
@@ -344,8 +346,8 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['RecommendItems'],
     }),
 
-    // features/auth/authApi.ts
 
+    // features/auth/authApi.ts
     shareList: builder.query<ShareListResponse, number | string>({
       query: listId => ({
         url: SHARE_LIST_ENDPOINT(listId),
@@ -377,6 +379,24 @@ export const authApi = baseApi.injectEndpoints({
     //     method: 'GET',
     //   }),
     // }),
+
+// Featured Bookmarks (My Book)
+getMyBookFeatured: builder.query({
+  query: () => ({
+    url: FeaturedBookmarks.FEATURED_BOOKMARKS_LIST,
+    method: 'GET',
+  }),
+  providesTags: ['Mybookmark'],
+}),
+
+deleteMyBookFeatured: builder.mutation({
+  query: (bookmarkId: number | string) => ({
+    url: FeaturedBookmarks.FEATURED_BOOKMARK_DELETE(bookmarkId),
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['Mybookmark'], 
+}),
+
   }),
 });
 
@@ -415,4 +435,6 @@ export const {
   useShareRecommendedMutation,
   useLazyShareListQuery,
   useShareListQuery,
+  useGetMyBookFeaturedQuery,
+  useDeleteMyBookFeaturedMutation
 } = authApi;

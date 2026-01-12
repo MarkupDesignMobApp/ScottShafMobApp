@@ -15,6 +15,9 @@ export default function Notification({ navigation }) {
   const [rejectNotification, { isLoading: isRejecting }] = useRejectNotificationMutation();
   const [selectedAction, setSelectedAction] = useState({});
 
+    useFocusEffect(()=>{
+      refetch();
+    })
   const Data = Notify?.data?.data || [];
 
   const handleAccept = async (item) => {
