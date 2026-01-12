@@ -23,7 +23,8 @@ export const baseApi = createApi({
     'CatalogItems',
     'Campaigns',
     'Notifications',
-    'RecommendItems'
+    'RecommendItems',
+    
   ],
   endpoints: () => ({}),
 });

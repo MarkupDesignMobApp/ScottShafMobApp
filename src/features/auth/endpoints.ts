@@ -11,7 +11,6 @@ export const AUTH_ENDPOINTS = {
   SAVE_USER: '/scott-shafer/api/user_profile',
   UPDATE_PROFILE: '/scott-shafer/api/update_profile',
   GET_PROFILE: '/scott-shafer/api/profile',
-
 } as const;
 
 export const FEATURED_LIST_ENDPOINTS = {
@@ -34,15 +33,12 @@ export const LIST_ENDPOINTS = {
     `/scott-shafer/api/lists/${listId}/items`,
 } as const;
 
-
-
-
 export const CATALOG_ENDPOINTS = {
   CATEGORIES: '/scott-shafer/api/catalog/categories',
   ITEMS: '/scott-shafer/api/catalog/items', // 👈 NEW
-  UpdateList:'/scott-shafer/api/lists/Update',
-  GetUpdateList:'/scott-shafer/api/Updatelists',
-  PUBLISH_LIST:'/scott-shafer/api/lists/publish'
+  UpdateList: '/scott-shafer/api/lists/Update',
+  GetUpdateList: '/scott-shafer/api/Updatelists',
+  PUBLISH_LIST: '/scott-shafer/api/lists/publish',
 } as const;
 
 // features/auth/endpoints/authEndpoints.ts
@@ -50,10 +46,9 @@ export const CATALOG_ENDPOINTS = {
 export const FEATURED_ITEM_ENDPOINTS = {
   LIKE_ITEM: (itemId: number | string) =>
     `/scott-shafer/api/featured-items/${itemId}/like`,
-    SHARE_LINK: (itemId: number | string) =>
+  SHARE_LINK: (itemId: number | string) =>
     `/scott-shafer/api/featured-items/${itemId}/share-link`,
 } as const;
-
 
 export const Notification = {
   NOTIFICATION_LIST: '/scott-shafer/api/my/notifications',
@@ -62,14 +57,8 @@ export const Notification = {
 } as const;
 
 export const Recommended = {
-
-
-
   SHARE_LIST: (listId: number | string) =>
     `/scott-shafer/api/lists/${listId}/share-link`,
-  
-
-
 
   RECOMMENDED_LIST: '/scott-shafer/api/recommeditems',
 
@@ -84,3 +73,5 @@ export const Recommended = {
 } as const;
 
 
+export const SHARE_LIST_ENDPOINT = (listId: number | string) =>
+  `/scott-shafer/api/lists/${listId}/share-link`;
