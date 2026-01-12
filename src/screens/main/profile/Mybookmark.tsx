@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,13 +8,13 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-} from 'react-native'
+} from 'react-native';
 import {
   responsiveScreenHeight as h,
   responsiveScreenWidth as w,
   responsiveScreenFontSize as f,
-} from 'react-native-responsive-dimensions'
-import AppHeader from '../../../components/ui/AppButton/AppHeader'
+} from 'react-native-responsive-dimensions';
+import AppHeader from '../../../components/ui/AppButton/AppHeader';
 
 const DATA = [
   {
@@ -41,21 +41,21 @@ const DATA = [
     author: 'By Sarah',
     category: 'Food & Drinks',
   },
-]
+];
 
-export default function Mybookmark({ navigation }:any) {
-  const [showModal, setShowModal] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<any>(null)
+export default function Mybookmark({ navigation }: any) {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const openModal = (item: any) => {
-    setSelectedItem(item)
-    setShowModal(true)
-  }
+    setSelectedItem(item);
+    setShowModal(true);
+  };
 
   const deleteItem = () => {
-    console.log('Deleted:', selectedItem?.title)
-    setShowModal(false)
-  }
+    console.log('Deleted:', selectedItem?.title);
+    setShowModal(false);
+  };
 
   const renderItem = ({ item }: any) => (
     <View>
@@ -83,7 +83,7 @@ export default function Mybookmark({ navigation }:any) {
       {/* Divider */}
       <View style={styles.divider} />
     </View>
-  )
+  );
 
   return (
     <View style={styles.container}>
@@ -110,47 +110,46 @@ export default function Mybookmark({ navigation }:any) {
 
       {/* Delete Modal */}
       <Modal transparent visible={showModal} animationType="fade">
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalBox}>
-      <Image
-        source={require('../../../../assets/image/bookmarkdelete.png')}
-        style={styles.deleteIcon}
-      />
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Image
+              source={require('../../../../assets/image/bookmarkdelete.png')}
+              style={styles.deleteIcon}
+            />
 
-      <Text
-        style={styles.modalTitle}
-        numberOfLines={1}
-        ellipsizeMode="tail"
-      >
-        Delete {selectedItem?.title}
-      </Text>
+            <Text
+              style={styles.modalTitle}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              Delete {selectedItem?.title}
+            </Text>
 
-      <Text
-        style={styles.modalDesc}
-        numberOfLines={1}
-        ellipsizeMode="tail"
-      >
-        Are you sure you want to delete this bookmark?
-      </Text>
+            <Text
+              style={styles.modalDesc}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              Are you sure you want to delete this bookmark?
+            </Text>
 
-      <View style={styles.modalRow}>
-        <TouchableOpacity
-          style={styles.keepBtn}
-          onPress={() => setShowModal(false)}
-        >
-          <Text style={styles.keepText}>No, Keep It</Text>
-        </TouchableOpacity>
+            <View style={styles.modalRow}>
+              <TouchableOpacity
+                style={styles.keepBtn}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={styles.keepText}>No, Keep It</Text>
+              </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteBtn} onPress={deleteItem}>
-          <Text style={styles.deleteText}>Yes, Delete</Text>
-        </TouchableOpacity>
-      </View>
+              <TouchableOpacity style={styles.deleteBtn} onPress={deleteItem}>
+                <Text style={styles.deleteText}>Yes, Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
-  </View>
-</Modal>
-
-    </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -158,7 +157,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: w(5),
-    paddingTop: h(3),
   },
 
   /* Search */
@@ -208,42 +206,40 @@ const styles = StyleSheet.create({
     color: '#0180FE',
     fontSize: f(1.7),
     fontWeight: '600',
-    fontFamily:'Quicksand-Regular',
-    marginBottom:h(0.2)
+    fontFamily: 'Quicksand-Regular',
+    marginBottom: h(0.2),
   },
 
   title: {
     fontSize: f(2),
     fontWeight: '700',
-   color:'#000000',
-    fontFamily:'Quicksand-Bold',
-    marginBottom:h(0.2)
+    color: '#000000',
+    fontFamily: 'Quicksand-Bold',
+    marginBottom: h(0.2),
   },
 
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    
   },
 
   author: {
     color: '#6B7280',
-    fontFamily:'Quicksand-light',
-    marginBottom:h(0.2)
+    fontFamily: 'Quicksand-light',
+    marginBottom: h(0.2),
   },
 
   dot: {
     marginHorizontal: 6,
     color: '#0180FE',
-    fontSize: f(2),   
-    fontWeight: '900', 
+    fontSize: f(2),
+    fontWeight: '900',
   },
-  
 
   category: {
     color: '#6B7280',
-    fontFamily:'Quicksand-light',
-    marginBottom:h(0.2)
+    fontFamily: 'Quicksand-light',
+    marginBottom: h(0.2),
   },
 
   moreIcon: {
@@ -288,18 +284,17 @@ const styles = StyleSheet.create({
     marginBottom: h(0.5),
     width: '100%',
     textAlign: 'center',
-    fontFamily:'Quicksand-Bold',
+    fontFamily: 'Quicksand-Bold',
   },
-  
+
   modalDesc: {
     fontSize: f(1.8),
     color: '#000000',
     textAlign: 'center',
     marginBottom: h(3),
     width: '100%',
-    fontFamily:'Quicksand-light',
+    fontFamily: 'Quicksand-light',
   },
-  
 
   modalRow: {
     flexDirection: 'row',
@@ -316,7 +311,7 @@ const styles = StyleSheet.create({
 
   keepText: {
     color: '#00C4FA',
-    fontFamily:'Quicksand-light',
+    fontFamily: 'Quicksand-light',
   },
 
   deleteBtn: {
@@ -328,6 +323,6 @@ const styles = StyleSheet.create({
 
   deleteText: {
     color: '#fff',
-    fontFamily:'Quicksand-light',
+    fontFamily: 'Quicksand-light',
   },
-})
+});

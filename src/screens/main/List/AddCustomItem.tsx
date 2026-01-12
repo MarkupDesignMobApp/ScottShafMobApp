@@ -39,24 +39,24 @@ export default function AddCustomItem({ navigation, route }) {
     try {
       const res = await addListItem({
         listId: listId,
-        custom_item_name: itemName.trim(),
-        custom_text: description.trim(),
+        custom_item_name: itemName,
+        custom_text: description,
+        // position: 11,
       }).unwrap();
 
-      Alert.alert('Success', res.message || 'Item added successfully', [
-        {
-          text: 'OK',
-          onPress: () =>
-            navigation.navigate('Reorder', {
-              listId: listId,
-            }),
-        },
-      ]);
-    } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error?.data?.message || 'Failed to add item. Please try again.',
-      );
+      console.log('SUCCESS:', res);
+    } catch (err: any) {
+      console.log('ERROR:', err);
+
+      if (err?.status === 404) {
+        console.log('❌ API NOT FOUND (wrong URL)');
+      } else if (err?.status === 405) {
+        console.log('❌ Method not allowed');
+      } else if (err?.status === 422) {
+        console.log('❌ Validation error', err.data);
+      } else if (err?.status === 500) {
+        console.log('❌ Backend crash');
+      }
     }
   };
 

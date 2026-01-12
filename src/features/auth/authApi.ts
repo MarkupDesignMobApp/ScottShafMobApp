@@ -37,7 +37,6 @@ import {
   CampaignsResponse,
   Campaign,
   CatalogItemsPublishList,
-  ShareListResponse,
 } from './authTypes';
 
 import {
@@ -210,30 +209,86 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['InviteUsers'],
     }),
 
-    addListItem: builder.mutation<AddListItemResponse, AddListItemRequest>({
-      query: ({ listId, custom_item_name, custom_text }) => ({
-        url: LIST_ENDPOINTS.ADD_LIST_ITEM(listId),
+  addListItem: builder.mutation<
+  AddListItemResponse,
+  {
+    listId: number | string;
+    custom_item_name: string;
+    custom_text?: string;
+    position?: number;
+  }
+>({
+  query: ({ listId, custom_item_name, custom_text, position }) => ({
+    url: `/scott-shafer/api/lists/${listId}/items`,
+    method: 'POST',
+    body: {
+      custom_item_name,
+      custom_text,
+      position,
+    },
+  }),
+}),
+
+
+    /* ✅ FIXED: ADD CATALOG ITEMS TO LIST */
+export const authApi = baseApi.injectEndpoints({
+  endpoints: builder => ({
+
+    /* ================= LIST ================= */
+
+    addListItem: builder.mutation<
+      AddListItemResponse,
+      {
+        listId: number | string;
+        custom_item_name: string;
+        custom_text?: string;
+        position?: number;
+      }
+    >({
+      query: ({ listId, custom_item_name, custom_text, position }) => ({
+        url: `/scott-shafer/api/lists/${listId}/items`,
         method: 'POST',
         body: {
           custom_item_name,
           custom_text,
+          position,
         },
       }),
     }),
 
-    /* ✅ FIXED: ADD CATALOG ITEMS TO LIST */
-    addCatalogItemToList: builder.mutation<
+    /* ✅ ADD CATALOG ITEMS TO LIST (THIS WAS MISSING) */
+    addCatalogItems: builder.mutation<
       AddListItemResponse,
-      AddCatalogItemsRequest
+      {
+        listId: number;
+        catalog_item_ids: number[];
+        position?: number;
+      }
     >({
-      query: ({ listId, catalog_item_ids }) => ({
-        url: LIST_ENDPOINTS.ADD_LIST_ITEM(listId),
+      query: body => ({
+        url: '/scott-shafer/api/lists/items',
         method: 'POST',
-        body: {
-          catalog_item_ids,
-        },
+        body,
       }),
     }),
+
+    getCatalogItemsOfList: builder.query<CatalogItem[], number>({
+      query: listId => ({
+        url: `/scott-shafer/api/lists/${listId}/items`,
+        method: 'GET',
+      }),
+      transformResponse: (res: ListCatalogItemsResponse) => res.data,
+    }),
+
+    // ⬇️ other endpoints continue here…
+
+  }),
+}),
+
+
+  
+
+
     getCatalogItemsOfList: builder.query<CatalogItem[], number>({
       query: listId => ({
         url: LIST_ENDPOINTS.ADD_LIST_ITEM(listId), // ✅ SAME URL
@@ -253,11 +308,8 @@ export const authApi = baseApi.injectEndpoints({
 
     getCatalogItemsByCategory: builder.query<CatalogItem[], number>({
       query: categoryId => ({
-        url: CATALOG_ENDPOINTS.ITEMS,
+        url: `/scott-shafer/api/catalog/items/${categoryId}`,
         method: 'GET',
-        params: {
-          category_id: categoryId,
-        },
       }),
       transformResponse: (response: CatalogItemsResponse) => response.data,
       providesTags: ['CatalogItems'],
@@ -401,7 +453,7 @@ export const {
   useAddListItemMutation,
   useGetCatalogCategoriesQuery,
   useGetCatalogItemsByCategoryQuery,
-  useAddCatalogItemToListMutation,
+  useAddCatalogItemsMutation,
   useGetCatalogItemsOfListQuery,
   useLikeFeaturedItemMutation,
   useBookmarkFeaturedItemMutation,

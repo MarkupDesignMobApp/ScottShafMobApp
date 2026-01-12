@@ -22,10 +22,9 @@ import {
 
 import {
   useGetCatalogItemsByCategoryQuery,
-  useAddCatalogItemToListMutation,
+  useAddCatalogItemsMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
-
 
 const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'Bars'];
 
@@ -33,9 +32,13 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   const { categoryId, listId } = route.params;
 
   /* ================= API ================= */
+
+  //   const result = useGetCatalogItemsByCategoryQuery(3);
+  // console.log("ef",result);
+
   const { data, isLoading } = useGetCatalogItemsByCategoryQuery(categoryId);
-  const [addCatalogItems, { isLoading: isAdding }] =
-    useAddCatalogItemToListMutation();
+const [addCatalogItems, { isLoading: isAdding }] =
+  useAddCatalogItemsMutation();
 
 
   /* ================= STATE ================= */
@@ -45,7 +48,6 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   /* ================= MAP API → LOCAL ================= */
   useEffect(() => {
     if (data) {
-     
       setItems(
         data.map(item => ({
           ...item,
@@ -68,14 +70,13 @@ export default function BrowseCatalogScreen({ navigation, route }) {
       navigation.goBack();
       return;
     }
-  
+
     // Items exist → go to Addcustom screen
     navigation.navigate('Addcustom', {
       selectedItems: items.filter(item => item.selected).map(item => item.id),
       listId: listId,
     });
   };
-  
 
   const handleNext = async () => {
     if (!items || items.length === 0) {
