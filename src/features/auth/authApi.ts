@@ -37,6 +37,7 @@ import {
   CampaignsResponse,
   Campaign,
   CatalogItemsPublishList,
+  ShareListResponse
 } from './authTypes';
 
 import {
@@ -348,6 +349,39 @@ export const authApi = baseApi.injectEndpoints({
       }),
       providesTags: ['RecommendItems'],
     }),
+
+    likeRecommended: builder.mutation({
+      query: (id) => ({
+        url: Recommended.RECOMMENDED_WISHLIST(id),
+        method: 'POST',
+      }),
+      providesTags: ['RecommendItems'],
+    }),
+    
+    shareRecommended: builder.mutation({
+      query: ({ id, platform }) => ({
+        url: Recommended.RECOMMENDED_SHARE(id),
+        method: 'POST',
+        data: {
+          platform,  
+        },
+      }),
+      providesTags: ['RecommendItems'],
+    }),
+    shareList: builder.query<ShareListResponse, number | string>({
+      query: listId => ({
+        url: Recommended.SHARE_LIST(listId),
+        method: 'GET',
+      }),
+    }),
+    
+    getShareLink: builder.mutation({
+      query: (id) => ({
+        url: Recommended.RECOMMENDED_SHARE_LINK(id),
+        method: 'GET',
+      }),
+      providesTags: ['RecommendItems'],
+    }),
     
 
   }),
@@ -383,5 +417,9 @@ export const {
   useAcceptNotificationMutation,
   useGetNotificationsQuery,
   useRejectNotificationMutation,
-  useGetRecommendItemsQuery
+  useGetRecommendItemsQuery,
+  useLikeRecommendedMutation,
+  useShareRecommendedMutation,
+  useGetShareLinkMutation,
+  useShareListQuery
 } = authApi;

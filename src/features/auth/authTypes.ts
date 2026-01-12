@@ -555,3 +555,10 @@ export interface ProfileResponse {
 export interface CatalogItemsPublishList {
   list_ids: number[];
 }
+
+
+export interface ShareListResponse {
+  success: boolean;
+  message: string;
+  share_url: string;
+}

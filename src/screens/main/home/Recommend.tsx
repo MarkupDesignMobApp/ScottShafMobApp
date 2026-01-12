@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import {
   View,
   Text,
@@ -7,92 +7,124 @@ import {
   Image,
   Share,
   Pressable,
+  Alert,
 } from 'react-native'
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions'
-import {useGetRecommendItemsQuery} from '../../../features/auth/authApi'
+import { useGetRecommendItemsQuery , useLikeRecommendedMutation, useShareRecommendedMutation,useShareListQuery} from '../../../features/auth/authApi'
 
-/* -------- ICONS -------- */
+/* -------- ICONS / PLACEHOLDER -------- */
 const icons = {
   heartFilled: require('../../../../assets/image/heart.png'),
   heartOutline: require('../../../../assets/image/unfillheart.png'),
   shareOutline: require('../../../../assets/image/unfillshare.png'),
   more: require('../../../../assets/image/dots.png'),
 }
-
-/* -------- STATIC DATA -------- */
-const DATA = [
-  {
-    id: '1',
-    user: 'Alex Chen',
-    time: '2 hour ago',
-    title: 'Top 5 Sci-Fi Movies of 2024',
-    likes: 355000,
-    isLiked: false,
-    items: [
-      {
-        id: 'a',
-        name: 'Dune: Part Two',
-        image: require('../../../../assets/image/movie1.png'),
-      },
-      {
-        id: 'b',
-        name: 'Civil War',
-        image: require('../../../../assets/image/movie2.png'),
-      },
-    ],
-  },
-  {
-    id: '2',
-    user: 'Alex Chen',
-    time: '2 hour ago',
-    title: "3 Coding tools I can’t live without",
-    likes: 1200,
-    isLiked: false,
-    items: [
-      {
-        id: 'c',
-        name: 'VS Code',
-        image: require('../../../../assets/image/movie3.png'),
-      },
-    ],
-  },
-]
+const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png')
 
 /* -------- MAIN -------- */
 export default function Recommend() {
-  const [posts, setPosts] = useState(DATA)
+  const [posts, setPosts] = useState([])
 
-  const { data, isLoading, error, refetch } = useGetRecommendItemsQuery();
-  console.log(data)
+  const { data, isLoading, error, refetch } = useGetRecommendItemsQuery()
+  const [likeRecommended] = useLikeRecommendedMutation()
+const [shareRecommended] = useShareRecommendedMutation()
+const { data:sharedata } = useShareListQuery(5);
+alert("feef",sharedata)
 
-  const onLikePress = useCallback((postId: string) => {
-    setPosts(prev =>
-      prev.map(p => {
-        if (p.id === postId) {
-          const newLike = !p.isLiked
+  
+  useEffect(() => {
+    if (!data) return
+    const rawList = Array.isArray(data) ? data : data?.data ?? []
+    const mapped = rawList.map(apiItem => {
+      const items = (apiItem.items || [])
+        .map(it => {
+          const ci = it.catalog_item
+          if (!ci) return null 
           return {
-            ...p,
-            isLiked: newLike,
-            likes: newLike ? p.likes + 1 : p.likes - 1,
+            id: String(ci.id),
+            name: ci.name ?? 'Unknown',
+            image: { uri: ci.image_url },
           }
-        }
-        return p
-      }),
-    )
-  }, [])
+        })
+        .filter(Boolean)
 
-  const onSharePress = async (title: string) => {
+      return {
+        id: String(apiItem.id),
+        user: apiItem.user?.full_name ?? 'Unknown',
+        time: formatTimeAgo(apiItem.created_at),
+        title: apiItem.title ?? '',
+        likes: Number(apiItem.likes_count ?? 0),
+        isLiked: Boolean(apiItem.is_liked),
+        items,
+      }
+    })
+    setPosts(mapped)
+  }, [data])
+
+  const onLikePress = async (itemId) => {
+    console.log(itemId)
+    if (!itemId) return;
     try {
-      await Share.share({
-        message: `Check this out: ${title}`,
-      })
-    } catch (error) {
-      console.log(error)
+      await likeRecommended(itemId).unwrap();
+      refetch(); 
+    } catch (e) {
+      console.log('Like error', e);
     }
+  };
+  
+  const onSharePress = async (itemId, title) => {
+    try {
+      // 1️⃣ Notify backend (must be valid platform)
+      await shareRecommended({
+        id: itemId,
+     
+      }).unwrap();
+  
+      // 2️⃣ Get real share link
+      const res = await getShareLink(6).unwrap();
+      console.log(res)
+      const url = res?.share_url 
+    alert(url)
+  
+      if (!url) {
+        console.log('No share URL from API');
+        return;
+      }
+  
+      // 3️⃣ Open system share (Instagram, WhatsApp etc)
+      await Share.share({
+        title,
+        message: `${title}\n\n${url}`,
+        url,
+      });
+  
+    } catch (e) {
+      console.log('Share error', JSON.stringify(e, null, 2));
+    }
+  };
+  
+  
+  if (isLoading) {
+    return (
+      <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
+        <Text>Loading recommendations...</Text>
+      </View>
+    )
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, {padding: 16}]}>
+        <Text style={{ color: 'red', marginBottom: 8 }}>Failed to load recommendations</Text>
+        <Pressable onPress={() => refetch()}>
+          <Text style={{ color: '#2F6BFF' }}>Try again</Text>
+        </Pressable>
+      </View>
+    )
   }
 
   return (
@@ -112,6 +144,7 @@ export default function Recommend() {
           />
         )}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={<Text style={{ padding: 16 }}>No recommendations yet.</Text>}
       />
     </View>
   )
@@ -137,21 +170,25 @@ function PostCard({ item, onLikePress, onSharePress }) {
 
       {item.items.map(listItem => (
         <View key={listItem.id} style={styles.itemRow}>
-          <Image source={listItem.image} style={styles.itemImage} />
+          <Image
+            source={listItem.image && listItem.image.uri ? listItem.image : PLACEHOLDER_IMAGE}
+            style={styles.itemImage}
+            resizeMode="cover"
+          />
           <Text style={styles.itemText}>{listItem.name}</Text>
         </View>
       ))}
 
       <View style={styles.cardlike}>
-        <Pressable onPress={() => onLikePress(item.id)}>
+      <Pressable onPress={() => onLikePress(item.id)}>
           <ActionButton
             icon={item.isLiked ? icons.heartFilled : icons.heartOutline}
             value={formatNumber(item.likes)}
           />
         </Pressable>
 
-        <Pressable onPress={() => onSharePress(item.title)}>
-          <ActionButton icon={icons.shareOutline} value="Share" />
+        <Pressable onPress={() => onSharePress(item.id, item.title)}>
+          <ActionButton icon={icons.shareOutline} value={`Share`} />
         </Pressable>
       </View>
     </View>
@@ -170,8 +207,24 @@ const ActionButton = React.memo(({ icon, value }) => (
 
 /* -------- HELPERS -------- */
 const formatNumber = num => {
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
-  return num.toString()
+  const n = Number(num ?? 0)
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
+  return n.toString()
+}
+
+function formatTimeAgo(isoString) {
+  if (!isoString) return ''
+  const then = new Date(isoString)
+  const now = new Date()
+  const diff = Math.floor((now - then) / 1000)
+  if (diff < 60) return `${diff}s ago`
+  const mins = Math.floor(diff / 60)
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+  return then.toLocaleDateString()
 }
 
 /* -------- STYLES (UNCHANGED) -------- */

@@ -34,6 +34,9 @@ export const LIST_ENDPOINTS = {
     `/scott-shafer/api/lists/${listId}/items`,
 } as const;
 
+
+
+
 export const CATALOG_ENDPOINTS = {
   CATEGORIES: '/scott-shafer/api/catalog/categories',
   ITEMS: '/scott-shafer/api/catalog/items', // 👈 NEW
@@ -59,6 +62,25 @@ export const Notification = {
 } as const;
 
 export const Recommended = {
+
+
+
+  SHARE_LIST: (listId: number | string) =>
+    `/scott-shafer/api/lists/${listId}/share-link`,
+  
+
+
+
   RECOMMENDED_LIST: '/scott-shafer/api/recommeditems',
+
+  RECOMMENDED_WISHLIST: (itemId: number | string) =>
+    `/scott-shafer/api/lists/${itemId}/like`,
+
+  RECOMMENDED_SHARE: (itemId: number | string) =>
+    `/scott-shafer/api/lists/${itemId}/share`,
+
+  RECOMMENDED_SHARE_LINK: (itemId: number | string) =>
+    `/scott-shafer/api/lists/${itemId}/share-link`,
 } as const;
+
 
