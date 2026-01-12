@@ -72,7 +72,7 @@ export default function CreateListScreen({ navigation, route }) {
       <View style={styles.image}>
         <Image
           resizeMode="contain"
-          source={require('../../../../assets/image/glass.png')}
+          source={{uri:item.image_url}}
           style={{ width: '100%', height: '100%' }}
         />
       </View>
