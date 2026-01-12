@@ -9,8 +9,10 @@ import {
   Browsecat,
   AddCustomItem,
   Reorder,
-  Invitescreen,Publish
+  Invitescreen,Publish,
+  Bookmark
 } from '../../screens/index';
+
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -30,6 +32,7 @@ export default function MainNavigator() {
       <Stack.Screen name="Reorder" component={Reorder} />
       <Stack.Screen name="Invitescreen" component={Invitescreen} />
        <Stack.Screen name="Publish" component={Publish} />
+       {/* <Stack.Screen name="Bookmark" component={Bookmark} /> */}
     </Stack.Navigator>
   );
 }

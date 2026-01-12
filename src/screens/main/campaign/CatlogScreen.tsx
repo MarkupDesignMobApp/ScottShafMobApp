@@ -25,7 +25,6 @@ import {
   useAddCatalogItemToListMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
-import { CommonActions } from '@react-navigation/native';
 
 
 const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'Bars'];

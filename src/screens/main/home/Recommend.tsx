@@ -33,7 +33,6 @@ export default function Recommend() {
   const [likeRecommended] = useLikeRecommendedMutation()
 const [shareRecommended] = useShareRecommendedMutation()
 const { data:sharedata } = useShareListQuery(5);
-alert("feef",sharedata)
 
   
   useEffect(() => {
@@ -119,7 +118,7 @@ alert("feef",sharedata)
   if (error) {
     return (
       <View style={[styles.container, {padding: 16}]}>
-        <Text style={{ color: 'red', marginBottom: 8 }}>Failed to load recommendations</Text>
+        
         <Pressable onPress={() => refetch()}>
           <Text style={{ color: '#2F6BFF' }}>Try again</Text>
         </Pressable>

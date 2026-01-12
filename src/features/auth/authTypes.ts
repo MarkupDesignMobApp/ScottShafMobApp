@@ -557,8 +557,34 @@ export interface CatalogItemsPublishList {
 }
 
 
-export interface ShareListResponse {
-  success: boolean;
-  message: string;
-  share_url: string;
+export interface FeaturedBookmarksResponse {
+  success: boolean
+  message: string
+  data: FeaturedBookmarkItem[]
+}
+
+export interface FeaturedBookmarkItem {
+  id: number
+  title: string
+  list_size: number
+  status: 'live' | 'draft' | string
+
+  category: {
+    id: number
+    name: string
+  }
+
+  interest: {
+    id: number
+    name: string
+  }
+
+  image: string
+
+  likes_count: number
+  saves_count: number
+  shares_count: number
+
+  is_liked: boolean
+  is_saved: boolean
 }

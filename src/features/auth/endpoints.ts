@@ -63,14 +63,9 @@ export const Notification = {
 
 export const Recommended = {
 
-
-
   SHARE_LIST: (listId: number | string) =>
     `/scott-shafer/api/lists/${listId}/share-link`,
   
-
-
-
   RECOMMENDED_LIST: '/scott-shafer/api/recommeditems',
 
   RECOMMENDED_WISHLIST: (itemId: number | string) =>
@@ -81,6 +76,15 @@ export const Recommended = {
 
   RECOMMENDED_SHARE_LINK: (itemId: number | string) =>
     `/scott-shafer/api/lists/${itemId}/share-link`,
+} as const;
+
+export const FeaturedBookmarks = {
+  // GET – Featured Lists Bookmarks
+  FEATURED_BOOKMARKS_LIST: '/scott-shafer/api/me/featured-lists/bookmarks',
+
+  // DELETE – Remove bookmark by ID
+  FEATURED_BOOKMARK_DELETE: (bookmarkId: number | string) =>
+    `/scott-shafer/api/featured-list-delete/${bookmarkId}`,
 } as const;
 
 
