@@ -1,4 +1,4 @@
-  // features/auth/authApi.ts
+// features/auth/authApi.ts
 import { baseApi } from '../../app/api';
 import {
   RequestOtpRequest,
@@ -37,7 +37,7 @@ import {
   CampaignsResponse,
   Campaign,
   CatalogItemsPublishList,
-  ShareListResponse
+  ShareListResponse,
 } from './authTypes';
 
 import {
@@ -47,7 +47,8 @@ import {
   CATALOG_ENDPOINTS,
   FEATURED_ITEM_ENDPOINTS,
   Notification,
-  Recommended
+  Recommended,
+  SHARE_LIST_ENDPOINT,
 } from './endpoints';
 
 /* ✅ NEW REQUEST TYPE FOR CATALOG ITEMS */
@@ -58,7 +59,6 @@ export interface AddCatalogItemsRequest {
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
-
     getCampaigns: builder.query<Campaign[], void>({
       query: () => ({
         url: '/scott-shafer/api/campaigns',
@@ -263,8 +263,10 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['CatalogItems'],
     }),
 
-
-    publishList: builder.mutation<CatalogItemsPublishList[], { list_ids: number[] }>({
+    publishList: builder.mutation<
+      CatalogItemsPublishList[],
+      { list_ids: number[] }
+    >({
       query: body => ({
         url: CATALOG_ENDPOINTS.PUBLISH_LIST,
         method: 'POST',
@@ -272,7 +274,6 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['FeaturedList'],
     }),
-
 
     /* ================= FEATURED LIST ================= */
 
@@ -298,7 +299,6 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['FeaturedList'],
     }),
 
-
     // 🔹 GET Notification List
     getNotifications: builder.query<any[], void>({
       query: () => ({
@@ -309,11 +309,8 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // 🔹 Accept Notification
-    acceptNotification: builder.mutation<
-      any,
-      { list_id: number }
-    >({
-      query: (body) => ({
+    acceptNotification: builder.mutation<any, { list_id: number }>({
+      query: body => ({
         url: Notification.ACCEPT_NOTIFICATION,
         method: 'POST',
         body,
@@ -322,12 +319,9 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // 🔹 Reject Notification
-    rejectNotification: builder.mutation<
-      any,
-      { list_id: number }
-    >({
-      query: (body) => ({
-        url: Notification.REJECT_NOTIFICATION,  
+    rejectNotification: builder.mutation<any, { list_id: number }>({
+      query: body => ({
+        url: Notification.REJECT_NOTIFICATION,
         method: 'POST',
         body,
       }),
@@ -350,40 +344,39 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['RecommendItems'],
     }),
 
+    // features/auth/authApi.ts
+
+    shareList: builder.query<ShareListResponse, number | string>({
+      query: listId => ({
+        url: SHARE_LIST_ENDPOINT(listId),
+        method: 'GET',
+      }),
+    }),
+
     likeRecommended: builder.mutation({
-      query: (id) => ({
+      query: id => ({
         url: Recommended.RECOMMENDED_WISHLIST(id),
         method: 'POST',
       }),
       providesTags: ['RecommendItems'],
     }),
-    
+
     shareRecommended: builder.mutation({
       query: ({ id, platform }) => ({
         url: Recommended.RECOMMENDED_SHARE(id),
         method: 'POST',
         data: {
-          platform,  
+          platform,
         },
       }),
       providesTags: ['RecommendItems'],
     }),
-    shareList: builder.query<ShareListResponse, number | string>({
-      query: listId => ({
-        url: Recommended.SHARE_LIST(listId),
-        method: 'GET',
-      }),
-    }),
-    
-    getShareLink: builder.mutation({
-      query: (id) => ({
-        url: Recommended.RECOMMENDED_SHARE_LINK(id),
-        method: 'GET',
-      }),
-      providesTags: ['RecommendItems'],
-    }),
-    
-
+    // shareList: builder.query<ShareListResponse, number | string>({
+    //   query: listId => ({
+    //     url: Recommended.SHARE_LIST(listId),
+    //     method: 'GET',
+    //   }),
+    // }),
   }),
 });
 
@@ -420,6 +413,6 @@ export const {
   useGetRecommendItemsQuery,
   useLikeRecommendedMutation,
   useShareRecommendedMutation,
-  useGetShareLinkMutation,
-  useShareListQuery
+  useLazyShareListQuery,
+  useShareListQuery,
 } = authApi;
