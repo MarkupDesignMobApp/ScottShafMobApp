@@ -47,7 +47,8 @@ import {
   Notification,
   Recommended,
   SHARE_LIST_ENDPOINT,
-  FeaturedBookmarks
+  FeaturedBookmarks,
+  PublishedLists
 } from './endpoints';
 
 /* ================= API ================= */
@@ -230,6 +231,7 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['CatalogItems'],
     }),
 
+
     publishList: builder.mutation<CatalogItemsPublishList[], { list_ids: number[] }>({
       query: body => ({
         url: CATALOG_ENDPOINTS.PUBLISH_LIST,
@@ -323,6 +325,8 @@ export const authApi = baseApi.injectEndpoints({
         method: 'GET',
       }),
     }),
+    
+    
 
     /* ================= BOOKMARKS ================= */
 
@@ -342,8 +346,32 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Mybookmark'],
     }),
 
+
+    /* ================= PUBLISHED LISTS ================= */
+
+getMyPublishedLists: builder.query<PublishedListsResponse, void>({
+  query: () => ({
+    url: PublishedLists.PUBLISHED_LISTS_GET,
+    method: 'GET',
+  }),
+  providesTags: ['PublishedList'],
+}),
+
+
+postCurrentPublishedList: builder.mutation({
+  query: body => ({
+    url: PublishedLists.CURRENT_PUBLISHED_LIST_POST,
+    method: 'POST',
+    body,
+  }),
+  providesTags: ['PublishedList'],
+}),
+
+
   }),
 });
+
+
 
 /* ================= HOOK EXPORTS ================= */
 
@@ -378,8 +406,11 @@ export const {
   useGetRecommendItemsQuery,
   useLikeRecommendedMutation,
   useShareRecommendedMutation,
-  useLazyShareListQuery,
   useShareListQuery,
+  useLazyShareListQuery,
   useGetMyBookFeaturedQuery,
   useDeleteMyBookFeaturedMutation,
+  usePublishListMutation,
+  useGetMyPublishedListsQuery,
+  usePostCurrentPublishedListMutation,
 } = authApi;

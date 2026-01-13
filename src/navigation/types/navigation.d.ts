@@ -71,7 +71,7 @@ export type MainStackParamList = {
   Invitescreen:undefined;
   Reorder:undefined;
   Publish:undefined;
-  Bookmark:undefined
+  Bookmark:undefined;
 };
 
 /**

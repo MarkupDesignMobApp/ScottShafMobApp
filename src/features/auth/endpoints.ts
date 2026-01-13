@@ -35,7 +35,7 @@ export const LIST_ENDPOINTS = {
 
 export const CATALOG_ENDPOINTS = {
   CATEGORIES: '/scott-shafer/api/catalog/categories',
-  ITEMS: '/scott-shafer/api/catalog/items', // 👈 NEW
+  ITEMS: '/scott-shafer/api/catalog/items',
   UpdateList: '/scott-shafer/api/lists/Update',
   GetUpdateList: '/scott-shafer/api/Updatelists',
   PUBLISH_LIST: '/scott-shafer/api/lists/publish',
@@ -73,7 +73,6 @@ export const Recommended = {
 } as const;
 
 export const FeaturedBookmarks = {
-  // GET – Featured Lists Bookmarks
   FEATURED_BOOKMARKS_LIST: '/scott-shafer/api/me/featured-lists/bookmarks',
 
   // DELETE – Remove bookmark by ID
@@ -83,3 +82,11 @@ export const FeaturedBookmarks = {
 
 export const SHARE_LIST_ENDPOINT = (listId: number | string) =>
   `/scott-shafer/api/lists/${listId}/share-link`;
+
+export const PublishedLists = {
+  // GET – fetch all published lists
+  PUBLISHED_LISTS_GET: '/scott-shafer/api/all-published-list',
+
+  // POST – create / update current published list
+  CURRENT_PUBLISHED_LIST_POST: '/scott-shafer/api/current-published-list',
+} as const;

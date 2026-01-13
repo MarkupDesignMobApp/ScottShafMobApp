@@ -41,23 +41,20 @@ export default function AddCustomItem({ navigation, route }) {
       Alert.alert('Required', 'Item name is required');
       return;
     }
-
+  
     try {
-      await addListItem({
+      const res = await addListItem({
         listId,
         custom_item_name: itemName,
         custom_text: description,
       }).unwrap();
-
-      Alert.alert('Success', 'Item added successfully', [
-        {
-          text: 'OK',
-          onPress: () =>
-            navigation.navigate('Reorder', {
-              listId: listId,
-            }),
-        },
-      ]);
+  
+      if (res?.success) {
+        navigation.navigate('Reorder', {
+          listId: listId,
+        });
+      }
+  
     } catch (err: any) {
       Alert.alert(
         'Error',
@@ -65,6 +62,7 @@ export default function AddCustomItem({ navigation, route }) {
       );
     }
   };
+  
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <Loader color="blue" visible={isLoading} />

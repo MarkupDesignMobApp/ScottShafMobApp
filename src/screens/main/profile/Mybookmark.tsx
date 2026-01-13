@@ -25,10 +25,16 @@ import { useFocusEffect } from '@react-navigation/native';
 export default function Mybookmark({ navigation }: any) {
   const { data, isLoading, refetch } = useGetMyBookFeaturedQuery();
   const [deleteMyBookFeatured] = useDeleteMyBookFeaturedMutation();
-  useFocusEffect(() => {
-    refetch();
-  });
 
+  
+   useFocusEffect(
+      React.useCallback(() => {
+        refetch();
+        return () => {
+        };
+      }, [refetch])
+    );
+    
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);

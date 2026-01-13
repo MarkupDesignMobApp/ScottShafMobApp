@@ -56,7 +56,7 @@ export default function ProfileScreen() {
             source={
               user?.profile?.profile_image
                 ? { uri: user.profile.profile_image }
-                : require('../../../../assets/image/women1.png')
+                : require('../../../../assets/image/nophoto.jpg')
             }
           />
         </View>

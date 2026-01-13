@@ -8,6 +8,7 @@ import {
   FeaturedLists,
   CreateList,
   MyList,
+  MyListScreen,
 } from '../../screens';
 import ProfileStackNavigator from '../stacks/InternalNavigator/ProfileStackNavigator';
 import HomeStackNavigator from '../stacks/InternalNavigator/HomeStackNavigator';
@@ -67,7 +68,7 @@ export default function TabNavigator() {
       <Tab.Screen name="Home" component={HomeStackNavigator} />
       <Tab.Screen name="Discover" component={Recommend_Screen} />
       <Tab.Screen name="Create" component={CreateList} />
-      <Tab.Screen name="MyLists" component={MyList} />
+      <Tab.Screen name="MyLists" component={MyListScreen} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );

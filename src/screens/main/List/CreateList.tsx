@@ -103,7 +103,7 @@ export default function CreateListScreen({ navigation }) {
 
       const res = await createList(payload).unwrap();
 
-      Alert.alert('Success', res?.message || 'List created successfully');
+      // Alert.alert('Success', res?.message || 'List created successfully');
 
       navigation.navigate('Browsecat', {
         listId: res.data.id,

@@ -106,16 +106,16 @@ export default function BrowseCatalogScreen({ navigation, route }) {
     try {
       const res = await addCatalogItems(payload).unwrap();
 
-      Alert.alert('Success', res.message || 'Items added successfully', [
-        {
-          text: 'OK',
-          onPress: () =>
-            navigation.navigate('Addcustom', {
-              selectedItems: selectedIds,
-              listId: listId,
-            }),
-        },
-      ]);
+      if (res?.success) {
+        navigation.navigate('Addcustom', {
+          selectedItems: selectedIds,
+          listId: listId,
+        });
+      } else {
+        Alert.alert('Error', res?.message || 'Something went wrong');
+      }
+      
+
     } catch (error: any) {
       Alert.alert(
         'Error',

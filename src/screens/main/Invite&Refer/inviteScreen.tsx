@@ -6,10 +6,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  Modal,
   ScrollView,
   Image,
+
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
+
+import {
+  useGetCatalogItemsOfListQuery,
+  usePublishListMutation,
+} from '../../../features/auth/authApi';
+import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const COLORS = {
@@ -25,181 +33,116 @@ const COLORS = {
   cardbg: '#DBEDFF',
   Circle: '#00C4FA',
   cardborder: '#A8A8A8',
-  Iconbg: '#E3F9FF'
+  Iconbg: '#E3F9FF',
 };
 
-export default function InviteScreen({ navigation }) {
-  const [title, setTitle] = useState('Top 3 Pizza Place in NY');
-  const [items, setItems] = useState([
-    { id: 1, text: "Joe's Pizza" },
-    { id: 2, text: "Scarr's Pizza" },
-    { id: 3, text: '' },
-  ]);
-  const [showSuccess, setShowSuccess] = useState(false);
+export default function InviteScreen({ navigation, route }) {
+  const { listId } = route.params;
+  const { data, isLoading } = useGetCatalogItemsOfListQuery(listId);
 
-  const updateItem = (id, value) => {
-    setItems(list => list.map(i => (i.id === id ? { ...i, text: value } : i)));
+  const [publishList, { isLoading: publishing }] = usePublishListMutation();
+
+  const [title, setTitle] = useState('My Ranked List');
+
+  const onPublish = async () => {
+    const ids = [listId];
+    console.log(ids);
+  
+    if (!ids.length) {
+      Alert.alert('Nothing to publish', 'No items found to publish.');
+      return;
+    }
+  
+    try {
+      const res = await publishList({ list_ids: ids }).unwrap();
+      console.log(res);
+      const ok = res?.success === true || res?.status === true || res?.ok === true || res?.code === 200;
+      if (ok) {
+        navigation.replace('ListPublishedScreen', { publishedIds: ids }); 
+        return;
+      }
+      console.warn('Publish response (unexpected):', res);
+      Alert.alert('Publish failed', 'Server did not confirm publish. Try again.');
+    } catch (err) {
+      console.warn('Publish error', err);
+      Alert.alert('Publish failed', 'Unable to publish list. Try again.');
+    }
   };
 
-  const removeItem = id => {
-    setItems(list => list.filter(i => i.id !== id));
-  };
-
-  const renderItem = ({ item, index }) => (
-    <View style={styles.row}>
-      <View style={styles.indexCircle}>
-        <Text style={styles.indexText}>
-          {String(index + 1).padStart(2, '0')}
-        </Text>
-      </View>
-
-      <View style={styles.inputWrap}>
-        <TextInput
-          value={item.text}
-          onChangeText={t => updateItem(item.id, t)}
-          placeholder={`Item ${index + 1}`}
-          placeholderTextColor="#CCCCCC"
-          style={styles.input}
-        />
-
-        {item.text.length === 0 && (
-          <View style={styles.iconGroup}>
-            <Image
-              source={require('../../../../assets/image/clipboard.png')}
-              style={styles.iconImage}
-              accessibilityLabel="attach-photo"
-            />
-            <Image
-              source={require('../../../../assets/image/close.png')}
-              style={styles.iconImage}
-              accessibilityLabel="remove-item"
-            />
-          </View>
-        )}
-
-        {/* when has text show clear (close) button as image */}
-        {item.text.length > 0 && (
-          <TouchableOpacity onPress={() => removeItem(item.id)}>
-            <Image
-              source={require('../../../../assets/image/close.png')}
-              style={styles.clearImage}
-              accessibilityLabel="remove-item"
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.loadingWrap}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12 }}>Loading items…</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <Image
-              source={require('../../../../assets/image/left-icon.png')}
-              style={styles.backImage}
-              accessibilityLabel="back"
-            />
-          </TouchableOpacity>
-        </View>
+      {/* Header */}
+        <AppHeader
+        onLeftPress={() => navigation.goBack()}
+        title='List Preview'
+        leftImage={require('../../../../assets/image/left-icon.png')}
+      />
 
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        
         {/* CARD */}
         <View style={styles.card}>
           <View style={styles.cardTopBar}>
-            <Text style={styles.cardHeader}>New List</Text>
-            <TouchableOpacity>
-              <Image
-                source={require('../../../../assets/image/dots.png')}
-                style={styles.menuImage}
-                accessibilityLabel="menu"
-              />
-            </TouchableOpacity>
+            <Text style={styles.cardHeader}>Your Ranked List</Text>
           </View>
 
-
           <Text style={styles.label}>List Title</Text>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            style={styles.titleInput}
-          />
+          <TextInput value={title} onChangeText={setTitle} style={styles.titleInput} />
 
           <FlatList
-            data={items}
-            keyExtractor={item => item.id.toString()}
-            renderItem={renderItem}
+            data={Array.isArray(data) ? data : []}
+            keyExtractor={(item) => String(item?.id ?? item?.item_id ?? Math.random())}
+            renderItem={({ item, index }) => (
+              <View style={styles.row}>
+                <View style={styles.indexCircle}>
+                  <Text style={styles.indexText}>{String(index + 1).padStart(2, '0')}</Text>
+                </View>
+
+                <View style={styles.inputWrap}>
+                  <Text style={styles.input}>{item?.name ?? 'Untitled'}</Text>
+
+                  {item?.image_url ? (
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={{ width: 32, height: 32, borderRadius: 6 }}
+                    />
+                  ) : null}
+                </View>
+              </View>
+            )}
             scrollEnabled={false}
           />
 
           <TouchableOpacity
-            style={styles.publishBtn}
-            onPress={() => navigation.navigate('Publish')}>
-            <Text style={styles.publishText}>Publish List</Text>
+            style={[styles.publishBtn, publishing && { opacity: 0.6 }]}
+            onPress={onPublish}
+            disabled={publishing}
+          >
+            <Text style={styles.publishText}>
+              {publishing ? 'Publishing…' : 'Publish List'}
+            </Text>
           </TouchableOpacity>
         </View>
-
-        {/* SUCCESS MODAL */}
-        <Modal visible={showSuccess} transparent animationType="fade">
-          <View style={styles.overlay}>
-            <View style={styles.successCard}>
-              {/* SUCCESS badge on top border */}
-              <View style={styles.successBadge}>
-                <Text style={styles.successText}>SUCCESS!</Text>
-              </View>
-
-              <View style={styles.iconCircle}>
-                <Image
-                  source={require('../../../../assets/image/usersmul.png')}
-                  style={styles.peopleImage}
-                />
-              </View>
-
-              <Text style={styles.inviteTitle}>Invite Friends?</Text>
-              <Text style={styles.inviteDesc}>
-                Lists are better with friends. Invite 2 friends to unlock the
-                'community Badge'
-              </Text>
-
-              <View style={styles.socialRow}>
-                <TouchableOpacity style={styles.socialBtn}>
-                  <View style={styles.iconBg}>
-                    <Image
-                      source={require('../../../../assets/image/whatsapp.png')}
-                      style={styles.socialIconImage}
-                    />
-                  </View>
-                  <Text style={styles.socialText}>WhatsApp</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.socialBtn}>
-                  <View style={styles.iconBg}>
-                    <Image
-                      source={require('../../../../assets/image/mail.png')}
-                      style={styles.socialIconImage}
-                    />
-                  </View>
-                  <Text style={styles.socialText}>SMS</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.socialBtn}>
-                  <View style={styles.iconBg}>
-                    <Image
-                      source={require('../../../../assets/image/chain.png')}
-                      style={styles.socialIconImage}
-                    />
-                  </View>
-                  <Text style={styles.socialText}>Copy Link</Text>
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity onPress={() => setShowSuccess(false)}>
-                <Text style={styles.skip}>Skip for now</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </ScrollView>
+
+      {/* Fullscreen loader overlay while publishing */}
+      {publishing && (
+        <View style={styles.publishOverlay}>
+          <View style={styles.publishLoader}>
+            <ActivityIndicator size="large" />
+            <Text style={{ marginTop: 10 }}>Publishing list…</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -210,7 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   scrollContent: {
-    padding: 16,
+    padding: 20,
   },
   header: {
     marginBottom: 16,
@@ -244,12 +187,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-
   cardHeader: {
     fontSize: 15,
     fontWeight: '500',
     color: COLORS.text,
-    fontFamily:'Quicksand-bold'
+    fontFamily: 'Quicksand-bold',
   },
   menuImage: {
     width: 20,
@@ -266,7 +208,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: 6,
     fontSize: 13,
-    fontFamily:'Quicksand-Regular'
+    fontFamily: 'Quicksand-Regular',
   },
   titleInput: {
     borderBottomWidth: 1,
@@ -290,13 +232,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-    fontFamily:'Quicksand-Regular'
+    fontFamily: 'Quicksand-Regular',
   },
   indexText: {
     color: COLORS.white,
     fontWeight: '600',
     fontSize: 14,
-    fontFamily:'Quicksand-Medium'
+    fontFamily: 'Quicksand-Medium',
   },
 
   inputWrap: {
@@ -314,7 +256,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: '#00C4FA',
-      fontFamily:'Quicksand-Medium'
+    fontFamily: 'Quicksand-Medium',
   },
   iconGroup: {
     flexDirection: 'row',
@@ -344,8 +286,31 @@ const styles = StyleSheet.create({
   publishText: {
     color: COLORS.white,
     fontWeight: '400',
-     fontFamily:'Quicksand-Regular',
+    fontFamily: 'Quicksand-Regular',
     fontSize: 18,
+  },
+
+  publishOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  publishLoader: {
+    width: 160,
+    height: 110,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    elevation: 6,
+  },
+
+  loadingWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   overlay: {
@@ -400,7 +365,6 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 
-
   iconCircle: {
     width: 60,
     height: 60,
@@ -421,16 +385,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     color: COLORS.text,
-     fontFamily:'Quicksand-Bold'
+    fontFamily: 'Quicksand-Bold',
   },
   inviteDesc: {
     textAlign: 'center',
-
     marginBottom: 20,
     fontSize: 13,
     lineHeight: 18,
     paddingHorizontal: 10,
-     fontFamily:'Quicksand-medium'
+    fontFamily: 'Quicksand-medium',
   },
 
   socialRow: {
@@ -446,7 +409,7 @@ const styles = StyleSheet.create({
 
     minWidth: 80,
   },
- 
+
   socialText: {
     fontSize: 11,
     color: COLORS.text,
@@ -454,6 +417,6 @@ const styles = StyleSheet.create({
   skip: {
     color: COLORS.muted,
     fontSize: 14,
-     fontFamily:'Quicksand-medium'
+    fontFamily: 'Quicksand-medium',
   },
 });

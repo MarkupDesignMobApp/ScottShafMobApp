@@ -1,5 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Alert, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  Alert,
+  Image,
+} from 'react-native';
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
@@ -9,15 +16,40 @@ import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import Share from 'react-native-share';
 import { CommonActions } from '@react-navigation/native';
+import { usePostCurrentPublishedListMutation } from '../../../features/auth/authApi';
 
-export default function ListPublishedScreen({ navigation }) {
+export default function ListPublishedScreen({ navigation, route }) {
+
+  const { publishedIds } = route.params || {};
+
+  const [getPublishedList, { data, isLoading }] =
+    usePostCurrentPublishedListMutation();
+
+  useEffect(() => {
+    if (publishedIds?.length) {
+      getPublishedList({ list_ids: publishedIds });
+    }
+  }, [publishedIds]);
+
+  const list = data?.data?.[0];
+
+  const title = list?.title || 'Your list';
+  const likes = list?.likes_count || 0;
+  const shares = list?.shares_count || 0;
+  const shareUrl = list?.share_url;
+0
+
   const handleShare = async () => {
     try {
+      if (!shareUrl) {
+        Alert.alert('Error', 'Share link not available');
+        return;
+      }
+
       const shareOptions = {
         title: 'Check out my list!',
-        message:
-          'I just published a list: Best Coffee Spots in NYC ☕🔥\nCheck it out!',
-        url: 'https://yourapp.com/list/123',
+        message: `I just published my list "${title}" `,
+        url: shareUrl,
       };
 
       await Share.open(shareOptions);
@@ -30,15 +62,9 @@ export default function ListPublishedScreen({ navigation }) {
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        backgroundColor="#00C4FA"
-        barStyle="light-content"
-      />
+      <StatusBar backgroundColor="#00C4FA" barStyle="light-content" />
 
-      <SafeAreaView
-        style={styles.container}
-        edges={['left', 'right', 'bottom']}
-      >
+      <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
         <AppHeader
           onLeftPress={() => navigation.goBack()}
           title="List Published"
@@ -54,28 +80,22 @@ export default function ListPublishedScreen({ navigation }) {
                 style={styles.checkIconImg}
               />
             </View>
-            <Text style={styles.title}>Your list is live!</Text>
+
+            <Text style={styles.title}>{title} is live!</Text>
 
             <Text style={styles.description}>
-              Best Coffee Spots in NYC has been{'\n'}
+              {title} has been{'\n'}
               published and is now visible to your{'\n'}
               followers.
             </Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Image
-                  source={require('../../../../assets/image/eye.png')}
-                  style={styles.statIconImg}
-                />
-                <Text style={styles.statText}>0 views</Text>
-              </View>
 
+            <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Image
                   source={require('../../../../assets/image/like.png')}
                   style={styles.statIconImg}
                 />
-                <Text style={styles.statText}>0 likes</Text>
+                <Text style={styles.statText}>{likes} likes</Text>
               </View>
 
               <View style={styles.statItem}>
@@ -83,38 +103,13 @@ export default function ListPublishedScreen({ navigation }) {
                   source={require('../../../../assets/image/share2.png')}
                   style={styles.statIconImg}
                 />
-                <Text style={styles.statText}>0 shares</Text>
+                <Text style={styles.statText}>{shares} shares</Text>
               </View>
             </View>
-
-          </View>
-
-          {/* CAMPAIGN CONSENT CARD */}
-          <View style={styles.consentCard}>
-            <View style={styles.consentIconContainer}>
-              <View style={styles.consentIconInner}>
-                <Image
-                  source={require('../../../../assets/image/Ellipse.png')}
-                  style={styles.consentIconImg}
-                />
-
-              </View>
-            </View>
-
-            <View style={styles.consentTextContainer}>
-              <Text style={styles.consentTitle}>Campaign Consent</Text>
-              <Text style={styles.consentDescription}>
-                You've applied for coffee offers.
-              </Text>
-            </View>
-
-            <View style={styles.blueDot} />
           </View>
 
           {/* ACTION BUTTONS */}
-          <View
-
-          >
+          <View style={{position:'absolute',width:"100%", bottom:responsiveScreenWidth(8), marginLeft:responsiveScreenWidth(4)}}>
             <AppButton
               style={{
                 backgroundColor: '#fff',
@@ -145,6 +140,7 @@ export default function ListPublishedScreen({ navigation }) {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -158,7 +154,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
-  // Success Card Styles
   card: {
     backgroundColor: '#EBF7FF',
     borderRadius: 20,
