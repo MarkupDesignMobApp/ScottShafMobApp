@@ -84,9 +84,8 @@ export const SHARE_LIST_ENDPOINT = (listId: number | string) =>
   `/scott-shafer/api/lists/${listId}/share-link`;
 
 export const PublishedLists = {
-  // GET – fetch all published lists
   PUBLISHED_LISTS_GET: '/scott-shafer/api/all-published-list',
-
-  // POST – create / update current published list
   CURRENT_PUBLISHED_LIST_POST: '/scott-shafer/api/current-published-list',
+  DELETE_PUBLISHED_LIST: (id: number | string) => `/scott-shafer/api/delete/list/${id}`,
 } as const;
+

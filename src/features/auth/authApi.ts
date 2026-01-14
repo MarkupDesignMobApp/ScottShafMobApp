@@ -349,13 +349,11 @@ export const authApi = baseApi.injectEndpoints({
 
     /* ================= PUBLISHED LISTS ================= */
 
-getMyPublishedLists: builder.query<PublishedListsResponse, void>({
-  query: () => ({
-    url: PublishedLists.PUBLISHED_LISTS_GET,
-    method: 'GET',
-  }),
-  providesTags: ['PublishedList'],
-}),
+    getMyPublishedLists: builder.query<PublishedListsResponse, void>({
+      query: () => ({ url: PublishedLists.PUBLISHED_LISTS_GET, method: 'GET' }),
+      providesTags: ['PublishedList'], // ✅ matches
+    }),
+    
 
 
 postCurrentPublishedList: builder.mutation({
@@ -365,6 +363,14 @@ postCurrentPublishedList: builder.mutation({
     body,
   }),
   providesTags: ['PublishedList'],
+}),
+
+deletePublishedList: builder.mutation<any, number | string>({
+  query: id => ({
+    url: PublishedLists.DELETE_PUBLISHED_LIST(id),
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['PublishedList'],
 }),
 
 
@@ -413,4 +419,5 @@ export const {
   usePublishListMutation,
   useGetMyPublishedListsQuery,
   usePostCurrentPublishedListMutation,
+  useDeletePublishedListMutation
 } = authApi;

@@ -9,23 +9,24 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Platform,
+  Modal,
+  TextInput,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import {
   NestableScrollContainer,
   NestableDraggableFlatList,
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
-
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
-
-import { useGetCatalogItemsOfListQuery } from '../../../features/auth/authApi';
+import { useGetCatalogItemsOfListQuery, useAddCatalogItemsMutation } from '../../../features/auth/authApi';
 import { useFocusEffect } from '@react-navigation/native';
 
 type ListItem = {
@@ -38,7 +39,6 @@ type ListItem = {
   image_url?: string | null;
 };
 
-const DRAG_BUFFER = responsiveScreenHeight(25);
 
 export default function CreateListScreen({ navigation, route }: any) {
   const { listId } = route.params;
@@ -46,8 +46,14 @@ export default function CreateListScreen({ navigation, route }: any) {
   const [items, setItems] = useState<ListItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data, isLoading, refetch } =
-    useGetCatalogItemsOfListQuery(listId);
+  // modal & inputs
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
+
+  // api hooks
+  const { data, isLoading, refetch } = useGetCatalogItemsOfListQuery(listId);
+  const [addListItem, { isLoading: isAdding }] = useAddCatalogItemsMutation();
 
   useFocusEffect(
     useCallback(() => {
@@ -58,6 +64,8 @@ export default function CreateListScreen({ navigation, route }: any) {
   useEffect(() => {
     if (Array.isArray(data)) {
       setItems(data);
+    } else {
+      setItems([]);
     }
   }, [data]);
 
@@ -132,12 +140,49 @@ export default function CreateListScreen({ navigation, route }: any) {
     }
   };
 
+  // --------- Add Item modal logic ----------
+  const handleAddItem = async () => {
+    if (!newItemName.trim()) {
+      Alert.alert('Required', 'Item name is required');
+      return;
+    }
+
+    try {
+      const res: any = await addListItem({
+        listId,
+        custom_item_name: newItemName.trim(),
+        custom_text: newItemDescription.trim(),
+      }).unwrap();
+
+      // Support various API shapes
+      if (res?.success || res?.status === 'success' || res?.id) {
+        Alert.alert('Success', 'Item added successfully.');
+        setModalVisible(false);
+        setNewItemName('');
+        setNewItemDescription('');
+
+        try {
+          await refetch();
+        } catch (rfErr) {
+          console.warn('Refetch failed after add item:', rfErr);
+        }
+      } else {
+        Alert.alert('Error', res?.message || 'Could not add item');
+      }
+    } catch (err: any) {
+      console.warn('Add item error', err);
+      Alert.alert('Error', err?.data?.message || err?.error || 'Something went wrong');
+    }
+  };
+
   return (
     <>
       <AppHeader
         title="Reorder Items"
         onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
+        rightImage={require('../../../../assets/image/plus.png')}
+        onRightPress={() => setModalVisible(true)}
       />
 
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -196,15 +241,22 @@ export default function CreateListScreen({ navigation, route }: any) {
 
                 contentContainerStyle={{
                   paddingTop: responsiveScreenHeight(2),
-                  paddingBottom: DRAG_BUFFER,
                   marginHorizontal: responsiveScreenWidth(4),
                 }}
-
-                /** REAL SPACE FOR LAST ITEM */
-                ListFooterComponent={
-                  <View style={{ height: DRAG_BUFFER }} />
-                }
               />
+              {/* Add More Button */}
+        <TouchableOpacity
+          style={styles.addMoreButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Image
+            style={styles.addMoreIcon}
+            resizeMode="contain"
+            source={require('../../../../assets/image/plus.png')}
+          />
+          <Text style={styles.addMoreText}>Add More</Text>
+        </TouchableOpacity>
+
             </NestableScrollContainer>
 
             {/* Footer */}
@@ -220,6 +272,67 @@ export default function CreateListScreen({ navigation, route }: any) {
             </View>
           </>
         )}
+
+        {/* ---------- Add Item Modal ---------- */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Modal Header */}
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Add New Item</Text>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={styles.closeButton}
+                  >
+                    <Text style={styles.closeButtonText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Item Name Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Item Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter item name"
+                    placeholderTextColor="#999"
+                    value={newItemName}
+                    onChangeText={setNewItemName}
+                  />
+                </View>
+
+                {/* Item Description Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Description</Text>
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    placeholder="Enter description (optional)"
+                    placeholderTextColor="#999"
+                    value={newItemDescription}
+                    onChangeText={setNewItemDescription}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                  />
+                </View>
+
+                {/* Save Button */}
+                <View style={styles.modalButtonContainer}>
+                  <AppButton
+                    title={isAdding ? 'Saving...' : 'Save Item'}
+                    onPress={handleAddItem}
+                    disabled={isAdding}
+                  />
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </>
   );
@@ -296,5 +409,98 @@ const styles = StyleSheet.create({
   iconcontainer: {
     width: responsiveScreenWidth(4),
     height: responsiveScreenHeight(3),
+  },
+  // Add / modal styles (kept same as requested)
+  addMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: responsiveScreenHeight(2),
+    borderRadius: 12,
+    marginBottom: responsiveScreenHeight(2),
+    borderWidth: 1.5,
+    borderColor: '#0180FE',
+    borderStyle: 'dashed',
+    marginHorizontal: responsiveScreenWidth(4),
+  },
+  addMoreIcon: {
+    width: responsiveScreenWidth(5),
+    height: responsiveScreenWidth(5),
+    marginRight: responsiveScreenWidth(2),
+    tintColor: '#0180FE',
+  },
+  addMoreText: {
+    fontSize: responsiveScreenFontSize(1.85),
+    fontFamily: 'Quicksand-Regular',
+    color: '#0180FE',
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: responsiveScreenWidth(5),
+    borderTopRightRadius: responsiveScreenWidth(5),
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingTop: responsiveScreenHeight(3),
+    paddingBottom: responsiveScreenHeight(4),
+    maxHeight: responsiveScreenHeight(70),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: responsiveScreenHeight(3),
+  },
+  modalTitle: {
+    fontSize: responsiveScreenFontSize(2.5),
+    fontFamily: 'Quicksand-Regular',
+    color: '#000',
+    fontWeight: '600',
+  },
+  closeButton: {
+    width: responsiveScreenWidth(8),
+    height: responsiveScreenWidth(8),
+    borderRadius: responsiveScreenWidth(4),
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: responsiveScreenFontSize(2.5),
+    color: '#666',
+    fontWeight: '400',
+  },
+  inputContainer: {
+    marginBottom: responsiveScreenHeight(2.5),
+  },
+  inputLabel: {
+    fontSize: responsiveScreenFontSize(1.75),
+    fontFamily: 'Quicksand-Regular',
+    color: '#000',
+    fontWeight: '500',
+    marginBottom: responsiveScreenHeight(1),
+  },
+  input: {
+    backgroundColor: '#F9F9F9',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(1.5),
+    fontSize: responsiveScreenFontSize(1.75),
+    fontFamily: 'Quicksand-Regular',
+    color: '#000',
+  },
+  textArea: {
+    height: responsiveScreenHeight(12),
+    paddingTop: responsiveScreenHeight(1.5),
+  },
+  modalButtonContainer: {
+    marginTop: responsiveScreenHeight(2),
   },
 });
