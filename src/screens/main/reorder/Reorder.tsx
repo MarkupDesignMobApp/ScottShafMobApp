@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Platform,
-  Alert,
 } from 'react-native';
 import {
   NestableScrollContainer,
@@ -26,7 +25,7 @@ import {
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
 
-import { useGetCatalogItemsOfListQuery /*, useSaveOrderMutation */ } from '../../../features/auth/authApi';
+import { useGetCatalogItemsOfListQuery } from '../../../features/auth/authApi';
 import { useFocusEffect } from '@react-navigation/native';
 
 type ListItem = {
@@ -39,62 +38,61 @@ type ListItem = {
   image_url?: string | null;
 };
 
+const DRAG_BUFFER = responsiveScreenHeight(25);
+
 export default function CreateListScreen({ navigation, route }: any) {
   const { listId } = route.params;
 
-  // state
   const [items, setItems] = useState<ListItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  // const [saveOrder] = useSaveOrderMutation(); // <- uncomment if you have a mutation
 
-  // api
-  const { data, isLoading , refetch} = useGetCatalogItemsOfListQuery(listId);
+  const { data, isLoading, refetch } =
+    useGetCatalogItemsOfListQuery(listId);
 
-  
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       refetch();
-      return () => {
-      };
     }, [refetch])
   );
-  // sync api -> state
+
   useEffect(() => {
-    if (data && Array.isArray(data)) {
+    if (Array.isArray(data)) {
       setItems(data);
     }
   }, [data]);
 
-
+  /** ✅ BULLETPROOF RENDER ITEM */
   const renderItem = useCallback(
-    ({ item, drag, isActive, getIndex }: RenderItemParams<ListItem>) => {
-      const index = getIndex?.() ?? 0;
+    ({ item, drag, isActive, index }: RenderItemParams<ListItem>) => {
+      const safeIndex =
+        typeof index === 'number'
+          ? index
+          : items.findIndex(i => i.id === item.id);
+
       return (
         <TouchableOpacity
           activeOpacity={1}
           onLongPress={drag}
           style={[styles.card, isActive && styles.cardActive]}
         >
-          {/* Index / ID */}
+          {/* Index */}
           <View style={styles.countwrap}>
-            <Text style={styles.countxt}>{index + 1}</Text>
+            <Text style={styles.countxt}>
+              {safeIndex >= 0 ? safeIndex + 1 : ''}
+            </Text>
           </View>
 
           {/* Image */}
           <View style={styles.image}>
-            {item.image_url ? (
-              <Image
-                resizeMode="contain"
-                source={{ uri: item.image_url }}
-                style={{ width: '100%', height: '100%' }}
-              />
-            ) : (
-              <Image
-                resizeMode="contain"
-                source={require('../../../../assets/image/noimage.jpg')}
-                style={{ width: '100%', height: '100%' }}
-              />
-            )}
+            <Image
+              resizeMode="contain"
+              source={
+                item.image_url
+                  ? { uri: item.image_url }
+                  : require('../../../../assets/image/noimage.jpg')
+              }
+              style={{ width: '100%', height: '100%' }}
+            />
           </View>
 
           {/* Content */}
@@ -105,7 +103,7 @@ export default function CreateListScreen({ navigation, route }: any) {
             </Text>
           </View>
 
-          {/* Drag handle */}
+          {/* Drag Icon */}
           <View style={{ position: 'absolute', right: 10, top: '40%' }}>
             <Image
               style={{ width: 20, height: 20 }}
@@ -115,117 +113,115 @@ export default function CreateListScreen({ navigation, route }: any) {
         </TouchableOpacity>
       );
     },
+    [items]
+  );
+
+  const handleDragEnd = useCallback(
+    ({ data }: { data: ListItem[] }) => {
+      setItems(data);
+    },
     []
   );
 
-  // when drag ends, update local state
-  const handleDragEnd = useCallback(({ data: newData }: { data: ListItem[] }) => {
-    setItems(newData);
-  }, []);
-
-  // on Done -> optionally save order, then navigate
   const handleDone = async () => {
     try {
       setIsSaving(true);
-
-      // Optional: call API to save new order
-      // Example payload: [{ id: 123, position: 1 }, { id: 456, position: 2 }, ...]
-      // const payload = items.map((it, idx) => ({ id: it.id, position: idx + 1 }));
-      // await saveOrder({ listId, order: payload }).unwrap();
-
-      // navigate after save (or immediately if you don't need to save)
       navigation.navigate('Invitescreen', { listId });
-    } catch (e) {
-      // handle error (alert/snackbar)
-      console.warn('Save order failed', e);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // footer height padding to prevent last item hiding under footer
-  const footerPadding = responsiveScreenHeight(18); // adjust if your footer height changes
-
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      {/* Status bar */}
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
+    <>
       <AppHeader
         title="Reorder Items"
         onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
 
-      {/* Info Box */}
-      <View
-        style={{
-          paddingHorizontal: responsiveScreenWidth(3),
-          backgroundColor: '#FFFBFE',
-          borderWidth: 1.5,
-          borderColor: '#FF04D7',
-          borderRadius: responsiveScreenWidth(2),
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginHorizontal: responsiveScreenWidth(4),
-          marginVertical: responsiveScreenHeight(3),
-        }}
-      >
-        <View style={styles.iconcontainer}>
-          <Image
-            style={styles.icon2}
-            resizeMode="contain"
-            source={require('../../../../assets/image/info.png')}
-          />
-        </View>
-        <Text style={styles.switchtxt}>
-          Hold to Drag items to reorder your list. Rankings update Automatically
-        </Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Loader */}
-      {isLoading ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) : (
-        <>
-          {/* Draggable List (nested scroll container wraps the draggable flatlist) */}
-          <NestableScrollContainer style={{ flex: 1 }}>
-            <NestableDraggableFlatList
-              data={items}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderItem}
-              onDragEnd={handleDragEnd}
-              removeClippedSubviews={false}
-              dragItemOverflow
-              activationDistance={5}
-              autoscrollThreshold={120}
-              autoscrollSpeed={40}
-              // ensure inner list can still scroll when nested
-              nestedScrollEnabled
-              // keep some padding so the last item is visible above footer
-              contentContainerStyle={{
-                paddingBottom: footerPadding,
-                marginHorizontal: responsiveScreenWidth(4),
-              }}
+        {/* Info Box */}
+        <View
+          style={{
+            paddingHorizontal: responsiveScreenWidth(3),
+            backgroundColor: '#FFFBFE',
+            borderWidth: 1.5,
+            borderColor: '#FF04D7',
+            borderRadius: responsiveScreenWidth(2),
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: responsiveScreenWidth(4),
+            marginVertical: responsiveScreenHeight(2),
+          }}
+        >
+          <View style={styles.iconcontainer}>
+            <Image
+              resizeMode="contain"
+              source={require('../../../../assets/image/info.png')}
+              style={styles.icon2}
             />
-          </NestableScrollContainer>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <AppButton
-              title={isSaving ? 'Saving...' : 'Done'}
-              onPress={handleDone}
-              disabled={isSaving}
-            />
-            {Platform.OS === 'android' && (
-              <View style={{ height: responsiveScreenHeight(1) }} /> // small spacer
-            )}
           </View>
-        </>
-      )}
-    </SafeAreaView>
+          <Text style={styles.switchtxt}>
+            Hold to drag items to reorder your list. Rankings update automatically.
+          </Text>
+        </View>
+
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <ActivityIndicator size="large" />
+          </View>
+        ) : (
+          <>
+            {/* ✅ FIXED SCROLL + DRAG */}
+            <NestableScrollContainer style={{ flex: 1 }}>
+              <NestableDraggableFlatList
+                data={items}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItem}
+                onDragEnd={handleDragEnd}
+
+                /** SCROLL FIX */
+                scrollEnabled
+                activationDistance={20}
+
+                /** CUTTING FIX */
+                removeClippedSubviews={false}
+                dragItemOverflow={false}
+
+                autoscrollThreshold={80}
+                autoscrollSpeed={60}
+
+                contentContainerStyle={{
+                  paddingTop: responsiveScreenHeight(2),
+                  paddingBottom: DRAG_BUFFER,
+                  marginHorizontal: responsiveScreenWidth(4),
+                }}
+
+                /** REAL SPACE FOR LAST ITEM */
+                ListFooterComponent={
+                  <View style={{ height: DRAG_BUFFER }} />
+                }
+              />
+            </NestableScrollContainer>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <AppButton
+                title={isSaving ? 'Saving...' : 'Done'}
+                onPress={handleDone}
+                disabled={isSaving}
+              />
+              {Platform.OS === 'android' && (
+                <View style={{ height: responsiveScreenHeight(1) }} />
+              )}
+            </View>
+          </>
+        )}
+      </SafeAreaView>
+    </>
   );
 }
 

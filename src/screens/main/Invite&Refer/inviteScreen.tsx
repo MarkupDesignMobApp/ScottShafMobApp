@@ -8,7 +8,6 @@ import {
   FlatList,
   ScrollView,
   Image,
-
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -19,6 +18,11 @@ import {
 } from '../../../features/auth/authApi';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  responsiveFontSize,
+  responsiveScreenHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 
 const COLORS = {
   primary: '#0A7AFF',
@@ -47,22 +51,29 @@ export default function InviteScreen({ navigation, route }) {
   const onPublish = async () => {
     const ids = [listId];
     console.log(ids);
-  
+
     if (!ids.length) {
       Alert.alert('Nothing to publish', 'No items found to publish.');
       return;
     }
-  
+
     try {
       const res = await publishList({ list_ids: ids }).unwrap();
       console.log(res);
-      const ok = res?.success === true || res?.status === true || res?.ok === true || res?.code === 200;
+      const ok =
+        res?.success === true ||
+        res?.status === true ||
+        res?.ok === true ||
+        res?.code === 200;
       if (ok) {
-        navigation.replace('ListPublishedScreen', { publishedIds: ids }); 
+        navigation.replace('ListPublishedScreen', { publishedIds: ids });
         return;
       }
       console.warn('Publish response (unexpected):', res);
-      Alert.alert('Publish failed', 'Server did not confirm publish. Try again.');
+      Alert.alert(
+        'Publish failed',
+        'Server did not confirm publish. Try again.',
+      );
     } catch (err) {
       console.warn('Publish error', err);
       Alert.alert('Publish failed', 'Unable to publish list. Try again.');
@@ -79,71 +90,86 @@ export default function InviteScreen({ navigation, route }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-        <AppHeader
+    <>
+      <AppHeader
         onLeftPress={() => navigation.goBack()}
-        title='List Preview'
+        title="List Preview"
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
+      <SafeAreaView style={styles.container}>
+        {/* Header */}
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        
-        {/* CARD */}
-        <View style={styles.card}>
-          <View style={styles.cardTopBar}>
-            <Text style={styles.cardHeader}>Your Ranked List</Text>
-          </View>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* CARD */}
+          <View
+            style={{
+              ...styles.card,
 
-          <Text style={styles.label}>List Title</Text>
-          <TextInput value={title} onChangeText={setTitle} style={styles.titleInput} />
 
-          <FlatList
-            data={Array.isArray(data) ? data : []}
-            keyExtractor={(item) => String(item?.id ?? item?.item_id ?? Math.random())}
-            renderItem={({ item, index }) => (
-              <View style={styles.row}>
-                <View style={styles.indexCircle}>
-                  <Text style={styles.indexText}>{String(index + 1).padStart(2, '0')}</Text>
-                </View>
-
-                <View style={styles.inputWrap}>
-                  <Text style={styles.input}>{item?.name ?? 'Untitled'}</Text>
-
-                  {item?.image_url ? (
-                    <Image
-                      source={{ uri: item.image_url }}
-                      style={{ width: 32, height: 32, borderRadius: 6 }}
-                    />
-                  ) : null}
-                </View>
-              </View>
-            )}
-            scrollEnabled={false}
-          />
-
-          <TouchableOpacity
-            style={[styles.publishBtn, publishing && { opacity: 0.6 }]}
-            onPress={onPublish}
-            disabled={publishing}
+            }}
           >
-            <Text style={styles.publishText}>
-              {publishing ? 'Publishing…' : 'Publish List'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            <View style={styles.cardTopBar}>
+              <Text style={styles.cardHeader}>Your Ranked List</Text>
+            </View>
 
-      {/* Fullscreen loader overlay while publishing */}
-      {publishing && (
-        <View style={styles.publishOverlay}>
-          <View style={styles.publishLoader}>
-            <ActivityIndicator size="large" />
-            <Text style={{ marginTop: 10 }}>Publishing list…</Text>
+            <Text style={styles.label}>List Title</Text>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              style={styles.titleInput}
+            />
+
+            <FlatList
+              data={Array.isArray(data) ? data : []}
+              keyExtractor={item =>
+                String(item?.id ?? item?.item_id ?? Math.random())
+              }
+              renderItem={({ item, index }) => (
+                <View style={styles.row}>
+                  <View style={styles.indexCircle}>
+                    <Text style={styles.indexText}>
+                      {String(index + 1).padStart(2, '0')}
+                    </Text>
+                  </View>
+
+                  <View style={styles.inputWrap}>
+                    <Text style={styles.input}>{item?.name ?? 'Untitled'}</Text>
+
+                    {item?.image_url ? (
+                      <Image
+                        source={{ uri: item.image_url }}
+                        style={{ width: 32, height: 32, borderRadius: 6 }}
+                      />
+                    ) : null}
+                  </View>
+                </View>
+              )}
+              scrollEnabled={false}
+            />
+
+            <TouchableOpacity
+              style={[styles.publishBtn, publishing && { opacity: 0.6 }]}
+              onPress={onPublish}
+              disabled={publishing}
+            >
+              <Text style={styles.publishText}>
+                {publishing ? 'Publishing…' : 'Publish List'}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      )}
-    </SafeAreaView>
+        </ScrollView>
+
+        {/* Fullscreen loader overlay while publishing */}
+        {publishing && (
+          <View style={styles.publishOverlay}>
+            <View style={styles.publishLoader}>
+              <ActivityIndicator size="large" />
+              <Text style={{ marginTop: 10 }}>Publishing list…</Text>
+            </View>
+          </View>
+        )}
+      </SafeAreaView>
+    </>
   );
 }
 
@@ -153,10 +179,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   scrollContent: {
-    padding: 20,
+    paddingHorizontal: responsiveScreenWidth(4),
   },
   header: {
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   backImage: {
     width: 20,
@@ -179,12 +205,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.cardbg,
     paddingHorizontal: 20,
-    paddingVertical: 16,
+
     marginHorizontal: -16,
     marginTop: -16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    marginBottom: 16,
+
+    marginBottom: 12, // reduce from 16
+    paddingVertical: 12,
   },
 
   cardHeader: {
