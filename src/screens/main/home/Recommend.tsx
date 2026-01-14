@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -14,7 +14,11 @@ import {
   responsiveScreenWidth,
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions'
-import { useGetRecommendItemsQuery , useLikeRecommendedMutation, useShareRecommendedMutation,useShareListQuery} from '../../../features/auth/authApi'
+import {
+  useGetRecommendItemsQuery,
+  useLikeRecommendedMutation,
+  useShareRecommendedMutation,
+} from '../../../features/auth/authApi'
 
 /* -------- ICONS / PLACEHOLDER -------- */
 const icons = {
@@ -23,6 +27,7 @@ const icons = {
   shareOutline: require('../../../../assets/image/unfillshare.png'),
   more: require('../../../../assets/image/dots.png'),
 }
+
 const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png')
 
 /* -------- MAIN -------- */
@@ -31,22 +36,25 @@ export default function Recommend() {
 
   const { data, isLoading, error, refetch } = useGetRecommendItemsQuery()
   const [likeRecommended] = useLikeRecommendedMutation()
-const [shareRecommended] = useShareRecommendedMutation()
-const { data:sharedata } = useShareListQuery(5);
+  const [shareRecommended] = useShareRecommendedMutation()
 
-  
+  /* -------- MAP API DATA -------- */
   useEffect(() => {
     if (!data) return
+
     const rawList = Array.isArray(data) ? data : data?.data ?? []
+
     const mapped = rawList.map(apiItem => {
       const items = (apiItem.items || [])
-        .map(it => {
+        .map((it, index) => {
           const ci = it.catalog_item
-          if (!ci) return null 
+          if (!ci) return null
+
           return {
+            uid: `${apiItem.id}-${ci.id}-${index}`, // ✅ UNIQUE KEY
             id: String(ci.id),
             name: ci.name ?? 'Unknown',
-            image: { uri: ci.image_url },
+            image: ci.image_url ? { uri: ci.image_url } : null,
           }
         })
         .filter(Boolean)
@@ -61,55 +69,44 @@ const { data:sharedata } = useShareListQuery(5);
         items,
       }
     })
+
     setPosts(mapped)
   }, [data])
 
-  const onLikePress = async (itemId) => {
-    console.log(itemId)
-    if (!itemId) return;
+  /* -------- ACTIONS -------- */
+  const onLikePress = async postId => {
     try {
-      await likeRecommended(itemId).unwrap();
-      refetch(); 
+      await likeRecommended(postId).unwrap()
+      refetch()
     } catch (e) {
-      console.log('Like error', e);
+      console.log('Like error', e)
     }
-  };
-  
-  const onSharePress = async (itemId, title) => {
+  }
+
+  const onSharePress = async (postId, title) => {
     try {
-      // 1️⃣ Notify backend (must be valid platform)
-      await shareRecommended({
-        id: itemId,
-     
-      }).unwrap();
-  
-      // 2️⃣ Get real share link
-      const res = await getShareLink(6).unwrap();
-      console.log(res)
-      const url = res?.share_url 
-    alert(url)
-  
+      const res = await shareRecommended({ id: postId }).unwrap()
+      const url = res?.share_url
+
       if (!url) {
-        console.log('No share URL from API');
-        return;
+        Alert.alert('Error', 'Share link not available')
+        return
       }
-  
-      // 3️⃣ Open system share (Instagram, WhatsApp etc)
+
       await Share.share({
         title,
         message: `${title}\n\n${url}`,
         url,
-      });
-  
+      })
     } catch (e) {
-      console.log('Share error', JSON.stringify(e, null, 2));
+      console.log('Share error', e)
     }
-  };
-  
-  
+  }
+
+  /* -------- STATES -------- */
   if (isLoading) {
     return (
-      <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text>Loading recommendations...</Text>
       </View>
     )
@@ -117,15 +114,15 @@ const { data:sharedata } = useShareListQuery(5);
 
   if (error) {
     return (
-      <View style={[styles.container, {padding: 16}]}>
-        
-        <Pressable onPress={() => refetch()}>
+      <View style={[styles.container, { padding: 16 }]}>
+        <Pressable onPress={refetch}>
           <Text style={{ color: '#2F6BFF' }}>Try again</Text>
         </Pressable>
       </View>
     )
   }
 
+  /* -------- RENDER -------- */
   return (
     <View style={styles.container}>
       <View style={styles.cardheading}>
@@ -167,10 +164,13 @@ function PostCard({ item, onLikePress, onSharePress }) {
 
       <Text style={styles.title}>{item.title}</Text>
 
-      {item.items.map(listItem => (
-        <View key={listItem.id} style={styles.itemRow}>
+      {item.items.map((listItem, index) => (
+        <View
+          key={listItem.uid} // ✅ FIXED UNIQUE KEY
+          style={styles.itemRow}
+        >
           <Image
-            source={listItem.image && listItem.image.uri ? listItem.image : PLACEHOLDER_IMAGE}
+            source={listItem.image ?? PLACEHOLDER_IMAGE}
             style={styles.itemImage}
             resizeMode="cover"
           />
@@ -179,7 +179,7 @@ function PostCard({ item, onLikePress, onSharePress }) {
       ))}
 
       <View style={styles.cardlike}>
-      <Pressable onPress={() => onLikePress(item.id)}>
+        <Pressable onPress={() => onLikePress(item.id)}>
           <ActionButton
             icon={item.isLiked ? icons.heartFilled : icons.heartOutline}
             value={formatNumber(item.likes)}
@@ -187,7 +187,7 @@ function PostCard({ item, onLikePress, onSharePress }) {
         </Pressable>
 
         <Pressable onPress={() => onSharePress(item.id, item.title)}>
-          <ActionButton icon={icons.shareOutline} value={`Share`} />
+          <ActionButton icon={icons.shareOutline} value="Share" />
         </Pressable>
       </View>
     </View>
@@ -213,17 +213,13 @@ const formatNumber = num => {
 
 function formatTimeAgo(isoString) {
   if (!isoString) return ''
-  const then = new Date(isoString)
-  const now = new Date()
-  const diff = Math.floor((now - then) / 1000)
+  const diff = Math.floor((Date.now() - new Date(isoString)) / 1000)
   if (diff < 60) return `${diff}s ago`
   const mins = Math.floor(diff / 60)
   if (mins < 60) return `${mins}m ago`
   const hours = Math.floor(mins / 60)
   if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  return then.toLocaleDateString()
+  return `${Math.floor(hours / 24)}d ago`
 }
 
 /* -------- STYLES (UNCHANGED) -------- */

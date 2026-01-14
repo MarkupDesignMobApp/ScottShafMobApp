@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,16 @@ import {
   FlatList,
   Image,
   StatusBar,
-  ScrollView,
   Alert,
   Share as RNShare,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
-import { styles as Homestyle } from '../home/styles';
+import Loader from '../../../components/ui/Loader/Loader';
+
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
@@ -22,71 +24,86 @@ import {
 } from 'react-native-responsive-dimensions';
 
 import { useGetMyPublishedListsQuery } from '../../../features/auth/authApi';
-import Loader from '../../../components/ui/Loader/Loader';
-import { useFocusEffect } from '@react-navigation/native';
 
 export default function MyListScreen({ navigation }) {
   /* ================= API ================= */
-  const { data: rawData, isLoading , refetch} = useGetMyPublishedListsQuery();
-  const listsFromApi = Array.isArray(rawData?.data)
-    ? rawData.data
-    : Array.isArray(rawData)
-    ? rawData
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetMyPublishedListsQuery();
+
+  const apiLists = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data)
+    ? data
     : [];
 
   const [lists, setLists] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
-  const isAdding = false;
 
- useFocusEffect(
-    React.useCallback(() => {
+  useFocusEffect(
+    useCallback(() => {
       refetch();
-      return () => {
-      };
-    }, [refetch])
+    }, [refetch]),
   );
 
-  useEffect(() => {
-    if (listsFromApi && Array.isArray(listsFromApi)) {
-      setLists(
-        listsFromApi.map(list => ({
-          ...list,
-          selected: false,
-        })),
-      );
-    } else {
-      setLists([]);
-    }
-  }, [listsFromApi]);
+useEffect(() => {
+  if (!apiLists?.length) {
+    setLists([]);
+    return;
+  }
+
+  setLists(prev => {
+    // prevent unnecessary state updates
+    if (prev.length === apiLists.length) return prev;
+
+    return apiLists.map(list => ({
+      ...list,
+      selected: false,
+    }));
+  });
+}, [data]); // ✅ depend on raw RTK data ONLY
+
 
   /* ================= ACTIONS ================= */
   const toggleSelectList = id => {
-    setLists(prev => prev.map(l => (l.id === id ? { ...l, selected: !l.selected } : l)));
+    setLists(prev =>
+      prev.map(l =>
+        l.id === id ? { ...l, selected: !l.selected } : l,
+      ),
+    );
   };
 
   const toggleExpand = id => {
-    setExpandedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+    setExpandedIds(prev =>
+      prev.includes(id)
+        ? prev.filter(x => x !== id)
+        : [...prev, id],
+    );
   };
 
   const handleShareList = async list => {
     try {
-      const shareUrl = list?.share_url ?? list?.shareUrl ?? null; 
-      const title = list?.title ?? 'Untitled List';
+      const shareUrl =
+        list?.share_url ||
+        list?.shareUrl ||
+        list?.share_link ||
+        '';
 
       if (!shareUrl) {
         Alert.alert('Error', 'Share link not available');
         return;
       }
-      const message = `I just published my list "${title}". Check it out here: ${shareUrl}`;
 
       await RNShare.share({
-        title: `Check out my list: ${title}`,
-        message,
+        title: list?.title || 'My List',
+        message: `Check out my list "${list?.title}"\n${shareUrl}`,
         url: shareUrl,
       });
-    } catch (error) {
-      console.warn('Share error:', error);
-      Alert.alert('Error', 'Unable to open share dialog');
+    } catch (e) {
+      Alert.alert('Error', 'Unable to share list');
     }
   };
 
@@ -94,98 +111,121 @@ export default function MyListScreen({ navigation }) {
     navigation.navigate('Create');
   };
 
-  /* ================= RENDERERS ================= */
+  /* ================= RENDER ITEM ================= */
   const renderItemRow = item => {
     if (!item) return null;
 
-    const catalog = item.catalog_item ?? null;
-    const imageUrl = catalog?.image_url ?? null;
-    const name = catalog?.name ?? item.custom_item_name ?? 'Unnamed';
-    const desc = catalog?.description ?? item.custom_text ?? '';
+    const catalog = item?.catalog_item || {};
+    const imageUrl =
+      typeof catalog?.image_url === 'string' &&
+      catalog.image_url.length > 0
+        ? catalog.image_url
+        : null;
+
+    const name =
+      catalog?.name ||
+      item?.custom_item_name ||
+      'Unnamed item';
+
+    const desc =
+      catalog?.description ||
+      item?.custom_text ||
+      '';
 
     return (
-      <View key={String(item.id ?? `${Math.random()}`)} style={styles.itemRow}>
+      <View key={`item-${item.id}`} style={styles.itemRow}>
         <View style={styles.itemLeft}>
           <View style={styles.itemImage}>
             {imageUrl ? (
               <Image
-                resizeMode="cover"
                 source={{ uri: imageUrl }}
                 style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
               />
             ) : (
-              <View style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', borderRadius: 8 }} />
+              <View style={{ flex: 1, backgroundColor: '#E5E7EB' }} />
             )}
           </View>
+
           <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={styles.title}>{name}</Text>
-            <Text style={styles.desc} numberOfLines={2}>
-              {desc}
-            </Text>
+            {!!desc && (
+              <Text style={styles.desc} numberOfLines={2}>
+                {desc}
+              </Text>
+            )}
           </View>
         </View>
       </View>
     );
   };
 
-  const renderListCard = ({ item: list }) => {
-    if (!list) return null;
+  /* ================= RENDER LIST CARD ================= */
+  const renderListCard = ({ item }) => {
+    const expanded = expandedIds.includes(item.id);
 
     const firstImage =
-      Array.isArray(list.items) && list.items.length
-        ? (list.items.find(it => it?.catalog_item && it?.catalog_item?.image_url)?.catalog_item?.image_url ?? null)
-        : null;
-
-    const expanded = expandedIds.includes(list.id);
+      item?.items?.find(
+        it =>
+          typeof it?.catalog_item?.image_url === 'string' &&
+          it.catalog_item.image_url.length > 0,
+      )?.catalog_item?.image_url || null;
 
     return (
-      <View key={String(list.id)} style={[styles.card, list.selected && styles.cardActive]}>
-        {/* top row: left = tappable card info, right = share icon */}
+      <View style={[styles.card, item.selected && styles.cardActive]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Pressable
-            onPress={() => toggleSelectList(list.id)}
-            style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 8 }}
-          >
+            onPress={() => toggleSelectList(item.id)}
+            style={{ flexDirection: 'row', flex: 1 }}>
             <View style={styles.image}>
               {firstImage ? (
-                <Image resizeMode="cover" source={{ uri: firstImage }} style={{ width: '100%', height: '100%' }} />
+                <Image
+                  source={{ uri: firstImage }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
               ) : (
-                <View style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', borderRadius: 8 }} />
+                <View style={{ flex: 1, backgroundColor: '#E5E7EB' }} />
               )}
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{list.title ?? 'Untitled List'}</Text>
+              <Text style={styles.title}>{item?.title}</Text>
               <Text style={styles.desc}>
-                {Array.isArray(list.items) ? `${list.items.length} items` : '0 items'} •{' '}
-                {new Date(list.created_at ?? list.updated_at ?? Date.now()).toLocaleDateString()}
+                {item?.items?.length || 0} items •{' '}
+                {item?.created_at
+                  ? new Date(item.created_at).toLocaleDateString()
+                  : ''}
               </Text>
             </View>
           </Pressable>
 
-          {/* Share icon aligned to the right of the card */}
-          <Pressable onPress={() => handleShareList(list)} style={styles.shareListBtn}>
+          <Pressable
+            onPress={() => handleShareList(item)}
+            style={styles.shareListBtn}>
             <Image
               source={require('../../../../assets/image/unfillshare.png')}
-              resizeMode="contain"
               style={styles.shareListIcon}
             />
           </Pressable>
         </View>
 
-        {/* footer with expand button */}
         <View style={styles.cardFooter}>
-          <Pressable onPress={() => toggleExpand(list.id)} style={styles.expandBtn}>
-            <Text style={styles.expandText}>{expanded ? 'Hide items' : 'Show items'}</Text>
+          <Pressable onPress={() => toggleExpand(item.id)}>
+            <Text style={styles.expandText}>
+              {expanded ? 'Hide items' : 'Show items'}
+            </Text>
           </Pressable>
         </View>
 
         {expanded && (
           <View style={styles.itemsContainer}>
-            {Array.isArray(list.items) && list.items.length ? (
-              list.items.map(it => renderItemRow(it))
+            {item?.items?.length > 0 ? (
+              item.items.map(renderItemRow)
             ) : (
-              <Text style={{ padding: 12, color: '#666' }}>No items in this list.</Text>
+              <Text style={{ padding: 12, color: '#666' }}>
+                No items in this list
+              </Text>
             )}
           </View>
         )}
@@ -193,24 +233,29 @@ export default function MyListScreen({ navigation }) {
     );
   };
 
+  /* ================= UI ================= */
   return (
     <>
-      <Loader color="blue" visible={isLoading || isAdding} />
+      <Loader
+        color="blue"
+        visible={(isLoading || isFetching) && !lists.length}
+      />
+
       <SafeAreaProvider>
         <StatusBar backgroundColor="#00C4FA" barStyle="light-content" />
         <SafeAreaView edges={['top']} style={{ backgroundColor: '#00C4FA' }} />
 
         <View style={styles.header2}>
           <View style={styles.header}>
-            <Pressable onPress={() => navigation.goBack()} style={styles.backarrow}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={styles.backarrow}>
               <Image
-                tintColor={'#fff'}
-                resizeMode="contain"
-                style={styles.img}
                 source={require('../../../../assets/image/left-icon.png')}
+                style={styles.img}
+                tintColor="#fff"
               />
             </Pressable>
-
             <Text style={styles.headerTitle}>My List</Text>
             <View />
           </View>
@@ -218,44 +263,39 @@ export default function MyListScreen({ navigation }) {
           <View style={styles.serchmaincontainer}>
             <SearchBar placeholder="Search items..." />
           </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ ...Homestyle.scrollcontainer, paddingTop: responsiveScreenHeight(2.25) }}
-          >
-            {/* Category chips - if you want, map categories here */}
-          </ScrollView>
         </View>
 
-        <View style={{ flex: 1, backgroundColor: '#fff' }}>
-          <FlatList
-            data={lists}
-            keyExtractor={item => String(item.id ?? `${Math.random()}`)}
-            renderItem={renderListCard}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: responsiveScreenWidth(4),
-              paddingTop: responsiveScreenHeight(2),
-            }}
-            ListEmptyComponent={
-              !isLoading && (
-                <View style={{ padding: 24, alignItems: 'center' }}>
-                  <Image source={require('../../../../assets/image/notificationnotfount.jpg')} style={styles.emptyImg} />
-                  <Text style={styles.emptyText}>No lists found</Text>
-
-                  <TouchableOpacity style={styles.nextBtnLarge} onPress={handleCreateList}>
-                    <Text style={styles.nextText}>Create List</Text>
-                  </TouchableOpacity>
-                </View>
-              )
-            }
-          />
-        </View>
+        <FlatList
+          data={lists}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderListCard}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: responsiveScreenWidth(4),
+            paddingTop: responsiveScreenHeight(2),
+          }}
+          ListEmptyComponent={
+            !isLoading && (
+              <View style={{ padding: 24, alignItems: 'center' }}>
+                <Image
+                  source={require('../../../../assets/image/notificationnotfount.jpg')}
+                  style={styles.emptyImg}
+                />
+                <Text style={styles.emptyText}>No lists found</Text>
+                <TouchableOpacity
+                  style={styles.nextBtnLarge}
+                  onPress={handleCreateList}>
+                  <Text style={styles.nextText}>Create List</Text>
+                </TouchableOpacity>
+              </View>
+            )
+          }
+        />
       </SafeAreaProvider>
     </>
   );
 }
+
 
 export const styles = StyleSheet.create({
   container: { flex: 1 },
