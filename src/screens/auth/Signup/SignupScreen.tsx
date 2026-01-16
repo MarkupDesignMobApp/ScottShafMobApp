@@ -131,6 +131,7 @@ export default function SignupScreen() {
                 placeholder="e.g. Saroha Sans"
                 value={fullName}
                 onChangeText={setFullName}
+                inputStyle={{ color: '#000' }}
               />
 
               {/* Email */}
@@ -204,9 +205,6 @@ export default function SignupScreen() {
                 onPress={handleSignup}
                 disabled={!isFormValid || isLoading}
               />
-
-
-
 
               {/* Bottom */}
               <Text style={styles.bottomtxt}>

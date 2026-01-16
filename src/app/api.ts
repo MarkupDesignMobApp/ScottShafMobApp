@@ -25,7 +25,8 @@ export const baseApi = createApi({
     'Notifications',
     'RecommendItems',
     'Mybookmark',
-    "PublishedList"
+    "PublishedList",
+    "MyWishlist"
   ],
   endpoints: () => ({}),
 });

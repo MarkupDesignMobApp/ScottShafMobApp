@@ -17,24 +17,22 @@ import {
 } from 'react-native-responsive-dimensions';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
 import {
-  useGetMyBookFeaturedQuery,
-  useDeleteMyBookFeaturedMutation,
+  useGetMyWishlistQuery,
+  useDeleteMyWishlistMutation
 } from '../../../features/auth/authApi';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function Mybookmark({ navigation }: any) {
-  const { data, isLoading, refetch } = useGetMyBookFeaturedQuery();
-  const [deleteMyBookFeatured] = useDeleteMyBookFeaturedMutation();
+export default function MyWishlist({ navigation }: any) {
+  const { data, isLoading, refetch } = useGetMyWishlistQuery();
+  const [deleteMyWishlist] = useDeleteMyWishlistMutation();
 
-  
-   useFocusEffect(
-      React.useCallback(() => {
-        refetch();
-        return () => {
-        };
-      }, [refetch])
-    );
-    
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+      return () => {};
+    }, [refetch])
+  );
+
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -51,7 +49,7 @@ export default function Mybookmark({ navigation }: any) {
     if (!selectedItem) return;
     setIsDeleting(true);
     try {
-      await deleteMyBookFeatured(selectedItem.id).unwrap();
+      await deleteMyWishlist(selectedItem.id).unwrap();
       setShowModal(false);
       refetch();
     } catch (err) {
@@ -73,7 +71,7 @@ export default function Mybookmark({ navigation }: any) {
     const items = data?.data || [];
     if (!searchText) return items;
     const q = searchText.toLowerCase();
-    return items.filter(item => {
+    return items.filter((item) => {
       const title = (item.title || '').toString().toLowerCase();
       const category = (item.category?.name || '').toString().toLowerCase();
       const interest = (item.interest?.name || '').toString().toLowerCase();
@@ -112,7 +110,7 @@ export default function Mybookmark({ navigation }: any) {
   return (
     <>
       <AppHeader
-        title="My Bookmark"
+        title="My Wishlist"
         onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
@@ -125,7 +123,7 @@ export default function Mybookmark({ navigation }: any) {
               style={styles.searchIcon}
             />
             <TextInput
-              placeholder="Search Bookmark"
+              placeholder="Search Wishlist"
               placeholderTextColor="#9CA3AF"
               style={styles.searchInput}
               value={searchText}
@@ -142,7 +140,7 @@ export default function Mybookmark({ navigation }: any) {
         ) : (
           <FlatList
             data={filteredData}
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
             contentContainerStyle={{
               paddingHorizontal: w(4),
@@ -161,7 +159,7 @@ export default function Mybookmark({ navigation }: any) {
                     color: '#6B7280',
                   }}
                 >
-                  {hasData ? 'No results found' : 'No Bookmarks Found'}
+                  {hasData ? 'No results found' : 'No Wishlist Found'}
                 </Text>
               </View>
             }
@@ -186,7 +184,7 @@ export default function Mybookmark({ navigation }: any) {
               </Text>
 
               <Text style={styles.modalDesc}>
-                Are you sure you want to delete this bookmark?
+                Are you sure you want to delete this wishlist item?
               </Text>
 
               <View style={styles.modalRow}>
@@ -248,7 +246,7 @@ const styles = StyleSheet.create({
   searchInput: {
     fontSize: f(2),
     flex: 1,
-    paddingVertical: 0, // keep vertical padding consistent on Android/iOS
+    paddingVertical: 0, 
   },
 
   /* Card */

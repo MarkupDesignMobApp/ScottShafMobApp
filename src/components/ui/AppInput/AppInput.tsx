@@ -129,8 +129,9 @@ const styles = StyleSheet.create({
   input: {
     fontSize: responsiveFontSize(1.75),
     paddingVertical: responsiveScreenHeight(0.75),
-    fontFamily: 'Quicksand-Regular',
-    color: '#535353',
+    fontFamily: 'Quicksand-bold',
+    color: '#000', 
     paddingLeft: responsiveScreenWidth(1),
   },
+  
 });

@@ -32,3 +32,4 @@ export { default as FeaturedDetailScreen} from './main/home/FeaturedDetailScreen
 export { default as Bookmark} from './main/profile/Mybookmark';
 export { default as ListPublishedScreen} from './main/List/ListPublish';
 export { default as MyListScreen} from './main/List/MyListScreen';
+export { default as MyWishlist} from './main/profile/MyWishlist';

@@ -72,6 +72,7 @@ export type MainStackParamList = {
   Reorder:undefined;
   Publish:undefined;
   Bookmark:undefined;
+  MyWishlist:undefined;
 };
 
 /**

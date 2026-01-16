@@ -10,8 +10,8 @@ import {
   AddCustomItem,
   Reorder,
   Invitescreen,Publish,
-  Bookmark,
-  ListPublishedScreen
+  ListPublishedScreen,
+  MyWishlist
 } from '../../screens/index';
 
 
@@ -34,6 +34,7 @@ export default function MainNavigator() {
       <Stack.Screen name="Invitescreen" component={Invitescreen} />
        <Stack.Screen name="Publish" component={Publish} />
        <Stack.Screen name="ListPublishedScreen" component={ListPublishedScreen} />
+       {/* <Stack.Screen name="MyWishlist" component={MyWishlist} /> */}
        
        {/* <Stack.Screen name="Bookmark" component={Bookmark} /> */}
     </Stack.Navigator>

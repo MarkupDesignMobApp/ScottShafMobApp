@@ -36,7 +36,7 @@ export default function EditProfile({ navigation, route }: any) {
   // -------------------- TOP LEVEL HOOKS --------------------
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
   const [age, setAge] = useState('');
   const [budgetText, setBudgetText] = useState('');
   const [profileImage, setProfileImage] = useState<any>(null);
@@ -53,6 +53,7 @@ export default function EditProfile({ navigation, route }: any) {
   const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
   const { data: profileResponse, isLoading: profileLoading } =
     useGetUserProfileQuery();
+    
 
   // -------------------- FOCUS SCROLL --------------------
   useFocusEffect(
@@ -67,9 +68,10 @@ export default function EditProfile({ navigation, route }: any) {
   useEffect(() => {
     if (profileResponse?.success) {
       const userData = profileResponse.data.user; // rename to avoid shadowing
+      console.log(userData)
       setName(userData.full_name ?? '');
       setEmail(userData.email ?? '');
-      setCity(userData.profile?.city ?? '');
+      setCountry(userData.country ?? '');
       setAge(userData.profile?.age_band ?? '');
       setBudgetText(userData.profile?.dining_budget ?? '');
       setProfileImage(userData.profile?.profile_image ?? null);
@@ -134,7 +136,7 @@ export default function EditProfile({ navigation, route }: any) {
       const formData = new FormData();
       formData.append('_method', 'POST');
       formData.append('full_name', name);
-      formData.append('city', city);
+      formData.append('country', country);
       formData.append('dining_budget', budgetText);
       formData.append('has_dogs', '0');
 
@@ -254,14 +256,19 @@ export default function EditProfile({ navigation, route }: any) {
             </View>
           </TouchableOpacity>
 
-          {/* CITY */}
+          {/* Country */}
           <AppInput
-            inputStyle={{ color: 'black' }}
-            value={city}
-            onChangeText={setCity}
-            placeholder="e.g. San Francisco"
-            label={<Text style={Homestyle.labeltxt}>Country  <Text style={{ color: 'red' }}>*</Text></Text>}
-          />
+  inputStyle={{ color: 'black' }}
+  value={country}
+  onChangeText={setCountry}
+  placeholder="e.g. India"
+  label={
+    <Text style={Homestyle.labeltxt}>
+      Country <Text style={{ color: 'red' }}>*</Text>
+    </Text>
+  }
+/>
+
 
           {/* BUDGET MODAL INPUT */}
           <TouchableOpacity
@@ -290,6 +297,7 @@ export default function EditProfile({ navigation, route }: any) {
           <Text style={styles2.labeltxt}>Describe your budget *</Text>
           <View style={styles2.paragraph}>
             <TextInput
+            inputStyle={{ color: 'black' }}
               value={budgetText}
               onChangeText={handleBudgetChange}
               multiline

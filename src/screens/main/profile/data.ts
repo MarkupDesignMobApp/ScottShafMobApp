@@ -13,12 +13,18 @@ export const Data = [
   },
   {
     id: '3',
+    icon: require('../../../../assets/image/unfillheart.png'),
+    title: 'My Wishlist',
+    navigate: 'MyWishlist',
+  },
+  {
+    id: '4',
     icon: require('../../../../assets/image/privacy.png'),
     title: 'Privacy & Consent',
     navigate: 'Privacy',
   },
   {
-    id: '4',
+    id: '5',
     icon: require('../../../../assets/image/bell.png'),
     title: 'Notifications',
     navigate: 'Notification',

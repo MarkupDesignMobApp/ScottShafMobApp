@@ -89,3 +89,13 @@ export const PublishedLists = {
   DELETE_PUBLISHED_LIST: (id: number | string) => `/scott-shafer/api/delete/list/${id}`,
 } as const;
 
+
+
+//Wishlist
+export const FeaturedWishlists = {
+  WISHLIST_LIST: '/scott-shafer/api/me/featured-lists/wishlists',
+
+  // DELETE – Remove wishlist item by ID
+  WISHLIST_DELETE: (wishlistId: number | string) =>
+    `/scott-shafer/api/featured-list-delete/${wishlistId}`,
+} as const;

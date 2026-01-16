@@ -107,7 +107,7 @@ export const styles = StyleSheet.create({
   
   prefix2style: {
     marginLeft: responsiveScreenWidth(14), // ✅ matches prefix width
-    
+     color:'#111111'
   },
   
   codetxt: {

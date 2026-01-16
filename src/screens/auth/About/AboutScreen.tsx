@@ -54,16 +54,24 @@ export default function AboutScreen({ navigation }) {
     { id: '1', country: 'India', name: 'Delhi' },
     { id: '2', country: 'India', name: 'Mumbai' },
     { id: '3', country: 'India', name: 'Bangalore' },
-
+  
     { id: '4', country: 'USA', name: 'New York' },
     { id: '5', country: 'USA', name: 'Los Angeles' },
     { id: '6', country: 'USA', name: 'Chicago' },
-
+  
     { id: '7', country: 'Uk', name: 'London' },
-    { id: '8', country: 'Uk', name: 'Dubai' },
-    { id: '9', country: 'Uk', name: 'Sydney' },
+    { id: '8', country: 'Uk', name: 'Manchester' },
+    { id: '9', country: 'Uk', name: 'Birmingham' },
+  
+    { id: '10', country: 'Germany', name: 'Berlin' },
+    { id: '11', country: 'Germany', name: 'Munich' },
+    { id: '12', country: 'Germany', name: 'Hamburg' },
+  
+    { id: '13', country: 'Canada', name: 'Toronto' },
+    { id: '14', country: 'Canada', name: 'Vancouver' },
+    { id: '15', country: 'Canada', name: 'Montreal' },
   ];
-
+  
   /** RENDER AGE */
   const renderItem = ({ item }) => {
     const isSelected = selectedId === item.id;

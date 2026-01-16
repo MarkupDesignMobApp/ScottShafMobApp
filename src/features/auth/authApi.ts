@@ -48,7 +48,8 @@ import {
   Recommended,
   SHARE_LIST_ENDPOINT,
   FeaturedBookmarks,
-  PublishedLists
+  PublishedLists,
+  FeaturedWishlists
 } from './endpoints';
 
 /* ================= API ================= */
@@ -374,6 +375,25 @@ deletePublishedList: builder.mutation<any, number | string>({
 }),
 
 
+/* ================= WISHLIST ================= */
+
+getMyWishlist: builder.query<FeaturedWishlistResponse, void>({
+  query: () => ({
+    url: FeaturedWishlists.WISHLIST_LIST,
+    method: 'GET',
+  }),
+  providesTags: ['MyWishlist'],
+}),
+
+deleteMyWishlist: builder.mutation<any, number | string>({
+  query: id => ({
+    url: FeaturedWishlists.WISHLIST_DELETE(id),
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['MyWishlist'],
+}),
+
+
   }),
 });
 
@@ -419,5 +439,7 @@ export const {
   usePublishListMutation,
   useGetMyPublishedListsQuery,
   usePostCurrentPublishedListMutation,
-  useDeletePublishedListMutation
+  useDeletePublishedListMutation,
+  useGetMyWishlistQuery,
+  useDeleteMyWishlistMutation
 } = authApi;
