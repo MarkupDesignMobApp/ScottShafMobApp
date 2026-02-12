@@ -43,6 +43,7 @@ export default function CreateListScreen({ navigation }) {
     name: string;
     code: string;
   } | null>(null);
+  const [subCategory, setSubCategory] = useState(''); // <-- new sub-category input
   const [modalVisible, setModalVisible] = useState(false);
   const [isGroup, setIsGroup] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<
@@ -65,6 +66,7 @@ export default function CreateListScreen({ navigation }) {
     listSize.trim().length > 0 &&
     !isNaN(Number(listSize)) &&
     (!isGroup || selectedUsers.length > 0);
+  // subCategory is optional — it will be sent as `sub_category_id` if provided
 
   /* ================= HANDLERS ================= */
   const toggleUser = (user: { id: number; full_name: string }) => {
@@ -80,6 +82,7 @@ export default function CreateListScreen({ navigation }) {
       setTitle('');
       setListSize('');
       setSelectedCategory(null);
+      setSubCategory(''); // reset sub-category too
       setModalVisible(false);
       setIsGroup(false);
       setSelectedUsers([]);
@@ -97,6 +100,11 @@ export default function CreateListScreen({ navigation }) {
         is_group: isGroup,
       };
 
+      // If user provided a sub-category value, include it under the key `sub_category_id`
+      if (subCategory && subCategory.trim().length > 0) {
+        payload.sub_category_id = subCategory.trim();
+      }
+
       if (isGroup) {
         payload.user_ids = selectedUsers.map(u => u.id);
       }
@@ -112,6 +120,7 @@ export default function CreateListScreen({ navigation }) {
         userIds: isGroup ? selectedUsers.map(u => u.id) : [],
         listSize: Number(listSize),
         title: title.trim(),
+        subCategory: subCategory.trim(), // pass along if needed
       });
     } catch (error: any) {
       Alert.alert('Error', error?.data?.message || 'Failed to create list');
@@ -189,6 +198,21 @@ export default function CreateListScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
+          {/* SUB CATEGORY (new input under Category) */}
+          <View style={{ marginTop: responsiveScreenHeight(2) }}>
+            <AppInput
+              value={subCategory}
+              onChangeText={setSubCategory}
+              placeholder="Type sub category (optional)"
+              label={
+                <Text style={Homestyle.labeltxt}>
+                  Sub Category
+                </Text>
+              }
+            />
+           
+          </View>
+
           {/* GROUP SWITCH */}
           <View style={styles.targetcontainer}>
             <View style={styles.switchcontainer}>
@@ -203,6 +227,7 @@ export default function CreateListScreen({ navigation }) {
               Let friends collaborate & add their own picks to your list.
             </Text>
           </View>
+
           {/* INVITE USERS */}
           {isGroup && (
             <View style={styles.invitedBox}>
@@ -249,7 +274,6 @@ export default function CreateListScreen({ navigation }) {
               )}
             </View>
           )}
-
 
           {/* LIST SIZE */}
           <View style={{ marginTop: responsiveScreenHeight(2) }}>
@@ -303,7 +327,6 @@ export default function CreateListScreen({ navigation }) {
       )}
     </View>
   );
-
 }
 
 /* ================= STYLES ================= */

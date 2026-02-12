@@ -5,8 +5,7 @@
 // import { TokenService } from './src/services/storage/keychain.services';
 
 // export default function App() {
-//   const [token, setToken] = useState<string | null>(null);
-
+//   const [token, setToken] = useState<string | null>(null)
 //   // Save token
 //   const handleSaveToken = async () => {
 //     await TokenService.save("MY_SECURE_TOKEN_123");

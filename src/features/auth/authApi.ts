@@ -35,7 +35,8 @@ import {
   CampaignsResponse,
   Campaign,
   CatalogItemsPublishList,
-  FeaturedBookmarksResponse
+  FeaturedBookmarksResponse,
+   
 } from './authTypes';
 
 import {
@@ -48,7 +49,9 @@ import {
   Recommended,
   SHARE_LIST_ENDPOINT,
   FeaturedBookmarks,
-  PublishedLists
+  PublishedLists,
+  SUB_CATEGORIES_ENDPOINT,
+  SUB_CATEGORY_ITEMS_ENDPOINT
 } from './endpoints';
 
 /* ================= API ================= */
@@ -325,8 +328,8 @@ export const authApi = baseApi.injectEndpoints({
         method: 'GET',
       }),
     }),
-    
-    
+
+
 
     /* ================= BOOKMARKS ================= */
 
@@ -353,31 +356,40 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({ url: PublishedLists.PUBLISHED_LISTS_GET, method: 'GET' }),
       providesTags: ['PublishedList'], // ✅ matches
     }),
-    
 
 
-postCurrentPublishedList: builder.mutation({
-  query: body => ({
-    url: PublishedLists.CURRENT_PUBLISHED_LIST_POST,
-    method: 'POST',
-    body,
-  }),
-  providesTags: ['PublishedList'],
-}),
 
-deletePublishedList: builder.mutation<any, number | string>({
-  query: id => ({
-    url: PublishedLists.DELETE_PUBLISHED_LIST(id),
-    method: 'DELETE',
-  }),
-  invalidatesTags: ['PublishedList'],
-}),
+    postCurrentPublishedList: builder.mutation({
+      query: body => ({
+        url: PublishedLists.CURRENT_PUBLISHED_LIST_POST,
+        method: 'POST',
+        body,
+      }),
+      providesTags: ['PublishedList'],
+    }),
+
+    deletePublishedList: builder.mutation<any, number | string>({
+      query: id => ({
+        url: PublishedLists.DELETE_PUBLISHED_LIST(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['PublishedList'],
+    }),
+
+    getSubCategories: builder.query<any, number | string>({
+      query: (categoryId) => ({
+        url: SUB_CATEGORIES_ENDPOINT(categoryId),
+        method: 'GET',
+      }),
+    }),
+
+    getSubCategoryItems: builder.query<any, number | string>({
+      query: subCategoryId => SUB_CATEGORY_ITEMS_ENDPOINT(subCategoryId),
+    }),
 
 
   }),
 });
-
-
 
 /* ================= HOOK EXPORTS ================= */
 
@@ -419,5 +431,7 @@ export const {
   usePublishListMutation,
   useGetMyPublishedListsQuery,
   usePostCurrentPublishedListMutation,
-  useDeletePublishedListMutation
+  useDeletePublishedListMutation,
+  useGetSubCategoriesQuery,
+  useGetSubCategoryItemsQuery
 } = authApi;

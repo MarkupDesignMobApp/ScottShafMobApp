@@ -89,3 +89,8 @@ export const PublishedLists = {
   DELETE_PUBLISHED_LIST: (id: number | string) => `/scott-shafer/api/delete/list/${id}`,
 } as const;
 
+export const SUB_CATEGORIES_ENDPOINT = (categoryId: number | string) =>
+  `/scott-shafer/api/categories/${categoryId}/sub-categories`;
+
+export const SUB_CATEGORY_ITEMS_ENDPOINT = (subCategoryId: number | string) =>
+  `/scott-shafer/api/sub-categories/${subCategoryId}/items`;

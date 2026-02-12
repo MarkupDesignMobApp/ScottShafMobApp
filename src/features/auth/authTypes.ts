@@ -376,6 +376,7 @@ export interface TermsAndPrivacyResponse {
 export interface CreateListRequest {
   title: string;
   category_id: number;
+  sub_category_ids:number[];
   list_size: number;
   is_group: boolean;
   user_ids?: number[];
@@ -587,4 +588,16 @@ export interface FeaturedBookmarkItem {
 
   is_liked: boolean
   is_saved: boolean
+}
+
+export interface SubCategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface SubCategoryResponse {
+  success: boolean;
+  message: string;
+  data: SubCategoryItem[];
 }

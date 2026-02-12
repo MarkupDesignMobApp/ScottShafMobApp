@@ -37,8 +37,8 @@ export default function MyListScreen({ navigation }) {
   const apiLists = Array.isArray(data?.data)
     ? data.data
     : Array.isArray(data)
-    ? data
-    : [];
+      ? data
+      : [];
 
   const [lists, setLists] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
@@ -49,23 +49,52 @@ export default function MyListScreen({ navigation }) {
     }, [refetch]),
   );
 
-useEffect(() => {
-  if (!apiLists?.length) {
-    setLists([]);
-    return;
-  }
+  useEffect(() => {
+    if (!apiLists?.length) {
+      setLists([]);
+      return;
+    }
 
-  setLists(prev => {
-    // prevent unnecessary state updates
-    if (prev.length === apiLists.length) return prev;
+    setLists(prev => {
+      // prevent unnecessary state updates
+      if (prev.length === apiLists.length) return prev;
 
-    return apiLists.map(list => ({
-      ...list,
-      selected: false,
-    }));
-  });
-}, [data]); // ✅ depend on raw RTK data ONLY
+      return apiLists.map(list => ({
+        ...list,
+        selected: false,
+      }));
+    });
+  }, [data]); // ✅ depend on raw RTK data ONLY
 
+  /* ================ Helpers ================= */
+  const formatSubCategory = raw => {
+    if (raw === null || raw === undefined) return '';
+    const s = String(raw).trim();
+    // remove leading hashes if any, and trim
+    const cleaned = s.replace(/^#+/, '').trim();
+    if (!cleaned) return '';
+    // if numeric id show as ID, else show the text nicely
+    if (/^\d+$/.test(cleaned)) {
+      return `Subcategory ID: ${cleaned}`;
+    }
+    // Capitalize first letter (basic)
+    return `#${cleaned.charAt(0).toUpperCase() + cleaned.slice(1)}`;
+  };
+
+  const getSubCategoryDisplay = list => {
+    // Prefer list-level sub_category_id, fallback to first item's catalog_item.sub_category_id
+    const listLevel = list?.sub_category_id ?? null;
+    if (listLevel !== null && listLevel !== undefined && String(listLevel).trim() !== '') {
+      return formatSubCategory(listLevel);
+    }
+
+    const firstCatalogSub = list?.items?.find(it => it?.catalog_item)?.catalog_item?.sub_category_id;
+    if (firstCatalogSub !== null && firstCatalogSub !== undefined) {
+      return formatSubCategory(firstCatalogSub);
+    }
+
+    return '';
+  };
 
   /* ================= ACTIONS ================= */
   const toggleSelectList = id => {
@@ -118,7 +147,7 @@ useEffect(() => {
     const catalog = item?.catalog_item || {};
     const imageUrl =
       typeof catalog?.image_url === 'string' &&
-      catalog.image_url.length > 0
+        catalog.image_url.length > 0
         ? catalog.image_url
         : null;
 
@@ -171,6 +200,8 @@ useEffect(() => {
           it.catalog_item.image_url.length > 0,
       )?.catalog_item?.image_url || null;
 
+    const subCategoryLabel = getSubCategoryDisplay(item);
+
     return (
       <View style={[styles.card, item.selected && styles.cardActive]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -191,6 +222,16 @@ useEffect(() => {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{item?.title}</Text>
+
+              <Text
+                style={styles.desc}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {subCategoryLabel}
+              </Text>
+
+
               <Text style={styles.desc}>
                 {item?.items?.length || 0} items •{' '}
                 {item?.created_at
@@ -295,7 +336,6 @@ useEffect(() => {
     </>
   );
 }
-
 
 export const styles = StyleSheet.create({
   container: { flex: 1 },
