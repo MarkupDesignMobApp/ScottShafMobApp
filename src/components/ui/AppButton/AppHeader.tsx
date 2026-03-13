@@ -9,9 +9,7 @@ import {
   Image,
   ImageSourcePropType,
 } from 'react-native';
-import {
-  responsiveScreenFontSize,
-} from 'react-native-responsive-dimensions';
+import { responsiveScreenFontSize } from 'react-native-responsive-dimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AppHeaderProps {
@@ -21,9 +19,9 @@ interface AppHeaderProps {
   onLeftPress?: () => void;
   onRightPress?: () => void;
   containerStyle?: ViewStyle;
+  backgroundColor?: string; // NEW PROP
+  titleColor?: string; // NEW PROP
 }
-
-const HEADER_HEIGHT = 56;
 
 const AppHeader: React.FC<AppHeaderProps> = ({
   title,
@@ -32,10 +30,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onLeftPress,
   onRightPress,
   containerStyle,
+  backgroundColor = '#FFFFFF', // default white
+  titleColor = '#000000', // default black
 }) => {
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <View style={[styles.container, containerStyle]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[styles.safeArea, { backgroundColor }]}
+    >
+      <View style={[styles.container, containerStyle, { backgroundColor }]}>
         {/* Left */}
         <View style={styles.sideContainer}>
           {leftImage && (
@@ -44,14 +47,18 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               hitSlop={10}
               style={styles.iconWrapper}
             >
-              <Image source={leftImage} style={styles.icon} />
+              <Image
+                tintColor={'#fff'}
+                source={leftImage}
+                style={styles.icon}
+              />
             </TouchableOpacity>
           )}
         </View>
 
         {/* Center */}
         <View style={styles.titleContainer}>
-          <Text numberOfLines={1} style={styles.title}>
+          <Text numberOfLines={1} style={[styles.title, { color: titleColor }]}>
             {title}
           </Text>
         </View>
@@ -75,16 +82,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
 export default AppHeader;
 
-
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFFFFF', // default, overridden by prop
   },
   container: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFFFFF', // default, overridden by prop
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E0E0E0',
   },

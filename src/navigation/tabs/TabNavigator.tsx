@@ -1,52 +1,49 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image } from 'react-native';
+import { Image, View, StyleSheet } from 'react-native';
+
 import { TabParamList } from '../types/navigation';
-import {
-  Profile,
-  Home,
-  FeaturedLists,
-  CreateList,
-  MyList,
-  MyListScreen,
-} from '../../screens';
+import { CreateList, MyListScreen } from '../../screens';
+
 import ProfileStackNavigator from '../stacks/InternalNavigator/ProfileStackNavigator';
 import HomeStackNavigator from '../stacks/InternalNavigator/HomeStackNavigator';
-import BrowseCatalogScreen from '../../screens/main/campaign/CatlogScreen';
 import Recommend_Screen from '../../screens/main/home/Recommend_Screen';
+
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const getTabIcon = (routeName: string, focused: boolean) => {
-  let icon;
+const icons = {
+  Home: require('../../../assets/image/home.png'),
+  Discover: require('../../../assets/image/compass.png'),
+  Create: require('../../../assets/image/add2.png'),
+  MyLists: require('../../../assets/image/list.png'),
+  Profile: require('../../../assets/image/users.png'),
+};
 
-  switch (routeName) {
-    case 'Home':
-      icon = require('../../../assets/image/home.png');
-      break;
-    case 'Discover':
-      icon = require('../../../assets/image/compass.png');
-      break;
-    case 'Create':
-      icon = require('../../../assets/image/add2.png');
-      break;
-    case 'MyLists':
-      icon = require('../../../assets/image/list.png');
-      break;
-    case 'Profile':
-      icon = require('../../../assets/image/users.png');
-      break;
-  }
+const PRIMARY = '#2C3E50';
+const INACTIVE = '#95A5A6';
+
+const TabIcon = ({ routeName, focused }) => {
+  const isCreate = routeName === 'Create';
 
   return (
-    <Image
-      source={icon}
-      style={{
-        width: 24,
-        height: 24,
-        tintColor: focused ? '#0180FE' : '#999',
-      }}
-      resizeMode="contain"
-    />
+    <View
+      style={[
+        styles.iconWrapper,
+        focused && !isCreate && styles.activeIconWrapper,
+        isCreate && styles.createWrapper,
+      ]}
+    >
+      <Image
+        source={icons[routeName]}
+        resizeMode="contain"
+        style={[
+          styles.icon,
+          {
+            tintColor: isCreate ? '#FFFFFF' : focused ? PRIMARY : INACTIVE,
+          },
+        ]}
+      />
+    </View>
   );
 };
 
@@ -55,14 +52,19 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+
         tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          fontFamily: 'Ubuntu-Regular',
-          marginTop: 4,
-        },
-        tabBarIcon: ({ focused }) => getTabIcon(route.name, focused),
+
+        tabBarLabelStyle: styles.label,
+
+        tabBarActiveTintColor: PRIMARY,
+        tabBarInactiveTintColor: INACTIVE,
+
+        tabBarIcon: ({ focused }) => (
+          <TabIcon routeName={route.name} focused={focused} />
+        ),
+
+        tabBarStyle: styles.tabBar,
       })}
     >
       <Tab.Screen name="Home" component={HomeStackNavigator} />
@@ -73,3 +75,69 @@ export default function TabNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    position: 'absolute',
+    left: 18,
+    right: 18,
+    bottom: 18,
+
+    height: 70,
+    borderRadius: 22,
+
+    backgroundColor: '#FFFFFF',
+
+    paddingTop: 6,
+    paddingBottom: 6,
+
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+
+    elevation: 10,
+  },
+
+  iconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  activeIconWrapper: {
+    backgroundColor: '#ECF0F1',
+  },
+
+  createWrapper: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: '#2C3E50',
+
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    marginTop: -20,
+
+    shadowColor: '#2C3E50',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+
+    elevation: 8,
+  },
+
+  icon: {
+    width: 24,
+    height: 24,
+  },
+
+  label: {
+    fontSize: 11,
+    fontFamily: 'Ubuntu-Regular',
+    marginTop: 2,
+  },
+});

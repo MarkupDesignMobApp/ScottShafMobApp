@@ -1,275 +1,304 @@
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
-  responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
 export const styles = StyleSheet.create({
-  heading: {
+  container: {
+    flex: 1,
+    backgroundColor: '#F6F8FA',
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  scrollContainer: {
+    paddingBottom: 40,
+  },
+
+  /* HEADER */
+
+  header: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+
+
+
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2C3E50',
+  },
+
+  headerIcon: {
+    width: 22,
+    height: 22,
+    tintColor: '#2C3E50',
+  },
+
+  /* PROFILE */
+
+  profileCard: {
+    backgroundColor: '#fff',
+
+    marginHorizontal: 20,
+    marginTop: 20,
+
+    borderRadius: 16,
+
+    padding: 24,
+
     alignItems: 'center',
 
-    borderBottomWidth: 0.25,
-    // paddingHorizontal: responsiveScreenWidth(4),
-    marginHorizontal: responsiveScreenWidth(4),
-    paddingTop: responsiveScreenHeight(2),
-    borderColor: '#707070',
-    paddingBottom: responsiveScreenHeight(1),
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  imgcontainer: {
-    width: responsiveScreenWidth(14),
-    height: responsiveScreenWidth(14),
-    borderRadius: responsiveScreenWidth(7)
+
+  profileImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+
+    marginBottom: 10,
   },
-  img: {
-    width: '100%',
-    height: '100%',
-    borderRadius: responsiveScreenWidth(7)
+
+  name: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2C3E50',
   },
-  nametxt: {
-    fontFamily: 'Quicksand-Bold',
-    fontSize: responsiveScreenFontSize(2),
+
+  email: {
+    fontSize: 14,
+    color: '#7F8C8D',
+    marginTop: 2,
   },
-  nameheadtxt: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.75),
-    paddingVertical: responsiveScreenHeight(0.5),
+
+  memberSince: {
+    fontSize: 12,
+    color: '#95A5A6',
+    marginTop: 6,
   },
-  datetxt: {
-    fontSize: responsiveScreenFontSize(1.5),
+
+  editButton: {
+    marginTop: 14,
+
+    backgroundColor: '#2C3E50',
+
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+
+    borderRadius: 10,
   },
-  edit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'absolute',
-    top: responsiveScreenHeight(2),
-    right: responsiveScreenWidth(0),
+
+  editText: {
+    color: '#fff',
+    fontWeight: '600',
   },
-  edittxt: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.75),
-    color: '#0180FE',
+
+  /* SETTINGS */
+
+  settingsCard: {
+    backgroundColor: '#fff',
+
+    marginHorizontal: 20,
+    marginTop: 20,
+
+    borderRadius: 16,
+
+    paddingVertical: 10,
   },
-  imgcontainer2: {
-    width: responsiveScreenWidth(5),
-    height: responsiveScreenHeight(4),
-    marginLeft: responsiveScreenWidth(1),
-  },
-  listcontainer: {
-    // paddingHorizontal: responsiveScreenWidth(4),
+
+  settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: responsiveScreenHeight(2),
-  },
-  imgcontainer3: {
-    width: responsiveScreenWidth(4),
-    height: responsiveScreenHeight(4),
-  },
-  title: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.7),
-    paddingLeft: responsiveScreenWidth(3),
-  },
-  listmaincontainer: {
-    borderBottomWidth: 0.25,
-    paddingTop: responsiveScreenHeight(2),
-    paddingBottom: responsiveScreenHeight(12),
-    marginHorizontal: responsiveScreenWidth(4),
-    // paddingHorizontal: responsiveScreenWidth(4),
-    borderColor: '#707070',
-  },
-  circleview: {
-    height: responsiveScreenWidth(2),
-    width: responsiveScreenWidth(2),
-    borderRadius: responsiveScreenWidth(1),
-    backgroundColor: '#00C4FA',
-    marginHorizontal: responsiveScreenWidth(4),
-  },
-  termcontainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
 
-    alignSelf: 'center',
-    paddingTop: responsiveScreenHeight(3),
-    paddingBottom: responsiveScreenHeight(1),
+    paddingHorizontal: 18,
+    paddingVertical: 16,
   },
-  term: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(1.75),
-    color: '#000000',
-  },
-  profile: {
-    alignSelf: 'center',
-    height: responsiveScreenWidth(25),
-    width: responsiveScreenWidth(25),
-    borderRadius: responsiveScreenWidth(12.5),
-    marginTop: responsiveScreenHeight(2),
-    marginBottom: responsiveScreenHeight(5),
-  },
-  camcontainer: {
-    borderWidth: 1,
-    height: responsiveScreenWidth(8),
-    width: responsiveScreenWidth(8),
-    borderRadius: responsiveScreenWidth(4),
-    position: 'absolute',
+
+  settingLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
+  },
+
+  settingIcon: {
+    width: 22,
+    height: 22,
+    marginRight: 12,
+  },
+
+  settingTitle: {
+    fontSize: 15,
+    color: '#2C3E50',
+  },
+
+  arrow: {
+    width: 16,
+    height: 16,
+    tintColor: '#BDC3C7',
+  },
+
+  /* TERMS */
+
+  termcontainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#F6FBFF',
-    right: 10,
-    bottom: -12,
-    borderColor: '#0180FE',
+    alignItems: 'center',
+
+    marginTop: 30,
   },
-  cammaincontainer: {
-    width: responsiveScreenHeight(1.75),
-    height: responsiveScreenHeight(1.75),
+
+  term: {
+    fontSize: 13,
+    color: '#7F8C8D',
   },
-  bottomcontainer: {
-    paddingHorizontal: responsiveScreenWidth(4),
-    position: 'absolute',
-    width: '100%',
-    bottom:
-      Platform.OS == 'ios'
-        ? responsiveScreenHeight(2)
-        : responsiveScreenHeight(6),
+
+  circleview: {
+    width: 4,
+    height: 4,
+
+    borderRadius: 2,
+
+    backgroundColor: '#BDC3C7',
+
+    marginHorizontal: 8,
+  },
+
+  saveButton: {
+    marginTop: 25,
+    marginHorizontal: 20,
+    backgroundColor: '#2C3E50',
+
+    paddingVertical: 16,
+
+    borderRadius: 12,
+    alignItems: 'center',
+
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
 export const styles2 = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-
-  fieldWrapper: {
-    marginTop: responsiveScreenHeight(2),
-    zIndex: 10,
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F9FC',
   },
+
+  /* PROFILE IMAGE */
+
   profile: {
-    alignSelf: 'center',
-    height: responsiveScreenWidth(20),
-    width: responsiveScreenWidth(20),
-    borderRadius: responsiveScreenWidth(10),
-    marginTop: responsiveScreenHeight(2),
-    marginBottom: responsiveScreenHeight(4),
-  },
-  camcontainer: {
-    borderWidth: 1,
-    height: responsiveScreenWidth(8),
-    width: responsiveScreenWidth(8),
-    borderRadius: responsiveScreenWidth(4),
-    position: 'absolute',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F6FBFF',
-    right: 0,
-    bottom: -14,
-    borderColor: '#0180FE',
+    marginTop: responsiveScreenHeight(3),
+    marginBottom: responsiveScreenHeight(3),
   },
-  cammaincontainer: {
-    width: responsiveScreenHeight(1.5),
-    height: responsiveScreenHeight(1.5),
-  },
-  floatingLabel: {
-    position: 'absolute',
-    top: -9,
-    left: 18,
-    backgroundColor: '#FFFFFF', // must be solid
-    paddingHorizontal: 6,
-    fontSize: 12,
-    color: '#8A8A8A',
-    zIndex: 20, // ⭐ label ABOVE everything
-  },
+
   img: {
-    width: '100%',
-    height: '100%',
-    borderRadius: responsiveScreenWidth(10),
+    width: responsiveScreenWidth(30),
+    height: responsiveScreenWidth(30),
+    borderRadius: responsiveScreenWidth(15),
+    borderWidth: 3,
+    borderColor: '#2C3E50',
   },
 
-  input: {
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1.2,
-    borderColor: '#E4E6EB',
-    paddingHorizontal: 18,
-    fontSize: 14,
-    color: '#1A1A1A',
-    backgroundColor: '#FFFFFF',
-    zIndex: 1,
-  },
-
-  prefix: {
+  camcontainer: {
     position: 'absolute',
-    paddingTop: responsiveScreenHeight(0.5),
-    right: responsiveScreenWidth(8),
-    color: '#AEAEAE',
-    width: responsiveScreenWidth(4),
-    height: responsiveScreenHeight(4),
+    bottom: 0,
+    right: responsiveScreenWidth(32),
+
+    backgroundColor: '#2C3E50',
+    padding: 10,
+    borderRadius: 20,
+
+    elevation: 4,
   },
+
+  /* TEXT AREA */
 
   labeltxt: {
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveScreenFontSize(2),
-    paddingBottom: responsiveScreenHeight(2),
-  },
-
-  error: {
-    color: 'red',
-    fontSize: 12,
-    marginTop: 4,
-  },
-
-  descriptionLabel: {
-    paddingHorizontal: 18,
+    fontSize: 14,
+    fontFamily: 'Quicksand-SemiBold',
+    color: '#2C3E50',
+    marginTop: responsiveScreenHeight(2),
     marginBottom: 6,
-    backgroundColor: '#FFFFFF', // must be solid
-    fontSize: 12,
-    color: '#8A8A8A',
   },
+
   paragraph: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    height: responsiveScreenHeight(20),
-    borderRadius: responsiveScreenWidth(4),
-    borderColor: 'lightgrey',
-    padding: responsiveScreenWidth(3), // 👈 important
-  },
-  multilineInput: {
-    flex: 1,
-    textAlignVertical: 'top', // 👈 top-left start
-    fontSize: responsiveScreenFontSize(2),
-    color: '#1A1A1A',
+    borderColor: '#E5E7EB',
+    minHeight: 120,
   },
 
   wordcapacity: {
+    textAlign: 'right',
+    marginTop: 6,
+    fontSize: 12,
+    color: '#7F8C8D',
+  },
 
-  
-    marginHorizontal: responsiveScreenWidth(2),
-    marginLeft:responsiveScreenWidth(70),
-    width:'100%'
-  },
-  bottomFixed: {
-    position: 'absolute',
-    bottom:
-      Platform.OS === 'ios'
-        ? responsiveScreenHeight(2)
-        : responsiveScreenHeight(1.5),
-    left: 0,
-    right: 0,
-    paddingHorizontal: responsiveScreenWidth(4),
-    backgroundColor: '#fff',
-  },
-  cammaincontainer2: {
-    height: responsiveScreenWidth(22),
-    width: responsiveScreenWidth(22),
-    borderRadius: responsiveScreenWidth(11),
+  /* SAVE BUTTON */
 
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F6FBFF',
-  },
   bottomButtonContainer: {
-  paddingHorizontal: responsiveScreenWidth(4),
-  paddingVertical: responsiveScreenHeight(2),
-  backgroundColor: '#fff',
-  borderTopWidth: 1,
-  borderTopColor: '#eee',
-},
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(2),
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ECF0F1',
+  },
 
+  /* MODAL */
+
+  modalBg: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+
+  modalCard: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingVertical: 20,
+  },
+
+  modalTitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: 'Quicksand-Bold',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
 });

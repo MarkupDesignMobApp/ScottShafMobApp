@@ -1,145 +1,215 @@
-import { Platform, StatusBar, StyleSheet, } from 'react-native';
-import {
-  responsiveScreenHeight,
-  responsiveHeight,
-  responsiveScreenWidth,
-  responsiveFontSize,
-responsiveScreenFontSize
-} from 'react-native-responsive-dimensions';
+import { StyleSheet } from 'react-native';
+
 export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+
+  bannerSection: {
+    height: 240,
+  },
+
+  bannerImage: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+
+  bannerContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 28,
+  },
+
+  welcomeTitle: {
+    fontSize: 30,
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+
+  welcomeSubtitle: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    marginTop: 4,
+  },
+
   safeArea: {
     flex: 1,
   },
-  innercontainer: {
+
+  keyboardView: {
     flex: 1,
-    paddingHorizontal: responsiveScreenWidth(4),
-    justifyContent: 'space-between',
   },
-  img: {
-    width: '100%',
-    height: '100%',
+
+  scrollContent: {
+    flexGrow: 1,
   },
-  imgcontainer: {
-    width: '100%',
-    height: responsiveScreenHeight(38),
-    overflow: 'hidden',
-  },
-  
-  maincontainer: {
+
+  formCard: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -20,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
   },
-  heading: {
-    letterSpacing: 0.25,
-    fontFamily: 'samsungsharpsans-medium',
-    fontSize: responsiveFontSize(3),
-    paddingBottom: responsiveHeight(1),
-    // fontWeight: Platform.OS == 'android' ? 'bold' : '500',
-    color: '#000000',
+
+  headerSection: {
+    marginBottom: 30,
   },
-  heading2: {
-    color: '#8A8A8A',
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2),
+
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#2C3E50',
   },
-  headcontainer: {
-    alignItems: 'center',
-    marginTop: responsiveScreenHeight(-2),
+
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#7F8C8D',
+    marginTop: 4,
   },
-  bottomtxt: {
-    alignSelf: 'center',
-    marginTop: responsiveScreenHeight(2),
-    marginBottom: responsiveScreenHeight(10),
-    padding: responsiveHeight(0.5),
-    fontFamily: 'Quicksand-Regular',
-    color: '#000000',
-    fontSize: responsiveFontSize(1.75),
+
+  fieldContainer: {
+    marginBottom: 20,
   },
-  
-  
-  bottomtxt2: {
-    width: '40%',
-    textAlign: 'center',
-    color: 'black',
-    fontFamily: 'Quicksand-Regular',
-    fontSize: responsiveFontSize(2.15),
-    fontWeight: '400',
+
+  label: {
+    fontSize: 13,
+    color: '#7F8C8D',
+    marginBottom: 6,
   },
-  linestyle: {
-    borderWidth: 0.5,
-    width: '30%',
-    borderColor: '#A5A5A5',
+
+  input: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E4E7EC',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#2C3E50',
   },
-  bottomtxt3: {
+
+  countryField: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E4E7EC',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-
-    marginVertical: responsiveHeight(1),
-    padding: 2,
-  },
-  prefix: {
-    position: 'absolute',
-    paddingTop: responsiveScreenHeight(0.5),
-    right: responsiveScreenWidth(8),
-    color: '#AEAEAE',
-    width: responsiveScreenWidth(4),
-    height: responsiveHeight(4),
-  },
-  labeltxt: {
-    fontFamily: 'Quicksand-Regular',
-
-  },
-  prefix2: {
-    position: 'absolute',
-    left: responsiveScreenWidth(8),
-    // height: responsiveHeight(4),          // ✅ match input height
-    minWidth: responsiveScreenWidth(10),
-    // alignItems: 'center',
-    // justifyContent: 'center',
-    borderRightWidth: 1,
-    borderRightColor: 'lightgrey',       // ✅ vertical center
-    top:responsiveScreenHeight(4.15)
-
-
-  },
-  
-  
-  prefix2style: {
-    marginLeft: responsiveScreenWidth(14), // ✅ matches prefix width
-    
-  },
-  
-  codetxt: {
-    fontFamily: "Quicksand-Regular",
-    fontSize:responsiveScreenFontSize(1.75),
-    color:'#111111',
-
-
-  
-  },
-  countryArrow: {
-    position: 'absolute',
-    right: responsiveScreenWidth(4),
-    top: responsiveScreenHeight(4), // aligns with input center
-    width: responsiveScreenWidth(4),
-    height: responsiveHeight(2),
-    tintColor: '#AEAEAE', // optional
-    
-  },
-  
-  
-  
-  inputcontainer: {
-    paddingBottom: responsiveScreenHeight(2),
+    justifyContent: 'space-between',
   },
 
-  banner: {
+  countryText: {
+    fontSize: 15,
+    color: '#2C3E50',
+  },
+
+  placeholderText: {
+    color: '#95A5A6',
+  },
+
+  arrowIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#95A5A6',
+  },
+
+  phoneWrapper: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#E4E7EC',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+
+  phoneWrapperFocused: {
+    borderColor: '#2C3E50',
+  },
+
+  countryCodeBox: {
+    backgroundColor: '#F1F3F6',
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+  },
+
+  countryCodeText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#2C3E50',
+  },
+
+  phoneInput: {
     flex: 1,
-    // position: 'relative',
-    width: '100%'
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#2C3E50',
   },
-  blur: {
-    ...StyleSheet.absoluteFill,
+
+  buttonWrapper: {
+    marginTop: 12,
+    marginBottom: 26,
+  },
+
+  submitButton: {
+    backgroundColor: '#2C3E50',
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+
+  submitButtonDisabled: {
+    backgroundColor: '#BDC3C7',
+  },
+
+  submitButtonText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  footer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  footerText: {
+    fontSize: 14,
+    color: '#7F8C8D',
+  },
+
+  signupLink: {
+    color: '#2C3E50',
+    fontWeight: '600',
+  },
+
+  termsContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+
+  termsText: {
+    fontSize: 12,
+    color: '#7F8C8D',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+
+  link: {
+    color: '#2C3E50',
+    fontWeight: '600',
   },
 });

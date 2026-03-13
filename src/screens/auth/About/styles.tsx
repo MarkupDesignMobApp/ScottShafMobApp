@@ -1,97 +1,143 @@
 import { StyleSheet } from 'react-native';
-import {
-  responsiveScreenHeight,
-  responsiveScreenWidth,
-  responsiveScreenFontSize,
-} from 'react-native-responsive-dimensions';
 
 export const styles = StyleSheet.create({
-  /* ---------- TEXT ---------- */
-  headtxt: {
-    fontFamily: 'samsungsharpsans-medium',
-    color: '#1E1E1E',
-    fontSize: responsiveScreenFontSize(1.85),
-    lineHeight: 25,
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
 
-  labeltxt: {
-    fontFamily: 'samsungsharpsans-medium',
-    color: '#1E1E1E',
-    fontSize: responsiveScreenFontSize(1.7),
-  },
-
-  itemText: {
-    fontSize: responsiveScreenFontSize(1.8),
-    color: '#333',
-  },
-
-  selectedText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-
-  /* ---------- CONTAINERS ---------- */
   innercontainer: {
-    paddingHorizontal: responsiveScreenWidth(4),
-    paddingTop: responsiveScreenHeight(2),
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 80,
   },
 
-  footer: {
-    paddingHorizontal: responsiveScreenWidth(4),
-    paddingBottom: responsiveScreenHeight(3),
-    paddingTop: responsiveScreenHeight(1),
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderColor: '#eee',
+  subtitle: {
+    fontSize: 14,
+    color: '#7F8C8D',
+    marginBottom: 20,
   },
 
-  /* ---------- AGE GROUP GRID ---------- */
-  listContainer: {
-    paddingVertical: responsiveScreenHeight(1.5),
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 10,
+    marginTop: 16,
   },
 
   row: {
     justifyContent: 'space-between',
   },
 
-  item: {
+  optionCard: {
+    width: '48%',
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E4E7EC',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+
+  budgetCard: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E4E7EC',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+
+  optionSelected: {
+    backgroundColor: '#2C3E50',
+    borderColor: '#2C3E50',
+  },
+
+  optionText: {
+    fontSize: 14,
+    color: '#2C3E50',
+  },
+
+  optionTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderTopWidth: 1,
+    borderColor: '#E4E7EC',
+  },
+
+  submitButton: {
+    backgroundColor: '#2C3E50',
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+
+  disabledButton: {
+    backgroundColor: '#BDC3C7',
+  },
+
+  submitText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  /* MODAL */
+
+  modalWrapper: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingVertical: responsiveScreenHeight(2.2),
-    marginBottom: responsiveScreenHeight(1.5),
-    marginHorizontal: responsiveScreenWidth(1),
-    borderRadius: responsiveScreenWidth(20),
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
   },
 
-  selectedItem: {
-    backgroundColor: '#4A90E2',
-    borderColor: '#4A90E2',
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
 
-  /* ---------- BUDGET ---------- */
-  budgetList: {
-    paddingBottom: responsiveScreenHeight(2),
-    gap: responsiveScreenHeight(1.5),
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2C3E50',
+    marginBottom: 16,
   },
 
-  budgetItem: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingVertical: responsiveScreenHeight(2),
-    borderRadius: responsiveScreenWidth(20),
-    alignItems: 'center',
-    backgroundColor: '#fff',
+  cityItem: {
+    paddingVertical: 12,
   },
 
-  /* ---------- SECTION TITLE ---------- */
-  sectionTitle: {
-    marginTop: responsiveScreenHeight(3),
-    marginBottom: responsiveScreenHeight(1.5),
-    fontFamily: 'samsungsharpsans-medium',
-    fontSize: responsiveScreenFontSize(1.85),
-    color: '#1E1E1E',
+  cityText: {
+    fontSize: 15,
+    color: '#2C3E50',
+  },
+
+  closeButton: {
+    marginTop: 16,
+    backgroundColor: '#2C3E50',
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+
+  closeText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });

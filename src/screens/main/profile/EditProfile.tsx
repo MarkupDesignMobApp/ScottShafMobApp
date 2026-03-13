@@ -21,7 +21,6 @@ import {
   responsiveScreenHeight,
 } from 'react-native-responsive-dimensions';
 import { AppInput } from '../../../components/ui/AppInput/AppInput';
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
 import { styles, styles2 } from './styles';
 import { styles as Homestyle } from '../../auth/Login/styles';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
@@ -33,7 +32,6 @@ import Loader from '../../../components/ui/Loader/Loader';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function EditProfile({ navigation, route }: any) {
-  // -------------------- TOP LEVEL HOOKS --------------------
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
@@ -45,7 +43,6 @@ export default function EditProfile({ navigation, route }: any) {
 
   const scrollRef = useRef<ScrollView>(null);
   const MAX_WORDS = 200;
-  const userParam = route?.params?.Edit;
 
   const AGE_OPTIONS = ['18-24', '25-35', '36-50', '50+'];
   const BUDGET_OPTIONS = ['Below 100$', '100$-400$', '500$-1000$'];
@@ -54,7 +51,6 @@ export default function EditProfile({ navigation, route }: any) {
   const { data: profileResponse, isLoading: profileLoading } =
     useGetUserProfileQuery();
 
-  // -------------------- FOCUS SCROLL --------------------
   useFocusEffect(
     useCallback(() => {
       setTimeout(() => {
@@ -63,34 +59,34 @@ export default function EditProfile({ navigation, route }: any) {
     }, []),
   );
 
-  // -------------------- LOAD PROFILE --------------------
   useEffect(() => {
     if (profileResponse?.success) {
-      const userData = profileResponse.data.user; // rename to avoid shadowing
-      setName(userData.full_name ?? '');
-      setEmail(userData.email ?? '');
-      setCity(userData.profile?.city ?? '');
-      setAge(userData.profile?.age_band ?? '');
-      setBudgetText(userData.profile?.dining_budget ?? '');
-      setProfileImage(userData.profile?.profile_image ?? null);
+      const user = profileResponse.data.user;
+
+      setName(user.full_name ?? '');
+      setEmail(user.email ?? '');
+      setCity(user.profile?.city ?? '');
+      setAge(user.profile?.age_band ?? '');
+      setBudgetText(user.profile?.dining_budget ?? '');
+      setProfileImage(user.profile?.profile_image ?? null);
     }
   }, [profileResponse]);
 
-  // -------------------- CAMERA PERMISSION --------------------
   const requestCameraPermission = async () => {
     if (Platform.OS !== 'android') return true;
+
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CAMERA,
       {
         title: 'Camera Permission',
-        message: 'App needs camera access to upload profile photo',
+        message: 'App needs camera access',
         buttonPositive: 'OK',
       },
     );
+
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  // -------------------- IMAGE PICKERS --------------------
   const openCamera = async () => {
     const granted = await requestCameraPermission();
     if (!granted) return;
@@ -99,11 +95,11 @@ export default function EditProfile({ navigation, route }: any) {
       {
         mediaType: 'photo',
         quality: 0.5,
-        maxWidth: 800,
-        maxHeight: 800,
       },
       response => {
-        if (response.assets?.length) setProfileImage(response.assets[0]);
+        if (response.assets?.length) {
+          setProfileImage(response.assets[0]);
+        }
       },
     );
   };
@@ -113,32 +109,35 @@ export default function EditProfile({ navigation, route }: any) {
       {
         mediaType: 'photo',
         quality: 0.5,
-        maxWidth: 800,
-        maxHeight: 800,
       },
       response => {
-        if (response.assets?.length) setProfileImage(response.assets[0]);
+        if (response.assets?.length) {
+          setProfileImage(response.assets[0]);
+        }
       },
     );
   };
 
-  // -------------------- BUDGET WORD LIMIT --------------------
   const handleBudgetChange = (text: string) => {
     const words = text.trim().split(/\s+/);
-    if (words.length <= MAX_WORDS) setBudgetText(text);
+    if (words.length <= MAX_WORDS) {
+      setBudgetText(text);
+    }
   };
 
-  // -------------------- SAVE PROFILE --------------------
   const handleSaveChanges = async () => {
     try {
       const formData = new FormData();
+
       formData.append('_method', 'POST');
       formData.append('full_name', name);
       formData.append('city', city);
       formData.append('dining_budget', budgetText);
       formData.append('has_dogs', '0');
 
-      if (age) formData.append('age_band', age);
+      if (age) {
+        formData.append('age_band', age);
+      }
 
       if (profileImage && typeof profileImage === 'object') {
         formData.append('profile_image', {
@@ -152,22 +151,22 @@ export default function EditProfile({ navigation, route }: any) {
       }
 
       const res = await updateProfile(formData).unwrap();
+
       Alert.alert('Success', res.message);
+
       navigation.goBack();
     } catch (err: any) {
-      console.log('UPDATE ERROR 👉', err);
       Alert.alert('Error', err?.data?.message || 'Update failed');
     }
   };
 
-  // -------------------- UI --------------------
   return (
     <View style={styles2.container}>
       <StatusBar barStyle="dark-content" />
       <Loader visible={isLoading || profileLoading} />
 
       <AppHeader
-        title={userParam ? 'Edit Profile' : 'My Profile'}
+        title="Edit Profile"
         onLeftPress={() => navigation.goBack()}
         leftImage={require('../../../../assets/image/left-icon.png')}
       />
@@ -181,10 +180,11 @@ export default function EditProfile({ navigation, route }: any) {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: responsiveScreenWidth(4),
-            paddingBottom: responsiveScreenHeight(15),
+            paddingBottom: responsiveScreenHeight(18),
           }}
         >
           {/* PROFILE IMAGE */}
+
           <View style={styles2.profile}>
             <Image
               resizeMode="cover"
@@ -199,7 +199,7 @@ export default function EditProfile({ navigation, route }: any) {
             <Pressable
               style={styles2.camcontainer}
               onPress={() =>
-                Alert.alert('Update Profile Photo', 'Choose an option', [
+                Alert.alert('Update Photo', 'Choose option', [
                   { text: 'Camera', onPress: openCamera },
                   { text: 'Gallery', onPress: openGallery },
                   { text: 'Cancel', style: 'cancel' },
@@ -207,7 +207,6 @@ export default function EditProfile({ navigation, route }: any) {
               }
             >
               <Image
-                resizeMode="contain"
                 source={require('../../../../assets/image/camera.png')}
                 style={styles.cammaincontainer}
               />
@@ -215,25 +214,24 @@ export default function EditProfile({ navigation, route }: any) {
           </View>
 
           {/* NAME */}
+
           <AppInput
-            inputStyle={{ color: 'black' }}
-            editable={false}
             value={name}
-            placeholder="e.g. Sarah Johnson"
+            editable={false}
             label={<Text style={Homestyle.labeltxt}>Name *</Text>}
           />
 
           {/* EMAIL */}
+
           <AppInput
-            inputStyle={{ color: 'black' }}
             value={email}
             editable={false}
             label={<Text style={Homestyle.labeltxt}>Email *</Text>}
           />
 
           {/* AGE */}
+
           <TouchableOpacity
-            style={{ width: '100%' }}
             activeOpacity={0.8}
             onPress={() => {
               Keyboard.dismiss();
@@ -242,30 +240,33 @@ export default function EditProfile({ navigation, route }: any) {
           >
             <View pointerEvents="none">
               <AppInput
-                inputStyle={{ color: 'black' }}
                 placeholder="Select Age"
+                value={age}
                 label={
                   <Text style={Homestyle.labeltxt}>
                     Age <Text style={{ color: 'red' }}>*</Text>
                   </Text>
                 }
-                value={age}
               />
             </View>
           </TouchableOpacity>
 
           {/* CITY */}
+
           <AppInput
-            inputStyle={{ color: 'black' }}
             value={city}
             onChangeText={setCity}
-            placeholder="e.g. San Francisco"
-            label={<Text style={Homestyle.labeltxt}>Country  <Text style={{ color: 'red' }}>*</Text></Text>}
+            placeholder="Enter Country"
+            label={
+              <Text style={Homestyle.labeltxt}>
+                Country <Text style={{ color: 'red' }}>*</Text>
+              </Text>
+            }
           />
 
-          {/* BUDGET MODAL INPUT */}
+          {/* BUDGET */}
+
           <TouchableOpacity
-            style={{ width: '100%' }}
             activeOpacity={0.8}
             onPress={() => {
               Keyboard.dismiss();
@@ -274,157 +275,94 @@ export default function EditProfile({ navigation, route }: any) {
           >
             <View pointerEvents="none">
               <AppInput
-                inputStyle={{ color: 'black' }}
-                placeholder="Select Budget Preference"
+                placeholder="Select Budget"
+                value={budgetText}
                 label={
                   <Text style={Homestyle.labeltxt}>
                     Budget Preference <Text style={{ color: 'red' }}>*</Text>
                   </Text>
                 }
-                value={budgetText}
               />
             </View>
           </TouchableOpacity>
 
-          {/* BUDGET TEXTAREA (optional description) */}
+          {/* DESCRIPTION */}
+
           <Text style={styles2.labeltxt}>Describe your budget *</Text>
+
           <View style={styles2.paragraph}>
             <TextInput
               value={budgetText}
               onChangeText={handleBudgetChange}
               multiline
-              placeholder="Love exploring new restaurants and hidden gems..."
               textAlignVertical="top"
               style={{ height: 120 }}
             />
           </View>
+
           <Text style={styles2.wordcapacity}>
             {budgetText.trim() ? budgetText.trim().split(/\s+/).length : 0}/200
             Words
           </Text>
         </ScrollView>
 
+        {/* SAVE BUTTON */}
+
         <View style={styles2.bottomButtonContainer}>
-          <AppButton title="Save Changes" onPress={handleSaveChanges} />
+          <Pressable style={styles2.saveButton} onPress={handleSaveChanges}>
+            <Text style={styles2.saveButtonText}>Save Changes</Text>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
 
-      {/* ---------------- AGE SELECTION MODAL ---------------- */}
-      <Modal
-        visible={ageModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setAgeModalVisible(false)}
-      >
+      {/* AGE MODAL */}
+
+      <Modal visible={ageModalVisible} transparent animationType="slide">
         <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            justifyContent: 'flex-end',
-          }}
+          style={styles2.modalBg}
           onPress={() => setAgeModalVisible(false)}
         >
-          <View
-            style={{
-              backgroundColor: '#fff',
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              paddingVertical: 20,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: 'center',
-                fontSize: 16,
-                fontWeight: '600',
-                marginBottom: 10,
-              }}
-            >
-              Select Age
-            </Text>
+          <View style={styles2.modalCard}>
+            <Text style={styles2.modalTitle}>Select Age</Text>
 
             {AGE_OPTIONS.map(item => (
               <Pressable
                 key={item}
+                style={styles2.modalItem}
                 onPress={() => {
                   setAge(item);
                   setAgeModalVisible(false);
                 }}
-                style={{
-                  paddingVertical: 14,
-                  paddingHorizontal: 20,
-                }}
               >
-                <Text style={{ fontSize: 15 }}>{item}</Text>
+                <Text>{item}</Text>
               </Pressable>
             ))}
-
-            <Pressable
-              onPress={() => setAgeModalVisible(false)}
-              style={{ paddingVertical: 14, marginTop: 5 }}
-            >
-              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
-            </Pressable>
           </View>
         </Pressable>
       </Modal>
 
-      {/* ---------------- BUDGET SELECTION MODAL ---------------- */}
-      <Modal
-        visible={budgetModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setBudgetModalVisible(false)}
-      >
+      {/* BUDGET MODAL */}
+
+      <Modal visible={budgetModalVisible} transparent animationType="slide">
         <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            justifyContent: 'flex-end',
-          }}
+          style={styles2.modalBg}
           onPress={() => setBudgetModalVisible(false)}
         >
-          <View
-            style={{
-              backgroundColor: '#fff',
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              paddingVertical: 20,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: 'center',
-                fontSize: 16,
-                fontWeight: '600',
-                marginBottom: 10,
-              }}
-            >
-              Select Budget
-            </Text>
+          <View style={styles2.modalCard}>
+            <Text style={styles2.modalTitle}>Select Budget</Text>
 
             {BUDGET_OPTIONS.map(item => (
               <Pressable
                 key={item}
+                style={styles2.modalItem}
                 onPress={() => {
                   setBudgetText(item);
                   setBudgetModalVisible(false);
                 }}
-                style={{
-                  paddingVertical: 14,
-                  paddingHorizontal: 20,
-                }}
               >
-                <Text style={{ fontSize: 15 }}>{item}</Text>
+                <Text>{item}</Text>
               </Pressable>
             ))}
-
-            <Pressable
-              onPress={() => setBudgetModalVisible(false)}
-              style={{ paddingVertical: 14, marginTop: 5 }}
-            >
-              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
-            </Pressable>
           </View>
         </Pressable>
       </Modal>

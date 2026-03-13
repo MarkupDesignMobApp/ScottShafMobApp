@@ -2,108 +2,66 @@ import {
   View,
   Text,
   StatusBar,
-  Platform,
   Image,
   ScrollView,
   Pressable,
 } from 'react-native';
+
 import React, { useState } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { removeTokenFromKeychain } from '../../../app/keychain';
-import { TokenService } from '../../../services/storage/keychain.services';
+
 import { styles } from './styles';
+
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import Button from '../../../components/ui/SocialButton/Button';
+
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
-import ImageCarousel3 from './MyCarousel3';
 import Recommend from './Recommend';
+
 import {
   useGetUserProfileQuery,
   useGetUserInterestsQuery,
-  useGetFeaturedListByIdQuery,
-  useGetFeaturedListsQuery,
-  useGetFeaturedListItemsQuery,
 } from '../../../features/auth/authApi';
-import {
-  responsiveFontSize,
-  responsiveScreenFontSize,
-  responsiveScreenWidth,
-} from 'react-native-responsive-dimensions';
 
 export default function HomeScreen({ navigation }) {
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [selectedInterestId, setSelectedInterestId] = useState<number | null>(
     null,
   );
-  const { data: profileData, isLoading: profileLoading } =
-    useGetUserProfileQuery();
 
-  // const { data, isLoading,refetch } =
-  // useGetFeaturedListsQuery();
-  // const { data, isLoading,  } =
-  // useGetFeaturedListByIdQuery(8);
-  // const { data, isLoading, } =
-  // useGetFeaturedListItemsQuery(8);
-  // const { data, isLoading,  } =
-  // useGetFeaturedListsByInterestQuery(interestId);
-  // const { data, isLoading } = useGetFeaturedListsByInterestQuery(6);
-  // console.log('Feature',profileData);
-  const {
-    data: interestsData,
-    isLoading: interestsLoading, // 👈 THIS NAME YOU MUST USE
-    error,
-  } = useGetUserInterestsQuery();
+  const { data: profileData } = useGetUserProfileQuery();
+
+  const { data: interestsData, isLoading: interestsLoading } =
+    useGetUserInterestsQuery();
+
   const interestsWithForYou = [
     { id: null, name: 'For You' },
     ...(interestsData ?? []),
   ];
 
-  // console.log("eded",interestsData)
   const user = profileData?.data?.user;
-  async function Gettoken() {
-    let mytoken = await TokenService.get();
-  }
-  // Dynamic interest selection handler
+
   const handleSelectInterest = (index: number, interestId: number | null) => {
     setActiveIndex(index);
     setSelectedInterestId(interestId);
   };
-  async function Removetoken() {
-    await removeTokenFromKeychain();
-  }
 
   return (
     <SafeAreaProvider>
-      {/* STATUS BAR */}
-      <StatusBar
-        backgroundColor="#00C4FA" // ✅ Android
-        barStyle="light-content" // ✅ iOS text color
-      />
+      <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
 
-      {/* iOS STATUS BAR BACKGROUND */}
-      <SafeAreaView
-        edges={['top']}
-        style={{
-          backgroundColor: '#00C4FA',
-        }}
-      />
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
+
+      {/* HEADER */}
+
       <View style={styles.header}>
         <Pressable
           onPress={() => navigation.navigate('Profile')}
-          style={{
-            ...styles.profilecontainer,
-            borderWidth: 1,
-            borderColor: '#fff',
-          }}
+          style={styles.profileContainer}
         >
           <Image
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: responsiveScreenWidth(5),
-            }}
-            resizeMode="cover"
+            style={styles.profileImage}
             source={
               user?.profile?.profile_image
                 ? { uri: user.profile.profile_image }
@@ -111,41 +69,39 @@ export default function HomeScreen({ navigation }) {
             }
           />
         </Pressable>
-        <View style={styles.imgcontainerlogo}>
-          <Image
-            tintColor={'#fff'}
-            resizeMode="contain"
-            style={styles.img}
-            source={require('../../../../assets/image/logo.png')}
-          />
-        </View>
+
+        <Image
+          resizeMode="contain"
+          style={styles.logo}
+          source={require('../../../../assets/image/logo.png')}
+        />
+
         <Pressable
           onPress={() => navigation.navigate('Notification')}
-          style={styles.imgcontainer}
+          style={styles.notificationButton}
         >
           <Image
-            tintColor={'#fff'}
             resizeMode="contain"
-            style={styles.img}
+            style={styles.notificationIcon}
             source={require('../../../../assets/image/bell.png')}
           />
         </Pressable>
       </View>
+
       <SafeAreaView
         edges={['left', 'right', 'bottom']}
         style={styles.innercontainer}
       >
-        <View style={styles.contentcontainer}>
+        {/* SEARCH + INTEREST */}
+
+        <View style={styles.topSection}>
           <SearchBar placeholder="Search lists, users, topics..." />
+
           <ScrollView
-            scrollEventThrottle={16}
-            bounces={false}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.scrollcontainer}
+            contentContainerStyle={styles.interestScroll}
           >
-            {interestsLoading && <Text>Loading...</Text>}
-
             {interestsLoading && <Text>Loading...</Text>}
 
             {!interestsLoading &&
@@ -154,17 +110,17 @@ export default function HomeScreen({ navigation }) {
 
                 return (
                   <Pressable
-                    key={item.id}
+                    key={item.id ?? 'for-you'}
                     onPress={() => handleSelectInterest(index, item.id)}
                     style={[
-                      styles.scrollbox,
-                      isActive && styles.activeScrollBox,
+                      styles.interestPill,
+                      isActive && styles.activeInterestPill,
                     ]}
                   >
                     <Text
                       style={[
-                        styles.boxtitle,
-                        isActive && styles.activeBoxTitle,
+                        styles.interestText,
+                        isActive && styles.activeInterestText,
                       ]}
                     >
                       {item.name}
@@ -174,69 +130,60 @@ export default function HomeScreen({ navigation }) {
               })}
           </ScrollView>
         </View>
-        <View style={{ ...styles.checkmaincontainer }}>
+
+        {/* MAIN CONTENT */}
+
+        <View style={styles.contentContainer}>
           <ScrollView
-            bounces={false}
             showsVerticalScrollIndicator={false}
-            scrollEventThrottle={16}
-            contentContainerStyle={styles.innerscrollcontainer}
+            contentContainerStyle={styles.scrollContainer}
           >
-            <View style={styles.checkcontainer}>
-              <Text
-                style={{
-                  ...styles.btnheadertxt,
-                  paddingTop: 0,
-                  fontFamily: 'Quicksand-Medium',
-                  fontSize: responsiveScreenFontSize(2),
-                }}
-              >
-                Create Your First List
-              </Text>
-              <Text style={styles.btnheadertxt}>
+            {/* CREATE LIST */}
+
+            <View style={styles.createCard}>
+              <Text style={styles.createTitle}>Create Your First List</Text>
+
+              <Text style={styles.createSubtitle}>
                 Share your top picks with the world.
               </Text>
 
               <Button
                 onPress={() => navigation.navigate('Create')}
-                buttonStyle={styles.btncontainer}
-                textStyle={styles.btntxt}
+                buttonStyle={styles.createButton}
+                textStyle={styles.createButtonText}
                 source={require('../../../../assets/image/add.png')}
                 title="Start Creating"
               />
             </View>
-            <View style={styles.cardheading}>
-              <Text style={{ ...styles.cardheadingtxt }}>Featured Lists</Text>
+
+            {/* FEATURED */}
+
+            <View style={styles.cardHeading}>
+              <Text style={styles.headingText}>Featured Lists</Text>
+
               <Text
                 onPress={() => navigation.navigate('Feature')}
-                style={{
-                  ...styles.cardheadingtxt,
-                  color: '#0180FE',
-                  fontSize: responsiveScreenFontSize(1.75),
-                }}
+                style={styles.seeAll}
               >
                 See All
               </Text>
             </View>
+
             <ImageCarousel interestId={selectedInterestId} />
-            <View style={styles.cardheading}>
-              <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
-                Sponsored Campaign
-              </Text>
+
+            {/* SPONSORED */}
+
+            <View style={styles.cardHeading}>
+              <Text style={styles.headingText}>Sponsored Campaign</Text>
             </View>
-            <ImageCarousel2 />x
-            {/* <View style={styles.cardheading}>
-              <Text style={{ ...styles.cardheadingtxt, fontWeight: '500' }}>
-                Recommended For You
-              </Text>
-            </View> */}
-            {/* <ImageCarousel3 /> */}
+
+            <ImageCarousel2 />
+
+            {/* RECOMMENDED */}
+
             <Recommend />
           </ScrollView>
         </View>
-        {/* <Text>{`${selectedInterestId}`}</Text> */}
-        {/* <ImageCarousel /> */}
-        {/* <Button onPress={Removetoken} title="RemoveValue" />
-        <Button onPress={Gettoken} title="GetValue" /> */}
       </SafeAreaView>
     </SafeAreaProvider>
   );

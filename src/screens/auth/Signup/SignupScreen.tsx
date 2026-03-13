@@ -10,19 +10,17 @@ import {
   TouchableOpacity,
   Platform,
   KeyboardAvoidingView,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 
 import { styles } from './styles';
 import { useSignupLogic } from './useSignupLogic';
+
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import Loader from '../../../components/ui/Loader/Loader';
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
-
-/* 🔹 Keyboard hook */
 const useKeyboardOpen = () => {
   const [open, setOpen] = useState(false);
 
@@ -58,173 +56,181 @@ export default function SignupScreen() {
     email,
     isFormValid,
   } = useSignupLogic();
-  const scrollRef = React.useRef(null);
 
   const navigation = useNavigation();
   const keyboardOpen = useKeyboardOpen();
-  useEffect(() => {
-    if (!keyboardOpen) {
-      scrollRef.current?.scrollTo({
-        y: 0,
-        animated: false,
-      });
-    }
-  }, [keyboardOpen]);
+
+  const [phoneFocused, setPhoneFocused] = useState(false);
 
   return (
-    <View style={styles.maincontainer}>
-      <Loader color='#0180FE' visible={isLoading} />
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+    <View style={styles.container}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
 
-      {/* ---------- FIXED BANNER ---------- */}
-      <View style={styles.imgcontainer}>
+      {/* BANNER */}
+      <View style={styles.bannerSection}>
         <ImageBackground
           source={require('../../../../assets/image/women.png')}
-          resizeMode="cover"
-          style={styles.banner}
+          style={styles.bannerImage}
         >
-          {/* Blur overlay */}
-          <Image
-            source={require('../../../../assets/image/blur.png')}
-            resizeMode="cover"
-            style={styles.img}
-          />
+          <View style={styles.overlay} />
 
-          {/* <View style={styles.headcontainer}>
-            <Text style={styles.heading}>Create Account</Text>
-            <Text style={styles.heading2}>
-              Fill the details to continue
+          <View style={styles.bannerContent}>
+            <Text style={styles.welcomeTitle}>Create Account</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Fill in your details to get started
             </Text>
-          </View> */}
+          </View>
         </ImageBackground>
       </View>
 
-      {/* ---------- SCROLLABLE CONTENT ---------- */}
-      <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
+      <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
+          style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
-            ref={scrollRef}
             scrollEnabled={keyboardOpen}
-            bounces={false}
-            alwaysBounceVertical={false}
-            overScrollMode="never"
-            keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: keyboardOpen ? responsiveScreenHeight(18) : 0,
-            }}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
           >
-            {/* <Loader visible={isLoading} color="blue" /> */}
+            <Loader visible={isLoading} color="#2C3E50" />
 
-            <View style={styles.innercontainer}>
-              {/* Full Name */}
-              <AppInput
-                label={
-                  <Text style={styles.labeltxt}>
-                    Full Name <Text style={{ color: 'red' }}>*</Text>
+            <View style={styles.formCard}>
+              {/* HEADER */}
+              <View style={styles.headerSection}>
+                <Text style={styles.headerTitle}>Sign Up</Text>
+                <Text style={styles.headerSubtitle}>
+                  Enter your information
+                </Text>
+              </View>
+
+              {/* FULL NAME */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Full Name</Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your name"
+                  placeholderTextColor="#95A5A6"
+                  value={fullName}
+                  onChangeText={setFullName}
+                />
+              </View>
+
+              {/* EMAIL */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Email</Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#95A5A6"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
+
+              {/* COUNTRY */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Country</Text>
+
+                <TouchableOpacity
+                  style={styles.countryField}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setModalVisible(true);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.countryText,
+                      !country && styles.placeholderText,
+                    ]}
+                  >
+                    {country || 'Select your country'}
                   </Text>
-                }
-                placeholder="e.g. Saroha Sans"
-                value={fullName}
-                onChangeText={setFullName}
-              />
-
-              {/* Email */}
-              <AppInput
-
-                keyboardType="email-address"
-                label={
-                  <Text style={styles.labeltxt}>
-                    Email ID <Text style={{ color: 'red' }}>*</Text>
-                  </Text>
-                }
-                placeholder="e.g. abc@gmail.com"
-                value={email}
-                onChangeText={setEmail}
-              />
-
-              {/* Country */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setTimeout(() => setModalVisible(true), 150);
-                }}
-              >
-                <View style={{ position: 'relative' }}>
-                  <View pointerEvents="none">
-                    <AppInput
-                    placeholder='Select Country'
-                      label={
-                        <Text style={styles.labeltxt}>
-                          Country <Text style={{ color: 'red' }}>*</Text>
-                        </Text>
-                      }
-                      value={country}
-                    />
-                  </View>
 
                   <Image
                     source={require('../../../../assets/image/arrow-down.png')}
-                    style={styles.countryArrow}
-                    resizeMode="contain"
+                    style={styles.arrowIcon}
                   />
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
 
-              {/* Phone */}
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={styles.prefix2}>
-                  <Text style={styles.codetxt}>{countryCode}</Text>
-                </View>
+              {/* PHONE */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Phone Number</Text>
 
-                <View style={{ width: '100%' }}>
-                  <AppInput
-                    label={
-                      <Text style={styles.labeltxt}>
-                        Phone Number <Text style={{ color: 'red' }}>*</Text>
-                      </Text>
-                    }
+                <View
+                  style={[
+                    styles.phoneWrapper,
+                    phoneFocused && styles.phoneWrapperFocused,
+                  ]}
+                >
+                  <View style={styles.countryCodeBox}>
+                    <Text style={styles.countryCodeText}>{countryCode}</Text>
+                  </View>
+
+                  <TextInput
+                    ref={phoneInputRef}
+                    style={styles.phoneInput}
                     value={phone}
                     onChangeText={setPhone}
-                    inputStyle={styles.prefix2style}
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#95A5A6"
                     keyboardType="phone-pad"
-                    ref={phoneInputRef}
+                    onFocus={() => setPhoneFocused(true)}
+                    onBlur={() => setPhoneFocused(false)}
                   />
                 </View>
               </View>
 
-              {/* Button */}
-              <AppButton
-                title={isLoading ? 'Please wait...' : 'Save And Continue'}
-                onPress={handleSignup}
-                disabled={!isFormValid || isLoading}
-              />
+              {/* BUTTON */}
+              <View style={styles.buttonWrapper}>
+                <AppButton
+                  title="Save & Continue"
+                  onPress={handleSignup}
+                  disabled={!isFormValid || isLoading}
+                  style={[
+                    styles.submitButton,
+                    (!isFormValid || isLoading) && styles.submitButtonDisabled,
+                  ]}
+                  textStyle={styles.submitButtonText}
+                />
+              </View>
 
-
-
-
-              {/* Bottom */}
-              <Text style={styles.bottomtxt}>
-                Already have an account?
-                <Text
-                  onPress={() => navigation.navigate('Login')}
-                  style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
-                >
-                  {' '}
-                  Sign In
+              {/* FOOTER */}
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>
+                  Already have an account?{' '}
+                  <Text
+                    style={styles.signupLink}
+                    onPress={() => navigation.navigate('Login')}
+                  >
+                    Sign In
+                  </Text>
                 </Text>
-              </Text>
+              </View>
+
+              {/* TERMS */}
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>
+                  By continuing you agree to our{' '}
+                  <Text style={styles.link}>Terms of Service</Text> and{' '}
+                  <Text style={styles.link}>Privacy Policy</Text>
+                </Text>
+              </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
 
-      {/* ---------- COUNTRY MODAL ---------- */}
       <CountryPickerModal
         visible={modalVisible}
         countries={countries}

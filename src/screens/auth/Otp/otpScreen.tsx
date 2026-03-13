@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,35 +12,14 @@ import {
   KeyboardAvoidingView,
   TextInput
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-
 import { styles } from './styles';
 import { useOtpLogic } from './useOtpLogic';
-
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
-
-import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 import Loader from '../../../components/ui/Loader/Loader';
 
-/* 🔹 Keyboard hook */
-const useKeyboardOpen = () => {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => setOpen(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
-
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
-
-  return open;
-};
-
 export default function OtpScreen({ route }) {
+
   const { phone, country } = route.params;
 
   const {
@@ -56,128 +35,130 @@ export default function OtpScreen({ route }) {
     isVerifying
   } = useOtpLogic(phone, country);
 
-
-  const keyboardOpen = useKeyboardOpen();
-  ;
   return (
-    <View style={styles.maincontainer}>
-      <Loader color='#0180FE' visible={isVerifying} />
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      {/* ---------- Banner (NON-SCROLLABLE) ---------- */}
+    <View style={styles.container}>
 
-      <View style={styles.imgcontainer}>
-        <ImageBackground
-          source={require('../../../../assets/image/loginbanner.png')}
-          resizeMode="cover"
-          style={styles.banner}
-        >
-          {/* Blur overlay */}
-          <Image
-            source={require('../../../../assets/image/blur.png')}
-            resizeMode="cover"
-            style={{ ...styles.img }}
-          />
+      <Loader visible={isVerifying} color="#2C3E50" />
 
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#2C3E50"
+      />
 
+      {/* Banner */}
 
-        </ImageBackground>
+      <ImageBackground
+        source={require('../../../../assets/image/loginbanner.png')}
+        style={styles.banner}
+      >
 
-      </View>
-      <View style={styles.headcontainer}>
-        <Text style={styles.heading}>OTP Verification</Text>
-        <Text style={styles.heading2}>
-          Enter the code from the SMS we sent to<Text style={{ color: '#0180FE', fontWeight: "500" }}>{phone}</Text>
+        <View style={styles.bannerOverlay} />
+
+        <Text style={styles.bannerTitle}>
+          OTP Verification
         </Text>
-        <Text />
-      </View>
 
+      </ImageBackground>
 
-      {/* ---------- Scrollable Content ---------- */}
-      <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
+      <SafeAreaView style={{ flex: 1 }}>
+
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
+
           <ScrollView
-            scrollEnabled={keyboardOpen}
-            bounces={false}
-            alwaysBounceVertical={false}
-            overScrollMode="never"
-            keyboardShouldPersistTaps="handled"
-            contentInsetAdjustmentBehavior="never"
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: keyboardOpen ? responsiveScreenHeight(12) : responsiveScreenHeight(4),
-
-
-            }}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
           >
-            {/* <Loader visible={isLoading} color="blue" /> */}
 
-            <View style={styles.innercontainer}>
+            <View style={styles.innerContainer}>
 
-              <View style={styles.otpcontainer}>
+              <Text style={styles.subtitle}>
+                Enter the code sent to
+              </Text>
+
+              <Text style={styles.phoneText}>
+                {phone}
+              </Text>
+
+              {/* OTP INPUT */}
+
+              <View style={styles.otpContainer}>
+
                 {otp.map((digit, index) => (
+
                   <TextInput
                     key={index}
                     style={styles.otpInput}
                     keyboardType="number-pad"
                     maxLength={1}
                     value={digit}
-                    ref={ref => (inputsRef.current[index] = ref!)}
+                    ref={ref => (inputsRef.current[index] = ref)}
                     onChangeText={text => handleOtpChange(text, index)}
                     onKeyPress={e => handleKeyPress(e, index)}
                     autoFocus={index === 0}
                   />
+
                 ))}
+
               </View>
 
-
-
-              {/* OTP INPUTS */}
-
               {/* RESEND */}
-              <View style={styles.resendcontainer}>
-                <View style={styles.icon}>
-                  <Image
-                    style={styles.img}
-                    resizeMode="contain"
-                    source={require('../../../../assets/image/reload.png')}
-                  />
-                </View>
+
+              <View style={styles.resendContainer}>
 
                 <TouchableOpacity
                   disabled={!isResendEnabled}
                   onPress={handleResendOtp}
                 >
+
                   <Text
                     style={[
-                      styles.resendtxt,
-                      { color: isResendEnabled ? '#0180FE' : '#000' },
+                      styles.resendText,
+                      { color: isResendEnabled ? "#2C3E50" : "#BDC3C7" }
                     ]}
                   >
+
                     {isResendEnabled
-                      ? 'Resend Code'
-                      : `Resend Code in ${timer}s`}
+                      ? "Resend Code"
+                      : `Resend in ${timer}s`
+                    }
+
                   </Text>
+
                 </TouchableOpacity>
+
               </View>
 
-              {/* Verify */}
-              <AppButton
-                title={isVerifying ? 'Verifying...' : 'Verify'}
+              {/* VERIFY BUTTON */}
+
+              <TouchableOpacity
                 disabled={!isOtpComplete || isVerifying}
-                onPress={() => submitOtp()}
-              />
+                onPress={submitOtp}
+                style={[
+                  styles.verifyButton,
+                  (!isOtpComplete || isVerifying) && styles.disabledButton
+                ]}
+              >
+
+                <Text style={styles.verifyText}>
+                  {isVerifying ? "Verifying..." : "Verify OTP"}
+                </Text>
+
+              </TouchableOpacity>
 
             </View>
+
           </ScrollView>
+
         </KeyboardAvoidingView>
+
       </SafeAreaView>
 
-
     </View>
+
   );
 }

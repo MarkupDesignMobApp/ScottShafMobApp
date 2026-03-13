@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,56 +8,59 @@ import {
   Share,
   Pressable,
   Alert,
-} from 'react-native'
+} from 'react-native';
+
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
   responsiveScreenFontSize,
-} from 'react-native-responsive-dimensions'
+} from 'react-native-responsive-dimensions';
+
 import {
   useGetRecommendItemsQuery,
   useLikeRecommendedMutation,
   useShareRecommendedMutation,
-} from '../../../features/auth/authApi'
+} from '../../../features/auth/authApi';
 
-/* -------- ICONS / PLACEHOLDER -------- */
+/* ICONS */
+
 const icons = {
   heartFilled: require('../../../../assets/image/heart.png'),
   heartOutline: require('../../../../assets/image/unfillheart.png'),
   shareOutline: require('../../../../assets/image/unfillshare.png'),
   more: require('../../../../assets/image/dots.png'),
-}
+};
 
-const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png')
+const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png');
 
-/* -------- MAIN -------- */
+/* MAIN */
+
 export default function Recommend() {
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState([]);
 
-  const { data, isLoading, error, refetch } = useGetRecommendItemsQuery()
-  const [likeRecommended] = useLikeRecommendedMutation()
-  const [shareRecommended] = useShareRecommendedMutation()
+  const { data, isLoading, error, refetch } = useGetRecommendItemsQuery();
+  const [likeRecommended] = useLikeRecommendedMutation();
+  const [shareRecommended] = useShareRecommendedMutation();
 
-  /* -------- MAP API DATA -------- */
   useEffect(() => {
-    if (!data) return
+    if (!data) return;
 
-    const rawList = Array.isArray(data) ? data : data?.data ?? []
+    const rawList = Array.isArray(data) ? data : data?.data ?? [];
 
     const mapped = rawList.map(apiItem => {
       const items = (apiItem.items || [])
         .map((it, index) => {
-          const ci = it.catalog_item
-          if (!ci) return null
+          const ci = it.catalog_item;
+          if (!ci) return null;
 
           return {
-            uid: `${apiItem.id}-${ci.id}-${index}`, // ✅ UNIQUE KEY
+            uid: `${apiItem.id}-${ci.id}-${index}`,
             id: String(ci.id),
             name: ci.name ?? 'Unknown',
             image: ci.image_url ? { uri: ci.image_url } : null,
-          }
+          };
         })
-        .filter(Boolean)
+        .filter(Boolean);
 
       return {
         id: String(apiItem.id),
@@ -67,67 +70,62 @@ export default function Recommend() {
         likes: Number(apiItem.likes_count ?? 0),
         isLiked: Boolean(apiItem.is_liked),
         items,
-      }
-    })
+      };
+    });
 
-    setPosts(mapped)
-  }, [data])
+    setPosts(mapped);
+  }, [data]);
 
-  /* -------- ACTIONS -------- */
   const onLikePress = async postId => {
     try {
-      await likeRecommended(postId).unwrap()
-      refetch()
+      await likeRecommended(postId).unwrap();
+      refetch();
     } catch (e) {
-      console.log('Like error', e)
+      console.log(e);
     }
-  }
+  };
 
   const onSharePress = async (postId, title) => {
     try {
-      const res = await shareRecommended({ id: postId }).unwrap()
-      const url = res?.share_url
+      const res = await shareRecommended({ id: postId }).unwrap();
 
+      const url = res?.share_url;
       if (!url) {
-        Alert.alert('Error', 'Share link not available')
-        return
+        Alert.alert('Error', 'Share link not available');
+        return;
       }
 
       await Share.share({
         title,
         message: `${title}\n\n${url}`,
         url,
-      })
+      });
     } catch (e) {
-      console.log('Share error', e)
+      console.log(e);
     }
-  }
+  };
 
-  /* -------- STATES -------- */
   if (isLoading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={styles.loader}>
         <Text>Loading recommendations...</Text>
       </View>
-    )
+    );
   }
 
   if (error) {
     return (
-      <View style={[styles.container, { padding: 16 }]}>
+      <View style={styles.loader}>
         <Pressable onPress={refetch}>
-          <Text style={{ color: '#2F6BFF' }}>Try again</Text>
+          <Text style={{ color: '#3498DB' }}>Retry</Text>
         </Pressable>
       </View>
-    )
+    );
   }
 
-  /* -------- RENDER -------- */
   return (
     <View style={styles.container}>
-      <View style={styles.cardheading}>
-        <Text style={styles.cardheadingtxt}>Recommended For You</Text>
-      </View>
+      <Text style={styles.heading}>Recommended For You</Text>
 
       <FlatList
         data={posts}
@@ -140,45 +138,51 @@ export default function Recommend() {
           />
         )}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={<Text style={{ padding: 16 }}>No recommendations yet.</Text>}
       />
     </View>
-  )
+  );
 }
 
-/* -------- POST CARD -------- */
+/* POST CARD */
+
 function PostCard({ item, onLikePress, onSharePress }) {
   return (
     <View style={styles.card}>
+      {/* USER ROW */}
+
       <View style={styles.userRow}>
         <Image
           source={require('../../../../assets/image/women1.png')}
           style={styles.avatar}
         />
+
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>{item.user}</Text>
           <Text style={styles.time}>{item.time}</Text>
         </View>
+
         <Image source={icons.more} style={styles.menuIcon} />
       </View>
 
+      {/* TITLE */}
+
       <Text style={styles.title}>{item.title}</Text>
 
-      {item.items.map((listItem, index) => (
-        <View
-          key={listItem.uid} // ✅ FIXED UNIQUE KEY
-          style={styles.itemRow}
-        >
+      {/* ITEMS */}
+
+      {item.items.map(listItem => (
+        <View key={listItem.uid} style={styles.itemRow}>
           <Image
             source={listItem.image ?? PLACEHOLDER_IMAGE}
             style={styles.itemImage}
-            resizeMode="cover"
           />
           <Text style={styles.itemText}>{listItem.name}</Text>
         </View>
       ))}
 
-      <View style={styles.cardlike}>
+      {/* ACTION BAR */}
+
+      <View style={styles.actions}>
         <Pressable onPress={() => onLikePress(item.id)}>
           <ActionButton
             icon={item.isLiked ? icons.heartFilled : icons.heartOutline}
@@ -191,64 +195,69 @@ function PostCard({ item, onLikePress, onSharePress }) {
         </Pressable>
       </View>
     </View>
-  )
+  );
 }
 
-/* -------- ACTION BUTTON -------- */
+/* ACTION BUTTON */
+
 const ActionButton = React.memo(({ icon, value }) => (
-  <View style={styles.likecontainer}>
-    <View style={styles.imgcontainer3}>
-      <Image resizeMode="contain" style={styles.img} source={icon} />
-    </View>
-    <Text style={styles.liketxt}>{value}</Text>
+  <View style={styles.actionButton}>
+    <Image source={icon} style={styles.actionIcon} />
+    <Text style={styles.actionText}>{value}</Text>
   </View>
-))
+));
 
-/* -------- HELPERS -------- */
+/* HELPERS */
+
 const formatNumber = num => {
-  const n = Number(num ?? 0)
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
-  return n.toString()
-}
+  const n = Number(num ?? 0);
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return n.toString();
+};
 
 function formatTimeAgo(isoString) {
-  if (!isoString) return ''
-  const diff = Math.floor((Date.now() - new Date(isoString)) / 1000)
-  if (diff < 60) return `${diff}s ago`
-  const mins = Math.floor(diff / 60)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
+  if (!isoString) return '';
+  const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  const mins = Math.floor(diff / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
-/* -------- STYLES (UNCHANGED) -------- */
+/* STYLES */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-
-  cardheading: {
-    paddingTop: responsiveScreenHeight(2.5),
-    paddingBottom: responsiveScreenHeight(2),
-  },
-  cardheadingtxt: {
-    fontFamily: 'Quicksand-Regular',
-    color: '#000',
-    fontSize: responsiveScreenFontSize(2.25),
-    fontWeight: '500',
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FB',
   },
 
-  menuIcon: {
-    width: responsiveScreenWidth(5),
-    height: responsiveScreenWidth(5),
-    resizeMode: 'contain',
+  heading: {
+    fontSize: responsiveScreenFontSize(2.4),
+    fontFamily: 'Quicksand-SemiBold',
+    color: '#2C3E50',
+    marginVertical: responsiveScreenHeight(2),
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   card: {
-    borderWidth: 1.5,
-    borderColor: '#2F6BFF',
-    borderRadius: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
     padding: responsiveScreenWidth(4),
     marginBottom: responsiveScreenHeight(2),
+
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
 
   userRow: {
@@ -256,72 +265,80 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: responsiveScreenHeight(1),
   },
+
   avatar: {
     width: responsiveScreenWidth(9),
     height: responsiveScreenWidth(9),
     borderRadius: responsiveScreenWidth(4.5),
     marginRight: responsiveScreenWidth(3),
   },
+
   username: {
-    fontWeight: '600',
+    fontFamily: 'Quicksand-SemiBold',
     fontSize: responsiveScreenFontSize(1.8),
+    color: '#2C3E50',
   },
+
   time: {
     fontSize: responsiveScreenFontSize(1.4),
-    color: '#777',
+    color: '#7F8C8D',
+  },
+
+  menuIcon: {
+    width: responsiveScreenWidth(5),
+    height: responsiveScreenWidth(5),
   },
 
   title: {
-    fontSize: responsiveScreenFontSize(1.9),
-    fontWeight: '600',
-    marginVertical: responsiveScreenHeight(1),
+    fontSize: responsiveScreenFontSize(2),
+    fontFamily: 'Quicksand-SemiBold',
+    marginBottom: responsiveScreenHeight(1),
   },
+
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#06B6F0',
+    backgroundColor: '#F1F5F9',
     padding: responsiveScreenWidth(3),
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: responsiveScreenHeight(1),
   },
+
   itemImage: {
     width: responsiveScreenWidth(10),
     height: responsiveScreenWidth(10),
-    borderRadius: 6,
+    borderRadius: 8,
     marginRight: responsiveScreenWidth(3),
   },
+
   itemText: {
-    color: '#fff',
-    fontWeight: '600',
     fontSize: responsiveScreenFontSize(1.7),
+    fontFamily: 'Quicksand-Medium',
+    color: '#2C3E50',
   },
 
-  cardlike: {
+  actions: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderColor: '#E5E5E5',
-    paddingTop: responsiveScreenHeight(1.5),
+    borderColor: '#EEF2F6',
+    paddingTop: responsiveScreenHeight(1.2),
     marginTop: responsiveScreenHeight(1),
   },
-  likecontainer: {
+
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: responsiveScreenWidth(5),
   },
-  imgcontainer3: {
+
+  actionIcon: {
     width: responsiveScreenWidth(5),
     height: responsiveScreenWidth(5),
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  img: {
-    width: '100%',
-    height: '100%',
-  },
-  liketxt: {
-    fontSize: responsiveScreenFontSize(1.6),
+
+  actionText: {
     marginLeft: responsiveScreenWidth(1),
-    color: '#000',
-    fontFamily: 'Quicksand-Regular',
+    fontFamily: 'Quicksand-Medium',
+    fontSize: responsiveScreenFontSize(1.6),
   },
-})
+});

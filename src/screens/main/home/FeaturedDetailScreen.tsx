@@ -40,8 +40,8 @@ type FeaturedDetailRouteProp = RouteProp<
 >;
 
 export default function FeaturedDetailScreen() {
-const route = useRoute<FeaturedDetailRouteProp>();
-const { item: passedItem, itemId } = route.params ?? {};
+  const route = useRoute<FeaturedDetailRouteProp>();
+  const { item: passedItem, itemId } = route.params ?? {};
 
 
 
@@ -110,55 +110,72 @@ const { item: passedItem, itemId } = route.params ?? {};
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F9FB' }}>
+    <SafeAreaView style={styles.container}>
+
       <ScrollView showsVerticalScrollIndicator={false}>
+
         {/* HERO IMAGE */}
-        <View style={styles.detailImageContainer}>
+        <View style={styles.imageWrapper}>
+
           <Image
             source={{ uri: item.image }}
-            style={styles.detailImage}
+            style={styles.image}
             resizeMode="cover"
           />
+
         </View>
 
         {/* CONTENT CARD */}
-        <View style={styles.detailCard}>
-          {/* TITLE */}
-          <Text style={styles.detailTitle}>{item.title}</Text>
 
-          {/* CATEGORY */}
-          <Text style={styles.detailSubTitle}>
+        <View style={styles.card}>
+
+          <Text style={styles.title}>
+            {item.title}
+          </Text>
+
+          <Text style={styles.category}>
             {item.category?.name} · {item.category?.interest?.name}
           </Text>
 
-          {/* ACTION BAR */}
-          <View style={styles.detailActions}>
+          {/* ACTIONS */}
+
+          <View style={styles.actions}>
+
             <ActionButton
               icon={item.is_liked ? icons.heartFilled : icons.heartOutline}
               value={formatCount(item.likes_count)}
               onPress={onLikePress}
             />
+
             <ActionButton
               icon={item.is_saved ? icons.bookmarkFilled : icons.bookmarkOutline}
               value={formatCount(item.saves_count)}
               onPress={onBookmarkPress}
             />
+
             <ActionButton
               icon={icons.shareOutline}
               value={formatCount(item.shares_count)}
               onPress={onSharePress}
             />
+
           </View>
 
-          {/* DESCRIPTION / BODY */}
-          <View style={styles.detailDescription}>
-            <Text style={styles.detailDescriptionText}>
+          {/* DESCRIPTION */}
+
+          <View style={styles.descriptionWrapper}>
+
+            <Text style={styles.descriptionText}>
               {item.description ??
                 'Detailed information about this featured item will appear here.'}
             </Text>
+
           </View>
+
         </View>
+
       </ScrollView>
+
     </SafeAreaView>
   );
 }
@@ -173,57 +190,98 @@ const ActionButton = ({
   value: string;
   onPress: () => void;
 }) => (
-  <Pressable onPress={onPress} style={styles.detailActionBtn}>
-    <Image source={icon} style={styles.detailActionIcon} resizeMode="contain" />
-    <Text style={styles.detailActionText}>{value}</Text>
+
+  <Pressable onPress={onPress} style={styles.actionButton}>
+
+    <Image
+      source={icon}
+      style={styles.actionIcon}
+    />
+
+    <Text style={styles.actionText}>
+      {value}
+    </Text>
+
   </Pressable>
+
 );
 
 const styles = StyleSheet.create({
-  detailImageContainer: { width, height: width * 0.9, backgroundColor: '#EEE' },
-  detailImage: { width: '100%', height: '100%' },
-  detailCard: {
-    backgroundColor: '#FFF',
-    marginTop: -24,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 32,
+
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F9FB"
   },
-  detailTitle: {
-    fontSize: 20,
-    fontFamily: 'Quicksand-SemiBold',
-    color: '#111',
+
+  imageWrapper: {
+    width,
+    height: width * 0.7,
+    backgroundColor: "#EEE"
   },
-  detailSubTitle: {
+
+  image: {
+    width: "100%",
+    height: "100%"
+  },
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    marginTop: -30,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24
+  },
+
+  title: {
+    fontSize: 22,
+    fontFamily: "Quicksand-SemiBold",
+    color: "#2C3E50"
+  },
+
+  category: {
     fontSize: 14,
-    fontFamily: 'Quicksand-Regular',
-    color: '#6B7280',
-    marginTop: 4,
+    fontFamily: "Quicksand-Regular",
+    color: "#7F8C8D",
+    marginTop: 6
   },
-  detailActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    paddingVertical: 12,
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 22,
+    paddingVertical: 14,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#F1F1F1',
+    borderColor: "#E4E7EC"
   },
-  detailActionBtn: { flexDirection: 'row', alignItems: 'center' },
-  detailActionIcon: { width: 20, height: 20 },
-  detailActionText: {
+
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  actionIcon: {
+    width: 22,
+    height: 22,
+    tintColor: "#2C3E50"
+  },
+
+  actionText: {
     marginLeft: 6,
     fontSize: 14,
-    fontFamily: 'Quicksand-Medium',
-    color: '#111',
+    fontFamily: "Quicksand-Medium",
+    color: "#2C3E50"
   },
-  detailDescription: { marginTop: 16 },
-  detailDescriptionText: {
+
+  descriptionWrapper: {
+    marginTop: 20
+  },
+
+  descriptionText: {
     fontSize: 15,
-    lineHeight: 22,
-    fontFamily: 'Quicksand-Regular',
-    color: '#374151',
-  },
+    lineHeight: 24,
+    fontFamily: "Quicksand-Regular",
+    color: "#4B5563"
+  }
+
 });

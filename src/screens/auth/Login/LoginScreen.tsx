@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Platform,
   KeyboardAvoidingView,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -18,30 +19,30 @@ import { styles } from './styles';
 import { useLoginLogic } from './useLoginLogic';
 
 import { AppButton } from '../../../components/ui/AppButton/AppButton';
-import { AppInput } from '../../../components/ui/AppInput/AppInput';
 import Loader from '../../../components/ui/Loader/Loader';
 import Social from '../../../components/ui/SocialButton/Button';
 import CountryPickerModal from '../../../components/ui/CountryPicker/CountryPickerModal';
-import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 
 import { navigateDeepLink } from '../../../navigation/navigateDeepLink';
-import { consumePendingDeepLink } from '../../../utils/pendingDeepLink'; // your utility file
+import { consumePendingDeepLink } from '../../../utils/pendingDeepLink';
 
 type LoginScreenProps = {
   onLoginSuccess?: () => void;
 };
 
-/* 🔹 Keyboard hook */
 const useKeyboardOpen = () => {
   const [open, setOpen] = useState(false);
+
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => setOpen(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
+
     return () => {
       show.remove();
       hide.remove();
     };
   }, []);
+
   return open;
 };
 
@@ -64,19 +65,19 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const navigation = useNavigation();
   const keyboardOpen = useKeyboardOpen();
 
-  // Handle OTP login button press
+  const [phoneFocused, setPhoneFocused] = useState(false);
+
   const handleLoginPress = async () => {
-    const success = await handleLogin(); // your existing login logic
+    const success = await handleLogin();
+
     if (success) {
-      // Call optional callback from RootNavigator
       onLoginSuccess?.();
 
-      // Consume pending deep link
       const url = consumePendingDeepLink();
+
       if (url) {
-        navigateDeepLink(url); // <-- navigate inside app, not open Safari
+        navigateDeepLink(url);
       } else {
-        // Default navigation if no pending link
         navigation.reset({
           index: 0,
           routes: [{ name: 'Tabs' }],
@@ -86,154 +87,168 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <View style={styles.maincontainer}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="dark-content"
-      />
+    <View style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
-      {/* ---------- Banner (NON-SCROLLABLE) ---------- */}
-      <View style={styles.imgcontainer}>
+      {/* Banner */}
+      <View style={styles.bannerSection}>
         <ImageBackground
           source={require('../../../../assets/image/loginbanner.png')}
-          resizeMode="cover"
-          style={styles.banner}
+          style={styles.bannerImage}
         >
-          <Image
-            source={require('../../../../assets/image/blur.png')}
-            resizeMode="cover"
-            style={{ ...styles.img }}
-          />
+          <View style={styles.overlay} />
 
-          <View style={styles.headcontainer}>
-            <Text style={styles.heading}>Welcome Back!</Text>
-            <Text style={styles.heading2}>
-              We&apos;ll send you a verification code
-            </Text>
+          <View style={styles.bannerContent}>
+            <Text style={styles.welcomeTitle}>Welcome Back</Text>
+            <Text style={styles.welcomeSubtitle}>Sign in to your account</Text>
           </View>
         </ImageBackground>
       </View>
 
-      {/* ---------- Scrollable Content ---------- */}
-      <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
+      <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
+          style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
             scrollEnabled={keyboardOpen}
-            bounces={false}
-            alwaysBounceVertical={false}
-            overScrollMode="never"
-            keyboardShouldPersistTaps="handled"
-            contentInsetAdjustmentBehavior="never"
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: keyboardOpen ? responsiveScreenHeight(12) : 0,
-            }}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
           >
-            <Loader visible={isLoading} color="blue" />
+            <Loader visible={isLoading} color="#2C3E50" />
 
-            <View style={styles.innercontainer}>
-              {/* Country */}
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={styles.prefix}>
-                  <Image
-                    resizeMode="contain"
-                    style={{ width: '100%', height: '100%' }}
-                    source={require('../../../../assets/image/arrow-down.png')}
-                  />
+            <View style={styles.formCard}>
+
+              {/* FORM CONTENT */}
+              <View>
+
+                <View style={styles.headerSection}>
+                  <Text style={styles.headerTitle}>Sign In</Text>
+                  <Text style={styles.headerSubtitle}>
+                    Enter your credentials
+                  </Text>
                 </View>
 
-                <TouchableOpacity
-                  style={{ width: '100%' }}
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setTimeout(() => setModalVisible(true), 150);
-                  }}
-                >
-                  <View pointerEvents="none">
-                    <AppInput
-                      placeholder="Select Country"
-                      label={
-                        <Text style={styles.labeltxt}>
-                          Country <Text style={{ color: 'red' }}>*</Text>
-                        </Text>
-                      }
-                      value={country}
+                {/* Country */}
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Country</Text>
+
+                  <TouchableOpacity
+                    style={styles.countryField}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setModalVisible(true);
+                    }}
+                  >
+                    <Text style={[styles.countryText, !country && styles.placeholderText]}>
+                      {country || 'Select your country'}
+                    </Text>
+
+                    <Image
+                      source={require('../../../../assets/image/arrow-down.png')}
+                      style={styles.arrowIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Phone */}
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Phone Number</Text>
+
+                  <View
+                    style={[
+                      styles.phoneWrapper,
+                      phoneFocused && styles.phoneWrapperFocused,
+                    ]}
+                  >
+                    <View style={styles.countryCodeBox}>
+                      <Text style={styles.countryCodeText}>{countryCode}</Text>
+                    </View>
+
+                    <TextInput
+                      ref={phoneInputRef}
+                      style={styles.phoneInput}
+                      value={phone}
+                      onChangeText={setPhone}
+                      placeholder="Enter your phone number"
+                      placeholderTextColor="#95A5A6"
+                      keyboardType="phone-pad"
+                      underlineColorAndroid="transparent"
+                      selectionColor="#2C3E50"
+                      onFocus={() => setPhoneFocused(true)}
+                      onBlur={() => setPhoneFocused(false)}
                     />
                   </View>
-                </TouchableOpacity>
-              </View>
-
-              {/* Phone */}
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={styles.prefix2}>
-                  <Text style={styles.codetxt}>{countryCode}</Text>
                 </View>
 
-                <View style={{ width: '100%' }}>
-                  <AppInput
-                    label={
-                      <Text style={styles.labeltxt}>
-                        Phone Number <Text style={{ color: 'red' }}>*</Text>
-                      </Text>
-                    }
-                    value={phone}
-                    onChangeText={setPhone}
-                    inputStyle={styles.prefix2style}
-                    keyboardType="phone-pad"
-                    ref={phoneInputRef}
+                {/* Button */}
+                <View style={styles.buttonWrapper}>
+                  <AppButton
+                    title="Continue"
+                    onPress={handleLoginPress}
+                    disabled={!isFormComplete || isLoading}
+                    style={[
+                      styles.submitButton,
+                      (!isFormComplete || isLoading) &&
+                      styles.submitButtonDisabled,
+                    ]}
+                    textStyle={styles.submitButtonText}
                   />
                 </View>
+
+                {/* Divider */}
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>OR</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                {/* Social */}
+                <View style={styles.socialSection}>
+                  <Social
+                    title="Google"
+                    source={require('../../../../assets/image/google.png')}
+                    containerStyle={styles.socialButton}
+                    textStyle={styles.socialButtonText}
+                  />
+
+                  <Social
+                    title="Apple"
+                    source={require('../../../../assets/image/apple.png')}
+                    containerStyle={styles.socialButton}
+                    textStyle={styles.socialButtonText}
+                  />
+                </View>
+
+                {/* Signup */}
+                <View style={styles.footer}>
+                  <Text style={styles.footerText}>
+                    Don’t have an account?{' '}
+                    <Text
+                      style={styles.signupLink}
+                      onPress={() => navigation.navigate('Signup')}
+                    >
+                      Sign up
+                    </Text>
+                  </Text>
+                </View>
               </View>
 
-              {/* Send OTP Button */}
-              <AppButton
-                title="Send OTP"
-                onPress={handleLoginPress}
-                disabled={!isFormComplete || isLoading}
-              />
-
-              {/* OR */}
-              <View style={styles.bottomtxt}>
-                <View style={styles.linestyle} />
-                <Text style={styles.bottomtxt2}>or sign in with</Text>
-                <View style={styles.linestyle} />
-              </View>
-
-              {/* Social */}
-              <View style={styles.bottomtxt3}>
-                <Social
-                  title="Google"
-                  source={require('../../../../assets/image/google.png')}
-                />
-                <Social
-                  title="Apple"
-                  source={require('../../../../assets/image/apple.png')}
-                />
-              </View>
-
-              {/* Signup */}
-              <Text style={styles.bottomtxt4}>
-                Don&apos;t have an account?
-                <Text
-                  onPress={() => navigation.navigate('Signup')}
-                  style={{ color: '#FF04D7', fontFamily: 'Quicksand-Bold' }}
-                >
-                  {' '}
-                  Sign Up
+              {/* TERMS */}
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>
+                  By continuing you agree to our{' '}
+                  <Text style={styles.link}>Terms of Service</Text> and{' '}
+                  <Text style={styles.link}>Privacy Policy</Text>
                 </Text>
-              </Text>
+              </View>
+
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
 
-      {/* ---------- Country Picker ---------- */}
       <CountryPickerModal
         visible={modalVisible}
         countries={countries}
