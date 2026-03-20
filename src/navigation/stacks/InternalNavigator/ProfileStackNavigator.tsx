@@ -14,7 +14,7 @@ export default function ProfileStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileMain" component={Profile} />
-      <Stack.Screen name="ProfileEdit" component={Editprofile} />
+      
        <Stack.Screen name="Bookmark" component={Bookmark} />
       
     </Stack.Navigator>

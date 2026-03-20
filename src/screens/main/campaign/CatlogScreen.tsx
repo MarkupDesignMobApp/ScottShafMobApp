@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
-import { styles as Homestyle } from '../home/styles';
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
@@ -32,10 +31,6 @@ export default function BrowseCatalogScreen({ navigation, route }) {
   const { categoryId, listId } = route.params;
 
   /* ================= API ================= */
-
-  //   const result = useGetCatalogItemsByCategoryQuery(3);
-  // console.log("ef",result);
-
   const { data, isLoading } = useGetCatalogItemsByCategoryQuery(categoryId);
   const [addCatalogItems, { isLoading: isAdding }] =
     useAddCatalogItemsMutation();
@@ -65,12 +60,10 @@ export default function BrowseCatalogScreen({ navigation, route }) {
 
   const handleSkip = () => {
     if (!items || items.length === 0) {
-      // No items available → go back
       navigation.goBack();
       return;
     }
 
-    // Items exist → go to Addcustom screen
     navigation.navigate('Addcustom', {
       selectedItems: items.filter(item => item.selected).map(item => item.id),
       listId: listId,
@@ -114,8 +107,6 @@ export default function BrowseCatalogScreen({ navigation, route }) {
       } else {
         Alert.alert('Error', res?.message || 'Something went wrong');
       }
-      
-
     } catch (error: any) {
       Alert.alert(
         'Error',
@@ -130,21 +121,24 @@ export default function BrowseCatalogScreen({ navigation, route }) {
       key={item.id}
       style={[styles.card, item.selected && styles.cardActive]}
       onPress={() => toggleSelect(item.id)}
+      activeOpacity={0.7}
     >
-      <View style={styles.image}>
+      <View style={styles.imageContainer}>
         <Image
-          resizeMode="contain"
-          source={{uri:item.image_url}}
-          style={{ width: '100%', height: '100%' }}
+          resizeMode="cover"
+          source={{ uri: item.image_url }}
+          style={styles.image}
         />
       </View>
 
-      <View style={{ flex: 1 }}>
+      <View style={styles.contentContainer}>
         <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.desc}>{item.description}</Text>
+        <Text style={styles.desc} numberOfLines={2}>
+          {item.description}
+        </Text>
       </View>
 
-      <View style={styles.iconWrap}>
+      <View style={[styles.iconWrap, item.selected && styles.iconWrapActive]}>
         <Text style={[styles.icon, item.selected && styles.iconActive]}>
           {item.selected ? '✓' : '+'}
         </Text>
@@ -154,40 +148,38 @@ export default function BrowseCatalogScreen({ navigation, route }) {
 
   return (
     <>
-      <Loader color="blue" visible={isLoading || isAdding} />
+      <Loader color="#2C3E50" visible={isLoading || isAdding} />
       <SafeAreaProvider style={{ flex: 1 }}>
-        <StatusBar backgroundColor="#00C4FA" barStyle="light-content" />
-        <SafeAreaView edges={['top']} style={{ backgroundColor: '#00C4FA' }} />
+        <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
+        <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
 
-        <View style={styles.header2}>
+        <View style={styles.headerContainer}>
           <View style={styles.header}>
             <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backarrow}
+              style={styles.backButton}
             >
               <Image
                 tintColor={'#fff'}
                 resizeMode="contain"
-                style={styles.img}
+                style={styles.backIcon}
                 source={require('../../../../assets/image/left-icon.png')}
               />
             </Pressable>
 
             <Text style={styles.headerTitle}>Browse Catalogue</Text>
-            <View />
+            <View style={styles.headerRight} />
           </View>
 
-          <View style={styles.serchmaincontainer}>
+          <View style={styles.searchContainer}>
             <SearchBar placeholder="Search items..." />
           </View>
 
+          {/* Optional Categories Scroll - Commented out as in original */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              ...Homestyle.scrollcontainer,
-              paddingTop: responsiveScreenHeight(2.25),
-            }}
+            contentContainerStyle={styles.categoriesContainer}
           >
             {/* {CATEGORIES.map((item, index) => {
               const isActive = index === activeIndex;
@@ -196,14 +188,14 @@ export default function BrowseCatalogScreen({ navigation, route }) {
                   key={item}
                   onPress={() => setActiveIndex(index)}
                   style={[
-                    Homestyle.scrollbox,
-                    isActive && Homestyle.activeScrollBox,
+                    styles.categoryChip,
+                    isActive && styles.categoryChipActive,
                   ]}
                 >
                   <Text
                     style={[
-                      Homestyle.boxtitle,
-                      isActive && Homestyle.activeBoxTitle,
+                      styles.categoryChipText,
+                      isActive && styles.categoryChipTextActive,
                     ]}
                   >
                     {item}
@@ -214,26 +206,38 @@ export default function BrowseCatalogScreen({ navigation, route }) {
           </ScrollView>
         </View>
 
-        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={styles.contentContainer}>
           <FlatList
             data={items}
             keyExtractor={item => item.id.toString()}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: responsiveScreenWidth(4),
-              paddingTop: responsiveScreenHeight(2),
-              paddingBottom: responsiveScreenHeight(16),
-            }}
+            contentContainerStyle={styles.listContainer}
+            ListEmptyComponent={
+              !isLoading ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyEmoji}>📦</Text>
+                  <Text style={styles.emptyText}>No items available</Text>
+                </View>
+              ) : null
+            }
           />
 
           <SafeAreaView edges={['bottom']} style={styles.footer}>
-            <Pressable style={styles.skipBtn} onPress={handleSkip}>
-              <Text style={styles.skipText}>Skip</Text>
+            <Pressable
+              style={styles.skipButton}
+              onPress={handleSkip}
+              android_ripple={{ color: '#E0E0E0', borderless: false }}
+            >
+              <Text style={styles.skipButtonText}>Skip</Text>
             </Pressable>
 
-            <Pressable style={styles.nextBtn} onPress={handleNext}>
-              <Text style={styles.nextText}>Next</Text>
+            <Pressable
+              style={styles.nextButton}
+              onPress={handleNext}
+              android_ripple={{ color: '#1a2632', borderless: false }}
+            >
+              <Text style={styles.nextButtonText}>Next</Text>
             </Pressable>
           </SafeAreaView>
         </View>
@@ -243,111 +247,206 @@ export default function BrowseCatalogScreen({ navigation, route }) {
 }
 
 export const styles = StyleSheet.create({
-  container: { flex: 1 },
-
-  header: {
-    backgroundColor: '#00C4FA',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  header2: {
-    backgroundColor: '#00C4FA',
+  headerContainer: {
+    backgroundColor: '#2C3E50',
     paddingHorizontal: responsiveScreenWidth(4),
     paddingBottom: responsiveScreenHeight(2),
   },
-  serchmaincontainer: {
-    paddingTop: responsiveScreenHeight(2.25),
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: responsiveScreenHeight(1.5),
   },
-  backarrow: {
-    width: responsiveScreenHeight(4),
+  backButton: {
+    width: responsiveScreenHeight(3),
     height: responsiveScreenHeight(3),
+    justifyContent: 'center',
   },
-  img: {
+  backIcon: {
     width: '100%',
     height: '100%',
+    tintColor: '#FFFFFF',
   },
   headerTitle: {
-    color: '#fff',
-    fontFamily: 'samsungsharpsans-medium',
-    fontSize: responsiveScreenFontSize(2),
+    color: '#FFFFFF',
+    fontFamily: 'Quicksand-Bold',
+    fontSize: responsiveScreenFontSize(2.2),
     fontWeight: '600',
     letterSpacing: 0.5,
+  },
+  headerRight: {
+    width: responsiveScreenHeight(3),
+  },
+  searchContainer: {
+    paddingTop: responsiveScreenHeight(1),
+  },
+  categoriesContainer: {
+    paddingTop: responsiveScreenHeight(2),
+    paddingBottom: responsiveScreenHeight(0.5),
+  },
+  categoryChip: {
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(1),
+    backgroundColor: '#F0F0F0',
+    borderRadius: 20,
+    marginRight: responsiveScreenWidth(2),
+  },
+  categoryChipActive: {
+    backgroundColor: '#2C3E50',
+  },
+  categoryChipText: {
+    fontSize: responsiveScreenFontSize(1.6),
+    color: '#666',
+    fontFamily: 'Quicksand-Regular',
+  },
+  categoryChipTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  listContainer: {
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingTop: responsiveScreenHeight(2),
+    paddingBottom: responsiveScreenHeight(16),
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: responsiveScreenHeight(2.35),
+    backgroundColor: '#FFFFFF',
+    padding: responsiveScreenHeight(1.8),
     borderRadius: 12,
-    marginBottom: responsiveScreenHeight(2),
-    borderWidth: 1,
-    borderColor: '#C5C5C5',
+    marginBottom: responsiveScreenHeight(1.5),
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  cardActive: { borderColor: '#0180FE', backgroundColor: '#ECF6FF' },
-  image: {
-    width: responsiveScreenWidth(12),
-    height: responsiveScreenHeight(6),
+  cardActive: {
+    borderColor: '#2C3E50',
+    backgroundColor: '#F0F4F8',
+    shadowColor: '#2C3E50',
+    shadowOpacity: 0.1,
+  },
+  imageContainer: {
+    width: responsiveScreenWidth(14),
+    height: responsiveScreenHeight(7),
     borderRadius: 8,
-    marginRight: 12,
+    backgroundColor: '#F5F5F5',
+    overflow: 'hidden',
+    marginRight: responsiveScreenWidth(3),
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   title: {
-    fontSize: responsiveScreenFontSize(1.85),
-    fontFamily: 'Quicksand-Regular',
-    color: 'black',
-    fontWeight: '500',
+    fontSize: responsiveScreenFontSize(1.9),
+    fontFamily: 'Quicksand-Bold',
+    color: '#2C3E50',
+    fontWeight: '600',
+    marginBottom: responsiveScreenHeight(0.3),
   },
   desc: {
-    fontSize: responsiveScreenFontSize(1.75),
-    color: '#777',
-    marginTop: responsiveScreenHeight(1.25),
+    fontSize: responsiveScreenFontSize(1.6),
+    color: '#718096',
     fontFamily: 'Quicksand-Regular',
+    lineHeight: responsiveScreenHeight(2.2),
   },
   footer: {
     flexDirection: 'row',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: responsiveScreenWidth(4),
     paddingVertical: responsiveScreenHeight(2),
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 10,
   },
-  skipBtn: {
+  skipButton: {
     flex: 1,
     height: responsiveScreenHeight(6),
     borderRadius: 30,
-    borderWidth: 1,
-    borderColor: '#00C4FA',
+    borderWidth: 1.5,
+    borderColor: '#2C3E50',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: responsiveScreenWidth(3),
+    backgroundColor: '#FFFFFF',
   },
-  skipText: {
-    color: '#00C4FA',
+  skipButtonText: {
+    color: '#2C3E50',
     fontWeight: '600',
     fontSize: responsiveScreenFontSize(1.8),
+    fontFamily: 'Quicksand-Bold',
   },
-  nextBtn: {
+  nextButton: {
     flex: 1,
     height: responsiveScreenHeight(6),
     borderRadius: 30,
-    backgroundColor: '#00C4FA',
+    backgroundColor: '#2C3E50',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#2C3E50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  nextText: {
-    color: '#fff',
+  nextButtonText: {
+    color: '#FFFFFF',
     fontWeight: '600',
     fontSize: responsiveScreenFontSize(1.8),
+    fontFamily: 'Quicksand-Bold',
   },
   iconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#22B8F0',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1.5,
+    borderColor: '#2C3E50',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
   },
-  icon: { fontSize: 18, color: '#22B8F0' },
-  iconActive: { fontWeight: '700' },
+  iconWrapActive: {
+    backgroundColor: '#2C3E50',
+    borderColor: '#2C3E50',
+  },
+  icon: {
+    fontSize: 20,
+    color: '#2C3E50',
+    fontWeight: '500',
+  },
+  iconActive: {
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: responsiveScreenHeight(10),
+  },
+  emptyEmoji: {
+    fontSize: responsiveScreenFontSize(5),
+    marginBottom: responsiveScreenHeight(2),
+  },
+  emptyText: {
+    fontSize: responsiveScreenFontSize(1.8),
+    color: '#A0A0A0',
+    fontFamily: 'Quicksand-Regular',
+  },
 });

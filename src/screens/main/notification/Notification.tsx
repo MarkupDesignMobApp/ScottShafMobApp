@@ -29,25 +29,25 @@ export default function Notification({ navigation }: any) {
   const [rejectNotification] = useRejectNotificationMutation();
 
   // per-item loading state: { [id]: boolean }
-  const [actionLoading, setActionLoading] = useState<Record<string | number, boolean>>(
-    {}
-  );
+  const [actionLoading, setActionLoading] = useState<
+    Record<string | number, boolean>
+  >({});
   // selectedAction for styling (accept/decline active look)
-  const [selectedAction, setSelectedAction] = useState<Record<string | number, string>>(
-    {}
-  );
+  const [selectedAction, setSelectedAction] = useState<
+    Record<string | number, string>
+  >({});
 
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
   const Data = Notify?.data?.data || [];
 
   const handleAccept = async (item: any) => {
-    setSelectedAction((prev) => ({ ...prev, [item.id]: 'accept' }));
-    setActionLoading((prev) => ({ ...prev, [item.id]: true }));
+    setSelectedAction(prev => ({ ...prev, [item.id]: 'accept' }));
+    setActionLoading(prev => ({ ...prev, [item.id]: true }));
     try {
       await acceptNotification({ list_id: item.list_id }).unwrap();
       // refresh list
@@ -55,20 +55,20 @@ export default function Notification({ navigation }: any) {
     } catch (err) {
       console.log('Accept error', err);
     } finally {
-      setActionLoading((prev) => ({ ...prev, [item.id]: false }));
+      setActionLoading(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
   const handleDecline = async (item: any) => {
-    setSelectedAction((prev) => ({ ...prev, [item.id]: 'decline' }));
-    setActionLoading((prev) => ({ ...prev, [item.id]: true }));
+    setSelectedAction(prev => ({ ...prev, [item.id]: 'decline' }));
+    setActionLoading(prev => ({ ...prev, [item.id]: true }));
     try {
       await rejectNotification({ list_id: item.list_id }).unwrap();
       refetch();
     } catch (err) {
       console.log('Decline error', err);
     } finally {
-      setActionLoading((prev) => ({ ...prev, [item.id]: false }));
+      setActionLoading(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
@@ -81,11 +81,11 @@ export default function Notification({ navigation }: any) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <AppHeader
         onLeftPress={() => navigation.goBack()}
         title="Notifications"
-        leftImage={require('../../../../assets/image/left-icon.png')}
+        leftImage={require('../../../../assets/image/arrow-down.png')}
       />
 
       {Data.length === 0 ? (
@@ -98,91 +98,102 @@ export default function Notification({ navigation }: any) {
         </View>
       ) : (
         <FlatList
-        data={Data}
-        contentContainerStyle={{ paddingTop: hp(1.5), paddingBottom: hp(1.5) }}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, index }) => {
-          const isLoadingThis = !!actionLoading[item.id];
-          return (
-            <View>
-              <View style={styles.card}>
-                <View style={styles.row}>
-                  <View style={styles.imgWrap}>
-                    <Image
-                      source={require('../../../../assets/image/women1.png')}
-                      style={styles.profileImg}
-                    />
-                  </View>
-      
-                  <View style={styles.textWrap}>
-                    <Text style={styles.title}>{item.title}</Text>
-                    <Text style={styles.sub}>{item.body}</Text>
-                    <Text style={styles.time}>{item.created_at} hours ago</Text>
-      
-                    <View style={styles.btnRow}>
-                      <TouchableOpacity
-                        disabled={isLoadingThis}
-                        style={[
-                          styles.btn,
-                          selectedAction[item.id] === 'accept' && styles.acceptActive,
-                        ]}
-                        onPress={() => handleAccept(item)}
-                      >
-                        {isLoadingThis && selectedAction[item.id] === 'accept' ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          <Text
-                            style={[
-                              styles.btnText,
-                              selectedAction[item.id] === 'accept' && styles.activeText,
-                            ]}
-                          >
-                            Accept
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-      
-                      <TouchableOpacity
-                        disabled={isLoadingThis}
-                        style={[
-                          styles.btn,
-                          styles.declineBtn,
-                          selectedAction[item.id] === 'decline' && styles.declineActive,
-                        ]}
-                        onPress={() => handleDecline(item)}
-                      >
-                        {isLoadingThis && selectedAction[item.id] === 'decline' ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          <Text
-                            style={[
-                              styles.btnText,
-                              selectedAction[item.id] === 'decline' && styles.activeText,
-                            ]}
-                          >
-                            Decline
-                          </Text>
-                        )}
-                      </TouchableOpacity>
+          data={Data}
+          contentContainerStyle={{
+            paddingTop: hp(1.5),
+            paddingBottom: hp(1.5),
+          }}
+          keyExtractor={item => item.id.toString()}
+          renderItem={({ item, index }) => {
+            const isLoadingThis = !!actionLoading[item.id];
+            return (
+              <View>
+                <View style={styles.card}>
+                  <View style={styles.row}>
+                    <View style={styles.imgWrap}>
+                      <Image
+                        source={require('../../../../assets/image/women1.png')}
+                        style={styles.profileImg}
+                      />
                     </View>
+
+                    <View style={styles.textWrap}>
+                      <Text style={styles.title}>{item.title}</Text>
+                      <Text style={styles.sub}>{item.body}</Text>
+                      <Text style={styles.time}>
+                        {item.created_at} hours ago
+                      </Text>
+
+                      <View style={styles.btnRow}>
+                        <TouchableOpacity
+                          disabled={isLoadingThis}
+                          style={[
+                            styles.btn,
+                            selectedAction[item.id] === 'accept' &&
+                              styles.acceptActive,
+                          ]}
+                          onPress={() => handleAccept(item)}
+                        >
+                          {isLoadingThis &&
+                          selectedAction[item.id] === 'accept' ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                          ) : (
+                            <Text
+                              style={[
+                                styles.btnText,
+                                selectedAction[item.id] === 'accept' &&
+                                  styles.activeText,
+                              ]}
+                            >
+                              {selectedAction[item.id] === 'accept'
+                                ? 'Accepted'
+                                : 'Accept'}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          disabled={isLoadingThis}
+                          style={[
+                            styles.btn,
+                            styles.declineBtn,
+                            selectedAction[item.id] === 'decline' &&
+                              styles.declineActive,
+                          ]}
+                          onPress={() => handleDecline(item)}
+                        >
+                          {isLoadingThis &&
+                          selectedAction[item.id] === 'decline' ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                          ) : (
+                            <Text
+                              style={[
+                                styles.btnText,
+                                selectedAction[item.id] === 'decline' &&
+                                  styles.activeText,
+                              ]}
+                            >
+                              Decline
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View style={styles.dot} />
                   </View>
-      
-                  <View style={styles.dot} />
                 </View>
+
+                {/* Divider below every item, including last */}
+                <View style={styles.divider} />
               </View>
-      
-              {/* Divider below every item, including last */}
-              <View style={styles.divider} />
-            </View>
-          );
-        }}
-      />
-      
+            );
+          }}
+        />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -322,7 +333,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#EAEAEA',
     marginHorizontal: wp(4.3),
-    marginBottom:hp(0.5)
+    marginBottom: hp(0.5),
   },
-  
 });

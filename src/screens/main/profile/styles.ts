@@ -29,8 +29,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
 
-
-
     borderBottomWidth: 1,
     borderBottomColor: '#EEE',
   },
@@ -184,7 +182,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 20,
     backgroundColor: '#2C3E50',
 
-    paddingVertical: 16,
+    paddingVertical: 15,
 
     borderRadius: 12,
     alignItems: 'center',
@@ -193,6 +191,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 5,
     elevation: 4,
+    marginBottom: responsiveScreenHeight(5),
   },
 
   saveButtonText: {
@@ -205,7 +204,7 @@ export const styles = StyleSheet.create({
 export const styles2 = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#fff',
   },
 
   /* PROFILE IMAGE */
@@ -267,12 +266,15 @@ export const styles2 = StyleSheet.create({
   bottomButtonContainer: {
     position: 'absolute',
     bottom: 0,
-    width: '100%',
+    width: '90%',
     paddingHorizontal: responsiveScreenWidth(4),
     paddingVertical: responsiveScreenHeight(2),
-    backgroundColor: '#fff',
+    backgroundColor: 'red',
     borderTopWidth: 1,
     borderTopColor: '#ECF0F1',
+    marginBottom: responsiveScreenHeight(10),
+    alignItems: 'center',
+    marginLeft:'5%'
   },
 
   /* MODAL */

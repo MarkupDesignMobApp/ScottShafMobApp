@@ -6,9 +6,9 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
-
 import React, { useState } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { styles } from './styles';
 
@@ -18,14 +18,20 @@ import Button from '../../../components/ui/SocialButton/Button';
 import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import Recommend from './Recommend';
+import FeaturedListsPreview from '../feature/FeaturedListsPreview';
 
 import {
   useGetUserProfileQuery,
   useGetUserInterestsQuery,
 } from '../../../features/auth/authApi';
+import { MainStackParamList } from '../../../navigation/types/navigation';
 
-export default function HomeScreen({ navigation }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+interface HomeScreenProps {
+  navigation: NativeStackNavigationProp<MainStackParamList, 'Home'>;
+}
+
+export default function HomeScreen({ navigation }: HomeScreenProps) {
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const [selectedInterestId, setSelectedInterestId] = useState<number | null>(
     null,
   );
@@ -54,7 +60,6 @@ export default function HomeScreen({ navigation }) {
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
 
       {/* HEADER */}
-
       <View style={styles.header}>
         <Pressable
           onPress={() => navigation.navigate('Profile')}
@@ -93,7 +98,6 @@ export default function HomeScreen({ navigation }) {
         style={styles.innercontainer}
       >
         {/* SEARCH + INTEREST */}
-
         <View style={styles.topSection}>
           <SearchBar placeholder="Search lists, users, topics..." />
 
@@ -132,14 +136,12 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {/* MAIN CONTENT */}
-
         <View style={styles.contentContainer}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContainer}
           >
             {/* CREATE LIST */}
-
             <View style={styles.createCard}>
               <Text style={styles.createTitle}>Create Your First List</Text>
 
@@ -156,8 +158,7 @@ export default function HomeScreen({ navigation }) {
               />
             </View>
 
-            {/* FEATURED */}
-
+            {/* FEATURED - Preview with 3 items */}
             <View style={styles.cardHeading}>
               <Text style={styles.headingText}>Featured Lists</Text>
 
@@ -169,10 +170,12 @@ export default function HomeScreen({ navigation }) {
               </Text>
             </View>
 
-            <ImageCarousel interestId={selectedInterestId} />
+            <FeaturedListsPreview
+              interestId={selectedInterestId}
+              navigation={navigation}
+            />
 
             {/* SPONSORED */}
-
             <View style={styles.cardHeading}>
               <Text style={styles.headingText}>Sponsored Campaign</Text>
             </View>
@@ -180,7 +183,6 @@ export default function HomeScreen({ navigation }) {
             <ImageCarousel2 />
 
             {/* RECOMMENDED */}
-
             <Recommend />
           </ScrollView>
         </View>

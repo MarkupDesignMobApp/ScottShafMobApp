@@ -72,7 +72,35 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: responsiveScreenHeight(2),
   },
-
+  /// Add these to your existing styles object
+  seeAllCard: {
+    width: responsiveScreenWidth(60),
+    height: responsiveScreenWidth(75),
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 14,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderStyle: 'dashed' as const,
+  },
+  seeAllCardText: {
+    fontSize: 18,
+    fontFamily: 'Quicksand-Bold',
+    color: '#00C4FA',
+    marginBottom: 8,
+  },
+  seeAllCardSubtext: {
+    fontSize: 14,
+    color: '#64748B',
+    fontFamily: 'Ubuntu-Regular',
+  },
+  loadingContainer: {
+    height: responsiveScreenWidth(75),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   interestPill: {
     paddingHorizontal: responsiveScreenWidth(4.2),
     paddingVertical: responsiveScreenHeight(0.9),
@@ -141,14 +169,14 @@ export const styles = StyleSheet.create({
     marginTop: responsiveScreenHeight(2),
     backgroundColor: '#1F2E3D',
     borderRadius: 14,
-    paddingVertical: responsiveScreenHeight(1.3),
+    paddingVertical: responsiveScreenHeight(0),
     alignItems: 'center',
   },
 
   createButtonText: {
     color: '#FFFFFF',
     fontFamily: 'Quicksand-SemiBold',
-    fontSize: responsiveScreenFontSize(1.85),
+    fontSize: responsiveScreenFontSize(1.5),
   },
 
   /* ---------------- SECTION HEADINGS ---------------- */

@@ -94,7 +94,7 @@ export const AppInput = forwardRef<TextInput, Props>(
           {label && <Animated.Text style={labelStyle}>{label}</Animated.Text>}
 
           <TextInput
-          autoCapitalize='none'
+            autoCapitalize='none'
             ref={internalRef}
             editable={editable}
             style={[styles.input, inputStyle]}
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: responsiveScreenWidth(30),
     paddingHorizontal: responsiveScreenWidth(6.5),
-    paddingVertical:responsiveScreenHeight(1.75),
+    paddingVertical: responsiveScreenHeight(1.75),
     paddingBottom: responsiveScreenHeight(1),
   },
   input: {

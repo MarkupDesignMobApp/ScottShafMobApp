@@ -36,7 +36,6 @@ import {
   Campaign,
   CatalogItemsPublishList,
   FeaturedBookmarksResponse,
-   
 } from './authTypes';
 
 import {
@@ -51,14 +50,13 @@ import {
   FeaturedBookmarks,
   PublishedLists,
   SUB_CATEGORIES_ENDPOINT,
-  SUB_CATEGORY_ITEMS_ENDPOINT
+  SUB_CATEGORY_ITEMS_ENDPOINT,
 } from './endpoints';
 
 /* ================= API ================= */
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
-
     /* ================= CAMPAIGNS ================= */
 
     getCampaigns: builder.query<Campaign[], void>({
@@ -69,21 +67,30 @@ export const authApi = baseApi.injectEndpoints({
 
     /* ================= FEATURED ITEMS ================= */
 
-    shareFeaturedItem: builder.mutation<ShareFeaturedItemResponse, number | string>({
+    shareFeaturedItem: builder.mutation<
+      ShareFeaturedItemResponse,
+      number | string
+    >({
       query: itemId => ({
         url: `/scott-shafer/api/featured-items/${itemId}/share-link`,
         method: 'GET',
       }),
     }),
 
-    bookmarkFeaturedItem: builder.mutation<BookmarkFeaturedItemResponse, number | string>({
+    bookmarkFeaturedItem: builder.mutation<
+      BookmarkFeaturedItemResponse,
+      number | string
+    >({
       query: itemId => ({
         url: `/scott-shafer/api/featured-items/${itemId}/bookmark`,
         method: 'POST',
       }),
     }),
 
-    likeFeaturedItem: builder.mutation<LikeFeaturedItemResponse, number | string>({
+    likeFeaturedItem: builder.mutation<
+      LikeFeaturedItemResponse,
+      number | string
+    >({
       query: itemId => ({
         url: FEATURED_ITEM_ENDPOINTS.LIKE_ITEM(itemId),
         method: 'POST',
@@ -118,7 +125,10 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    updateTermsAndPrivacy: builder.mutation<TermsAndPrivacyResponse, TermsAndPrivacyRequest>({
+    updateTermsAndPrivacy: builder.mutation<
+      TermsAndPrivacyResponse,
+      TermsAndPrivacyRequest
+    >({
       query: body => ({
         url: AUTH_ENDPOINTS.TERMS_AND_PRIVACY,
         method: 'POST',
@@ -130,7 +140,7 @@ export const authApi = baseApi.injectEndpoints({
 
     getUserProfile: builder.query<ProfileResponse, void>({
       query: () => ({ url: AUTH_ENDPOINTS.GET_PROFILE, method: 'GET' }),
-      providesTags: ['Profile'],
+      providesTags: ['Profile'], // ✅ ADD THIS
     }),
 
     updateUserProfile: builder.mutation<UpdateProfileResponse, FormData>({
@@ -138,8 +148,9 @@ export const authApi = baseApi.injectEndpoints({
         url: AUTH_ENDPOINTS.UPDATE_PROFILE,
         method: 'POST',
         body: formData,
+        formData: true,
       }),
-      invalidatesTags: ['Profile'],
+      invalidatesTags: ['Profile'], // ✅ ADD THIS
     }),
 
     saveUserProfile: builder.mutation<UserProfileResponse, UserProfileRequest>({
@@ -162,7 +173,10 @@ export const authApi = baseApi.injectEndpoints({
       transformResponse: (res: { data: Interest[] }) => res.data,
     }),
 
-    saveUserInterests: builder.mutation<SaveInterestsResponse, SaveInterestsRequest>({
+    saveUserInterests: builder.mutation<
+      SaveInterestsResponse,
+      SaveInterestsRequest
+    >({
       query: body => ({
         url: AUTH_ENDPOINTS.ADD_INTEREST,
         method: 'POST',
@@ -188,7 +202,12 @@ export const authApi = baseApi.injectEndpoints({
 
     addListItem: builder.mutation<
       AddListItemResponse,
-      { listId: number | string; custom_item_name: string; custom_text?: string; position?: number }
+      {
+        listId: number | string;
+        custom_item_name: string;
+        custom_text?: string;
+        position?: number;
+      }
     >({
       query: ({ listId, ...body }) => ({
         url: `/scott-shafer/api/lists/${listId}/items`,
@@ -234,8 +253,10 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['CatalogItems'],
     }),
 
-
-    publishList: builder.mutation<CatalogItemsPublishList[], { list_ids: number[] }>({
+    publishList: builder.mutation<
+      CatalogItemsPublishList[],
+      { list_ids: number[] }
+    >({
       query: body => ({
         url: CATALOG_ENDPOINTS.PUBLISH_LIST,
         method: 'POST',
@@ -246,7 +267,10 @@ export const authApi = baseApi.injectEndpoints({
 
     /* ================= FEATURED LIST ================= */
 
-    getFeaturedLists: builder.query<FeaturedListSummary[], { interestId?: number } | void>({
+    getFeaturedLists: builder.query<
+      FeaturedListSummary[],
+      { interestId?: number } | void
+    >({
       query: args => ({
         url: FEATURED_LIST_ENDPOINTS.FEATURED_LISTS,
         method: 'GET',
@@ -261,7 +285,10 @@ export const authApi = baseApi.injectEndpoints({
         url: FEATURED_LIST_ENDPOINTS.FEATURED_LIST_ITEMS(id),
         method: 'GET',
       }),
-      transformResponse: (res: FeaturedListItemsResponse) => res.data,
+      transformResponse: (res: any) => {
+        console.log('API Response in transform:', res);
+        return res?.items || [];
+      },
       providesTags: ['FeaturedList'],
     }),
 
@@ -329,8 +356,6 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-
-
     /* ================= BOOKMARKS ================= */
 
     getMyBookFeatured: builder.query<FeaturedBookmarksResponse, void>({
@@ -349,15 +374,12 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Mybookmark'],
     }),
 
-
     /* ================= PUBLISHED LISTS ================= */
 
     getMyPublishedLists: builder.query<PublishedListsResponse, void>({
       query: () => ({ url: PublishedLists.PUBLISHED_LISTS_GET, method: 'GET' }),
-      providesTags: ['PublishedList'], // ✅ matches
+      providesTags: ['PublishedList'],
     }),
-
-
 
     postCurrentPublishedList: builder.mutation({
       query: body => ({
@@ -377,7 +399,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     getSubCategories: builder.query<any, number | string>({
-      query: (categoryId) => ({
+      query: categoryId => ({
         url: SUB_CATEGORIES_ENDPOINT(categoryId),
         method: 'GET',
       }),
@@ -386,8 +408,6 @@ export const authApi = baseApi.injectEndpoints({
     getSubCategoryItems: builder.query<any, number | string>({
       query: subCategoryId => SUB_CATEGORY_ITEMS_ENDPOINT(subCategoryId),
     }),
-
-
   }),
 });
 
@@ -433,5 +453,5 @@ export const {
   usePostCurrentPublishedListMutation,
   useDeletePublishedListMutation,
   useGetSubCategoriesQuery,
-  useGetSubCategoryItemsQuery
+  useGetSubCategoryItemsQuery,
 } = authApi;

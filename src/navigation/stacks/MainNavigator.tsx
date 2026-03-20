@@ -2,18 +2,19 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../types/navigation';
 import { TabNavigator, DrawerNavigator } from '../index';
 import {
-
   Notification,
   Privacy,
   OfferDetail,
   Browsecat,
   AddCustomItem,
   Reorder,
-  Invitescreen,Publish,
-  Bookmark,
-  ListPublishedScreen
+  Invitescreen,
+  Publish,
+  Editprofile,
+  ListPublishedScreen,
+  FeaturedDetailScreen,
+  FeaturedLists,
 } from '../../screens/index';
-
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -32,10 +33,15 @@ export default function MainNavigator() {
       <Stack.Screen name="Addcustom" component={AddCustomItem} />
       <Stack.Screen name="Reorder" component={Reorder} />
       <Stack.Screen name="Invitescreen" component={Invitescreen} />
-       <Stack.Screen name="Publish" component={Publish} />
-       <Stack.Screen name="ListPublishedScreen" component={ListPublishedScreen} />
-       
-       {/* <Stack.Screen name="Bookmark" component={Bookmark} /> */}
+      <Stack.Screen name="Publish" component={Publish} />
+      <Stack.Screen
+        name="ListPublishedScreen"
+        component={ListPublishedScreen}
+      />
+      <Stack.Screen name="ProfileEdit" component={Editprofile} />
+      <Stack.Screen name="FeaturedDetail" component={FeaturedDetailScreen} />
+      <Stack.Screen name="Feature" component={FeaturedLists} />
+      {/* <Stack.Screen name="Bookmark" component={Bookmark} /> */}
     </Stack.Navigator>
   );
 }

@@ -9,13 +9,14 @@ import {
   TouchableOpacity,
   Modal,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import {
   responsiveScreenHeight as h,
   responsiveScreenWidth as w,
   responsiveScreenFontSize as f,
 } from 'react-native-responsive-dimensions';
-import AppHeader from '../../../components/ui/AppButton/AppHeader';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import {
   useGetMyBookFeaturedQuery,
   useDeleteMyBookFeaturedMutation,
@@ -26,15 +27,13 @@ export default function Mybookmark({ navigation }: any) {
   const { data, isLoading, refetch } = useGetMyBookFeaturedQuery();
   const [deleteMyBookFeatured] = useDeleteMyBookFeaturedMutation();
 
-  
-   useFocusEffect(
-      React.useCallback(() => {
-        refetch();
-        return () => {
-        };
-      }, [refetch])
-    );
-    
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+      return () => { };
+    }, [refetch])
+  );
+
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -81,23 +80,36 @@ export default function Mybookmark({ navigation }: any) {
     });
   }, [data?.data, searchText]);
 
+
   const renderItem = ({ item }: any) => (
     <View>
-      <View style={styles.card}>
-        <Image source={{ uri: item.image }} style={styles.image} />
+      <View style={styles.cardContainer}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('FeaturedDetail', { itemId: item.id })}
+          style={styles.cardTouchable}
+          activeOpacity={0.7}
+        >
+          <View style={styles.card}>
+            <Image source={{ uri: item.image }} style={styles.image} />
 
-        <View style={styles.textContainer}>
-          <Text style={styles.tag}>#{item.interest?.name}</Text>
-          <Text style={styles.title}>{item.title}</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.tag}>#{item.interest?.name}</Text>
+              <Text style={styles.title}>{item.title}</Text>
 
-          <View style={styles.row}>
-            <Text style={styles.author}>{item.status} items</Text>
-            <Text style={styles.dot}>•</Text>
-            <Text style={styles.category}>{item.category?.name}</Text>
+              <View style={styles.row}>
+                <Text style={styles.author}>{item.status} items</Text>
+                <Text style={styles.dot}>•</Text>
+                <Text style={styles.category}>{item.category?.name}</Text>
+              </View>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => openModal(item)}>
+        <TouchableOpacity
+          onPress={() => openModal(item)}
+          style={styles.moreButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Image
             source={require('../../../../assets/image/dots.png')}
             style={styles.moreIcon}
@@ -110,12 +122,23 @@ export default function Mybookmark({ navigation }: any) {
   );
 
   return (
-    <>
-      <AppHeader
-        title="My Bookmark"
-        onLeftPress={() => navigation.goBack()}
-        leftImage={require('../../../../assets/image/left-icon.png')}
-      />
+    <SafeAreaProvider>
+      <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
+
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
+
+      {/* Custom Header with Theme Color */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Image
+            source={require('../../../../assets/image/left-icon.png')}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Bookmark</Text>
+        <View style={styles.headerRight} />
+      </View>
+
       <View style={styles.container}>
         {/* Search -> only render when we have data */}
         {hasData && (
@@ -135,10 +158,10 @@ export default function Mybookmark({ navigation }: any) {
             />
           </View>
         )}
-
+        {console.log("Sumitra", filteredData)}
         {/* Loader */}
         {isLoading ? (
-          <ActivityIndicator size="large" color="#0180FE" style={{ flex: 1 }} />
+          <ActivityIndicator size="large" color="#2C3E50" style={{ flex: 1 }} />
         ) : (
           <FlatList
             data={filteredData}
@@ -154,6 +177,7 @@ export default function Mybookmark({ navigation }: any) {
                   source={require('../../../../assets/image/notificationnotfount.jpg')}
                   style={{ width: 300, height: 300, resizeMode: 'contain' }}
                 />
+
                 <Text
                   style={{
                     textAlign: 'center',
@@ -213,17 +237,59 @@ export default function Mybookmark({ navigation }: any) {
           </View>
         </Modal>
       </View>
-    </>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#2C3E50',
+    paddingHorizontal: w(4),
+    paddingVertical: h(1.5),
+  },
+  backButton: {
+    padding: w(1),
+  },
+  cardContainer: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardTouchable: {
+    flex: 1,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: w(1),
+  },
+  moreButton: {
+    padding: w(2),
+    marginLeft: w(2),
+    zIndex: 1,
+  },
+  backIcon: {
+    width: w(6),
+    height: w(6),
+    tintColor: '#FFFFFF',
+    resizeMode: 'contain',
+  },
+  headerTitle: {
+    fontSize: f(2.2),
+    fontWeight: '600',
+    color: '#FFFFFF',
+    fontFamily: 'Quicksand-Bold',
+  },
+  headerRight: {
+    width: w(6),
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    // paddingHorizontal: w(5),
   },
-
   searchBox: {
     height: h(6),
     borderRadius: h(3),
@@ -236,7 +302,6 @@ const styles = StyleSheet.create({
     marginBottom: h(2),
     marginTop: h(2),
   },
-
   searchIcon: {
     width: w(5),
     height: w(5),
@@ -244,39 +309,33 @@ const styles = StyleSheet.create({
     tintColor: '#9CA3AF',
     marginRight: w(2),
   },
-
   searchInput: {
     fontSize: f(2),
     flex: 1,
-    paddingVertical: 0, // keep vertical padding consistent on Android/iOS
+    paddingVertical: 0,
+    fontFamily: 'Quicksand-Regular',
   },
-
-  /* Card */
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: w(1),
   },
-
   image: {
     width: w(22),
     height: h(10),
     borderRadius: h(1),
   },
-
   textContainer: {
     flex: 1,
     marginLeft: w(4),
   },
-
   tag: {
-    color: '#0180FE',
+    color: '#2C3E50',
     fontSize: f(1.7),
     fontWeight: '600',
     fontFamily: 'Quicksand-Regular',
     marginBottom: h(0.2),
   },
-
   title: {
     fontSize: f(2),
     fontWeight: '700',
@@ -284,52 +343,43 @@ const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Bold',
     marginBottom: h(0.2),
   },
-
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   author: {
     color: '#6B7280',
-    fontFamily: 'Quicksand-light',
+    fontFamily: 'Quicksand-Light',
     marginBottom: h(0.2),
   },
-
   dot: {
     marginHorizontal: 6,
-    color: '#0180FE',
+    color: '#2C3E50',
     fontSize: f(2),
     fontWeight: '900',
   },
-
   category: {
     color: '#6B7280',
-    fontFamily: 'Quicksand-light',
+    fontFamily: 'Quicksand-Light',
     marginBottom: h(0.2),
   },
-
   moreIcon: {
     width: w(4.5),
     height: w(4.5),
     resizeMode: 'contain',
     tintColor: '#9CA3AF',
   },
-
   divider: {
     height: 1,
     backgroundColor: '#E5E7EB',
     marginVertical: h(1.5),
   },
-
-  /* Modal */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   modalBox: {
     width: w(80),
     backgroundColor: '#fff',
@@ -337,13 +387,11 @@ const styles = StyleSheet.create({
     padding: h(3),
     alignItems: 'center',
   },
-
   deleteIcon: {
     width: w(15),
     height: w(15),
     marginBottom: h(2),
   },
-
   modalTitle: {
     fontSize: f(2.2),
     fontWeight: '700',
@@ -353,43 +401,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Quicksand-Bold',
   },
-
   modalDesc: {
     fontSize: f(1.8),
     color: '#000000',
     textAlign: 'center',
     marginBottom: h(3),
     width: '100%',
-    fontFamily: 'Quicksand-light',
+    fontFamily: 'Quicksand-Light',
   },
-
   modalRow: {
     flexDirection: 'row',
   },
-
   keepBtn: {
     borderWidth: 1,
-    borderColor: '#00C4FA',
+    borderColor: '#2C3E50',
     paddingVertical: h(1.2),
     paddingHorizontal: w(6),
     borderRadius: h(3),
     marginRight: w(3),
   },
-
   keepText: {
-    color: '#00C4FA',
-    fontFamily: 'Quicksand-light',
+    color: '#2C3E50',
+    fontFamily: 'Quicksand-Regular',
   },
-
   deleteBtn: {
     backgroundColor: '#FF0000',
     paddingVertical: h(1.2),
     paddingHorizontal: w(6),
     borderRadius: h(3),
   },
-
   deleteText: {
     color: '#fff',
-    fontFamily: 'Quicksand-light',
+    fontFamily: 'Quicksand-Regular',
   },
 });

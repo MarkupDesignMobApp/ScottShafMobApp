@@ -11,6 +11,7 @@ const STATUS_BAR_HEIGHT =
 export const styles = StyleSheet.create({
   slide: {
     flex: 1,
+    backgroundColor: '#F8F9FA',
   },
 
   backgroundImage: {
@@ -29,38 +30,46 @@ export const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: responsiveScreenFontSize(3.5),
-
-    fontFamily: 'samsungsharpsans-medium',
+    fontSize: responsiveScreenFontSize(3.2),
+    fontFamily: 'Quicksand-Bold',
     textAlign: 'center',
-    color: '#000000',
-    position: 'absolute',
-    top: responsiveScreenHeight(-4),
+    color: '#2C3E50',
     width: responsiveScreenWidth(85),
+    marginBottom: responsiveScreenHeight(1.5),
   },
 
   description: {
-    fontSize: responsiveScreenFontSize(2.25),
-    fontFamily: 'Quickand-Regular',
+    fontSize: responsiveScreenFontSize(2),
+    fontFamily: 'Quicksand-Regular',
     textAlign: 'center',
-    paddingTop: responsiveScreenHeight(6),
-    color: '#8A8A8A',
+    color: '#4A5568',
     lineHeight: responsiveScreenHeight(3),
     width: responsiveScreenWidth(85),
   },
+
   imgcontainer: {
     height: responsiveScreenHeight(50),
     width: responsiveScreenWidth(100),
+    position: 'relative',
   },
+
   image: {
     height: '100%',
     width: '100%',
   },
+
   image2: {
     position: 'absolute',
     width: '100%',
     height: '100%',
   },
+
+  textContainer: {
+    alignItems: 'center',
+    paddingHorizontal: responsiveScreenWidth(5),
+    marginTop: responsiveScreenHeight(2),
+  },
+
   buttonContainer: {
     paddingHorizontal: responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(1),
@@ -68,17 +77,20 @@ export const styles = StyleSheet.create({
     width: '100%',
     bottom: responsiveScreenHeight(15),
   },
+
   bottomtxt: {
     textAlign: 'center',
     paddingTop: responsiveScreenHeight(2),
-    color: '#00C4FA',
-    fontFamily: 'Quicksand-Regular',
+    color: '#2C3E50',
+    fontFamily: 'Quicksand-Medium',
     fontSize: responsiveScreenFontSize(2.15),
+    textDecorationLine: 'underline',
+    textDecorationColor: '#2C3E50',
   },
 
   paginationContainer: {
     position: 'absolute',
-    bottom: 90, // above button
+    bottom: responsiveScreenHeight(20),
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -92,12 +104,12 @@ export const styles = StyleSheet.create({
   },
 
   activeDot: {
-    width: responsiveScreenWidth(8),
-    backgroundColor: '#FF04D7', // iOS blue / primary
+    width: responsiveScreenWidth(6),
+    backgroundColor: '#2C3E50',
   },
 
   inactiveDot: {
-    width: responsiveScreenWidth(2),
-    backgroundColor: '#D1D5DB', // light gray
+    width: responsiveScreenWidth(2.5),
+    backgroundColor: '#E2E8F0',
   },
 });

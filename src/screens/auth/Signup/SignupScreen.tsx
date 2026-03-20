@@ -90,13 +90,14 @@ export default function SignupScreen() {
       <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 20}
         >
           <ScrollView
-            scrollEnabled={keyboardOpen}
+            scrollEnabled={true}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
           >
             <Loader visible={isLoading} color="#2C3E50" />
 

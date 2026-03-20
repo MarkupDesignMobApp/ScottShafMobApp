@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StatusBar, StyleSheet, ScrollView, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   responsiveScreenWidth,
   responsiveScreenHeight,
@@ -10,25 +10,27 @@ import Recommend from './Recommend';
 
 export default function Recommend_Screen() {
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      {/* STATUS BAR */}
-      <StatusBar barStyle="light-content" backgroundColor="#2C3E50" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        {/* STATUS BAR */}
 
-      {/* HEADER */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Recommended For You</Text>
-      </View>
 
-      {/* CONTENT */}
-      <ScrollView
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.contentCard}>
-          <Recommend />
+        {/* HEADER */}
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTitle}>Recommended For You</Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        <StatusBar barStyle="dark-content" backgroundColor="#2C3E50" translucent />
+        {/* CONTENT */}
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.contentCard}>
+            <Recommend />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -56,7 +58,7 @@ const styles = StyleSheet.create({
 
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: responsiveScreenFontSize(2.5),
+    fontSize: responsiveScreenFontSize(2),
     fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 0.3,

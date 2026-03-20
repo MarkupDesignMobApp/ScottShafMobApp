@@ -19,14 +19,16 @@ import {
   NestableDraggableFlatList,
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
-import AppHeader from '../../../components/ui/AppButton/AppHeader';
-import { AppButton } from '../../../components/ui/AppButton/AppButton';
+import { KeyboardAvoidingView } from 'react-native';
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
-import { useGetCatalogItemsOfListQuery, useAddCatalogItemsMutation } from '../../../features/auth/authApi';
+import {
+  useGetCatalogItemsOfListQuery,
+  useAddCatalogItemsMutation,
+} from '../../../features/auth/authApi';
 import { useFocusEffect } from '@react-navigation/native';
 
 type ListItem = {
@@ -38,7 +40,6 @@ type ListItem = {
   description: string | null;
   image_url?: string | null;
 };
-
 
 export default function CreateListScreen({ navigation, route }: any) {
   const { listId } = route.params;
@@ -58,7 +59,7 @@ export default function CreateListScreen({ navigation, route }: any) {
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export default function CreateListScreen({ navigation, route }: any) {
     }
   }, [data]);
 
-  /** ✅ BULLETPROOF RENDER ITEM */
+  /** BULLETPROOF RENDER ITEM */
   const renderItem = useCallback(
     ({ item, drag, isActive, index }: RenderItemParams<ListItem>) => {
       const safeIndex =
@@ -84,7 +85,7 @@ export default function CreateListScreen({ navigation, route }: any) {
           style={[styles.card, isActive && styles.cardActive]}
         >
           {/* Index */}
-          <View style={styles.countwrap}>
+          <View style={[styles.countwrap, isActive && styles.countwrapActive]}>
             <Text style={styles.countxt}>
               {safeIndex >= 0 ? safeIndex + 1 : ''}
             </Text>
@@ -93,7 +94,7 @@ export default function CreateListScreen({ navigation, route }: any) {
           {/* Image */}
           <View style={styles.image}>
             <Image
-              resizeMode="contain"
+              resizeMode="cover"
               source={
                 item.image_url
                   ? { uri: item.image_url }
@@ -105,31 +106,31 @@ export default function CreateListScreen({ navigation, route }: any) {
 
           {/* Content */}
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{item.name}</Text>
-            <Text style={styles.desc}>
+            <Text style={[styles.title, isActive && styles.titleActive]}>
+              {item.name}
+            </Text>
+            <Text style={styles.desc} numberOfLines={2}>
               {item.description || item.category || 'No description'}
             </Text>
           </View>
 
           {/* Drag Icon */}
-          <View style={{ position: 'absolute', right: 10, top: '40%' }}>
+          <View style={styles.dragIconContainer}>
             <Image
-              style={{ width: 20, height: 20 }}
+              style={styles.dragIcon}
               source={require('../../../../assets/image/dots.png')}
+              tintColor={isActive ? '#FFFFFF' : '#2C3E50'}
             />
           </View>
         </TouchableOpacity>
       );
     },
-    [items]
+    [items],
   );
 
-  const handleDragEnd = useCallback(
-    ({ data }: { data: ListItem[] }) => {
-      setItems(data);
-    },
-    []
-  );
+  const handleDragEnd = useCallback(({ data }: { data: ListItem[] }) => {
+    setItems(data);
+  }, []);
 
   const handleDone = async () => {
     try {
@@ -140,7 +141,7 @@ export default function CreateListScreen({ navigation, route }: any) {
     }
   };
 
-  // --------- Add Item modal logic ----------
+  // Add Item modal logic
   const handleAddItem = async () => {
     if (!newItemName.trim()) {
       Alert.alert('Required', 'Item name is required');
@@ -154,7 +155,6 @@ export default function CreateListScreen({ navigation, route }: any) {
         custom_text: newItemDescription.trim(),
       }).unwrap();
 
-      // Support various API shapes
       if (res?.success || res?.status === 'success' || res?.id) {
         Alert.alert('Success', 'Item added successfully.');
         setModalVisible(false);
@@ -171,188 +171,335 @@ export default function CreateListScreen({ navigation, route }: any) {
       }
     } catch (err: any) {
       console.warn('Add item error', err);
-      Alert.alert('Error', err?.data?.message || err?.error || 'Something went wrong');
+      Alert.alert(
+        'Error',
+        err?.data?.message || err?.error || 'Something went wrong',
+      );
     }
   };
 
   return (
-    <>
-      <AppHeader
-        title="Reorder Items"
-        onLeftPress={() => navigation.goBack()}
-        leftImage={require('../../../../assets/image/left-icon.png')}
-        rightImage={require('../../../../assets/image/plus.png')}
-        onRightPress={() => setModalVisible(true)}
-      />
+    <View style={styles.mainContainer}>
+      <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-        {/* Info Box */}
-        <View
-          style={{
-            paddingHorizontal: responsiveScreenWidth(3),
-            backgroundColor: '#FFFBFE',
-            borderWidth: 1.5,
-            borderColor: '#FF04D7',
-            borderRadius: responsiveScreenWidth(2),
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginHorizontal: responsiveScreenWidth(4),
-            marginVertical: responsiveScreenHeight(2),
-          }}
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.headerLeft}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
         >
-          <View style={styles.iconcontainer}>
+          <Image
+            source={require('../../../../assets/image/left-icon.png')}
+            style={styles.headerIcon}
+            tintColor="#FFFFFF"
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Reorder Items</Text>
+        <TouchableOpacity
+          style={styles.headerRight}
+          onPress={() => setModalVisible(true)}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require('../../../../assets/image/plus.png')}
+            style={styles.headerIcon}
+            tintColor="#FFFFFF"
+          />
+        </TouchableOpacity>
+      </View>
+
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F9FA' }}>
+        {/* Info Box */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoIconContainer}>
             <Image
               resizeMode="contain"
               source={require('../../../../assets/image/info.png')}
-              style={styles.icon2}
+              style={styles.infoIcon}
+              tintColor="#2C3E50"
             />
           </View>
-          <Text style={styles.switchtxt}>
-            Hold to drag items to reorder your list. Rankings update automatically.
+          <Text style={styles.infoText}>
+            Hold and drag items to reorder your list. Rankings update
+            automatically.
           </Text>
         </View>
 
         {isLoading ? (
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator size="large" />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2C3E50" />
           </View>
         ) : (
           <>
-            {/* ✅ FIXED SCROLL + DRAG */}
             <NestableScrollContainer style={{ flex: 1 }}>
               <NestableDraggableFlatList
                 data={items}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={item => item.id.toString()}
                 renderItem={renderItem}
                 onDragEnd={handleDragEnd}
-
-                /** SCROLL FIX */
                 scrollEnabled
                 activationDistance={20}
-
-                /** CUTTING FIX */
                 removeClippedSubviews={false}
                 dragItemOverflow={false}
-
                 autoscrollThreshold={80}
                 autoscrollSpeed={60}
-
-                contentContainerStyle={{
-                  paddingTop: responsiveScreenHeight(2),
-                  marginHorizontal: responsiveScreenWidth(4),
-                }}
+                contentContainerStyle={styles.listContainer}
               />
-              {/* Add More Button */}
-        <TouchableOpacity
-          style={styles.addMoreButton}
-          onPress={() => setModalVisible(true)}
-        >
-          <Image
-            style={styles.addMoreIcon}
-            resizeMode="contain"
-            source={require('../../../../assets/image/plus.png')}
-          />
-          <Text style={styles.addMoreText}>Add More</Text>
-        </TouchableOpacity>
 
+              {/* Add More Button */}
+              <TouchableOpacity
+                style={styles.addMoreButton}
+                onPress={() => setModalVisible(true)}
+                activeOpacity={0.7}
+              >
+                <Image
+                  style={styles.addMoreIcon}
+                  resizeMode="contain"
+                  source={require('../../../../assets/image/plus.png')}
+                  tintColor="#2C3E50"
+                />
+                <Text style={styles.addMoreText}>Add More Items</Text>
+              </TouchableOpacity>
             </NestableScrollContainer>
 
             {/* Footer */}
             <View style={styles.footer}>
-              <AppButton
-                title={isSaving ? 'Saving...' : 'Done'}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[
+                  styles.doneButton,
+                  isSaving && styles.doneButtonDisabled,
+                ]}
                 onPress={handleDone}
                 disabled={isSaving}
-              />
-              {Platform.OS === 'android' && (
-                <View style={{ height: responsiveScreenHeight(1) }} />
-              )}
+              >
+                {isSaving ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.doneButtonText}>Done</Text>
+                )}
+              </TouchableOpacity>
             </View>
           </>
         )}
 
-        {/* ---------- Add Item Modal ---------- */}
+        {/* Add Item Modal */}
         <Modal
           animationType="slide"
           transparent={true}
           visible={modalVisible}
+          statusBarTranslucent={true}
           onRequestClose={() => setModalVisible(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Add New Item</Text>
-                  <TouchableOpacity
-                    onPress={() => setModalVisible(false)}
-                    style={styles.closeButton}
-                  >
-                    <Text style={styles.closeButtonText}>✕</Text>
-                  </TouchableOpacity>
-                </View>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ justifyContent: 'flex-end' }}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+            >
+              <View style={styles.modalContainer}>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{ flexGrow: 1 }}
+                >
+                  {/* Modal Header */}
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Add New Item</Text>
+                    <TouchableOpacity
+                      onPress={() => setModalVisible(false)}
+                      style={styles.modalCloseButton}
+                    >
+                      <Text style={styles.modalCloseText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
 
-                {/* Item Name Input */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Item Name</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter item name"
-                    placeholderTextColor="#999"
-                    value={newItemName}
-                    onChangeText={setNewItemName}
-                  />
-                </View>
+                  {/* Item Name Input */}
+                  <View style={styles.modalInputWrapper}>
+                    <Text style={styles.modalInputLabel}>
+                      Item Name <Text style={styles.requiredStar}>*</Text>
+                    </Text>
+                    <View style={styles.modalInputContainer}>
+                      <TextInput
+                        style={styles.modalInput}
+                        placeholder="Enter item name"
+                        placeholderTextColor="#A0A0A0"
+                        value={newItemName}
+                        onChangeText={setNewItemName}
+                      />
+                    </View>
+                  </View>
 
-                {/* Item Description Input */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Description</Text>
-                  <TextInput
-                    style={[styles.input, styles.textArea]}
-                    placeholder="Enter description (optional)"
-                    placeholderTextColor="#999"
-                    value={newItemDescription}
-                    onChangeText={setNewItemDescription}
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                  />
-                </View>
+                  {/* Item Description Input */}
+                  <View style={styles.modalInputWrapper}>
+                    <Text style={styles.modalInputLabel}>
+                      Description (Optional)
+                    </Text>
+                    <View
+                      style={[
+                        styles.modalInputContainer,
+                        styles.modalTextAreaContainer,
+                      ]}
+                    >
+                      <TextInput
+                        style={[styles.modalInput, styles.modalTextArea]}
+                        placeholder="Enter description"
+                        placeholderTextColor="#A0A0A0"
+                        value={newItemDescription}
+                        onChangeText={setNewItemDescription}
+                        multiline
+                        numberOfLines={4}
+                        textAlignVertical="top"
+                      />
+                    </View>
+                  </View>
 
-                {/* Save Button */}
-                <View style={styles.modalButtonContainer}>
-                  <AppButton
-                    title={isAdding ? 'Saving...' : 'Save Item'}
-                    onPress={handleAddItem}
-                    disabled={isAdding}
-                  />
-                </View>
-              </ScrollView>
-            </View>
+                  {/* Save Button */}
+                  <View style={styles.modalButtonContainer}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={[
+                        styles.modalSaveButton,
+                        (isAdding || !newItemName.trim()) &&
+                        styles.modalSaveButtonDisabled,
+                      ]}
+                      onPress={handleAddItem}
+                      disabled={isAdding || !newItemName.trim()}
+                    >
+                      {isAdding ? (
+                        <ActivityIndicator color="#FFFFFF" size="small" />
+                      ) : (
+                        <Text style={styles.modalSaveButtonText}>Add Item</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </View>
+            </KeyboardAvoidingView>
           </View>
         </Modal>
       </SafeAreaView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#2C3E50',
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(2),
+  },
+  headerLeft: {
+    width: responsiveScreenHeight(3),
+    height: responsiveScreenHeight(3),
+    justifyContent: 'center',
+  },
+  headerRight: {
+    width: responsiveScreenHeight(3),
+    height: responsiveScreenHeight(3),
+    justifyContent: 'center',
+  },
+  headerIcon: {
+    width: '100%',
+    height: '100%',
+    tintColor: '#FFFFFF',
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: responsiveScreenFontSize(2.2),
+    fontWeight: '600',
+    fontFamily: 'Quicksand-Bold',
+  },
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F4F8',
+    borderWidth: 1.5,
+    borderColor: '#2C3E50',
+    borderRadius: responsiveScreenWidth(3),
+    marginHorizontal: responsiveScreenWidth(4),
+    marginVertical: responsiveScreenHeight(2),
+    padding: responsiveScreenWidth(3),
+    shadowColor: '#2C3E50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  infoIconContainer: {
+    width: responsiveScreenWidth(6),
+    height: responsiveScreenHeight(3),
+    marginRight: responsiveScreenWidth(2),
+  },
+  infoIcon: {
+    width: '100%',
+    height: '100%',
+    tintColor: '#2C3E50',
+  },
+  infoText: {
+    flex: 1,
+    fontFamily: 'Quicksand-Regular',
+    fontSize: responsiveScreenFontSize(1.5),
+    color: '#4A5568',
+    lineHeight: responsiveScreenHeight(2.2),
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContainer: {
+    paddingTop: responsiveScreenHeight(1),
+    paddingHorizontal: responsiveScreenWidth(4),
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: responsiveScreenHeight(2),
+    backgroundColor: '#FFFFFF',
+    paddingVertical: responsiveScreenHeight(1.5),
+    paddingHorizontal: responsiveScreenWidth(3),
     borderRadius: 12,
-    marginBottom: responsiveScreenHeight(2),
-    borderWidth: 1,
-    borderColor: '#C5C5C5',
-    paddingHorizontal: responsiveScreenWidth(1.5),
+    marginBottom: responsiveScreenHeight(1.5),
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   cardActive: {
-    backgroundColor: '#ECF6FF',
-    borderColor: '#0180FE',
+    backgroundColor: '#2C3E50',
+    borderColor: '#2C3E50',
+    shadowColor: '#2C3E50',
+    shadowOpacity: 0.2,
+    elevation: 4,
+  },
+  countwrap: {
+    height: responsiveScreenWidth(7),
+    width: responsiveScreenWidth(7),
+    borderRadius: responsiveScreenWidth(3.5),
+    marginRight: responsiveScreenWidth(2),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2C3E50',
+  },
+  countwrapActive: {
+    backgroundColor: '#FFFFFF',
+  },
+  countxt: {
+    color: '#FFFFFF',
+    fontFamily: 'Quicksand-Bold',
+    fontSize: responsiveScreenFontSize(1.6),
   },
   image: {
     width: responsiveScreenWidth(12),
@@ -360,81 +507,97 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 12,
     overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
   },
   title: {
     fontSize: responsiveScreenFontSize(1.85),
-    fontFamily: 'Quicksand-Regular',
-    color: '#000',
-    fontWeight: '500',
+    fontFamily: 'Quicksand-Bold',
+    color: '#2C3E50',
+    fontWeight: '600',
+    marginBottom: responsiveScreenHeight(0.3),
+  },
+  titleActive: {
+    color: '#FFFFFF',
   },
   desc: {
-    fontSize: responsiveScreenFontSize(1.75),
-    color: '#777',
-    marginTop: responsiveScreenHeight(1),
+    fontSize: responsiveScreenFontSize(1.6),
+    color: '#718096',
     fontFamily: 'Quicksand-Regular',
+    lineHeight: responsiveScreenHeight(2.1),
   },
-  footer: {
-    paddingHorizontal: responsiveScreenWidth(4),
-    paddingVertical: responsiveScreenHeight(4),
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    backgroundColor: '#fff',
+  dragIconContainer: {
+    position: 'absolute',
+    right: 10,
+    top: '40%',
   },
-  countxt: {
-    color: '#fff',
-    fontFamily: 'Ubuntu-Regular',
+  dragIcon: {
+    width: 20,
+    height: 20,
   },
-  countwrap: {
-    height: responsiveScreenWidth(8),
-    width: responsiveScreenWidth(8),
-    borderRadius: responsiveScreenWidth(4),
-    marginRight: responsiveScreenWidth(2),
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0180FE',
-  },
-  switchtxt: {
-    fontFamily: 'samsungsharpsans-medium',
-    fontSize: responsiveScreenFontSize(1.5),
-    letterSpacing: 0.5,
-    color: '#FF04D7',
-    paddingVertical: responsiveScreenHeight(1),
-    paddingHorizontal: responsiveScreenWidth(4),
-    lineHeight: responsiveScreenHeight(2.25),
-  },
-  icon2: {
-    width: '100%',
-    height: '100%',
-  },
-  iconcontainer: {
-    width: responsiveScreenWidth(4),
-    height: responsiveScreenHeight(3),
-  },
-  // Add / modal styles (kept same as requested)
   addMoreButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     paddingVertical: responsiveScreenHeight(2),
     borderRadius: 12,
     marginBottom: responsiveScreenHeight(2),
-    borderWidth: 1.5,
-    borderColor: '#0180FE',
-    borderStyle: 'dashed',
     marginHorizontal: responsiveScreenWidth(4),
+    borderWidth: 1.5,
+    borderColor: '#2C3E50',
+    borderStyle: 'dashed',
+    shadowColor: '#2C3E50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   addMoreIcon: {
     width: responsiveScreenWidth(5),
     height: responsiveScreenWidth(5),
     marginRight: responsiveScreenWidth(2),
-    tintColor: '#0180FE',
+    tintColor: '#2C3E50',
   },
   addMoreText: {
     fontSize: responsiveScreenFontSize(1.85),
-    fontFamily: 'Quicksand-Regular',
-    color: '#0180FE',
+    fontFamily: 'Quicksand-Bold',
+    color: '#2C3E50',
     fontWeight: '600',
+  },
+  footer: {
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(2),
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 10,
+  },
+  doneButton: {
+    backgroundColor: '#2C3E50',
+    borderRadius: responsiveScreenWidth(3),
+    paddingVertical: responsiveScreenHeight(1.8),
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#2C3E50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  doneButtonDisabled: {
+    backgroundColor: '#A0A0A0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  doneButtonText: {
+    color: '#FFFFFF',
+    fontSize: responsiveScreenFontSize(1.9),
+    fontWeight: '600',
+    fontFamily: 'Quicksand-Bold',
   },
   modalOverlay: {
     flex: 1,
@@ -442,10 +605,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: responsiveScreenWidth(5),
     borderTopRightRadius: responsiveScreenWidth(5),
-    paddingHorizontal: responsiveScreenWidth(4),
+    paddingHorizontal: responsiveScreenWidth(5),
     paddingTop: responsiveScreenHeight(3),
     paddingBottom: responsiveScreenHeight(4),
     maxHeight: responsiveScreenHeight(70),
@@ -457,12 +620,12 @@ const styles = StyleSheet.create({
     marginBottom: responsiveScreenHeight(3),
   },
   modalTitle: {
-    fontSize: responsiveScreenFontSize(2.5),
-    fontFamily: 'Quicksand-Regular',
-    color: '#000',
+    fontSize: responsiveScreenFontSize(2.2),
+    fontFamily: 'Quicksand-Bold',
+    color: '#2C3E50',
     fontWeight: '600',
   },
-  closeButton: {
+  modalCloseButton: {
     width: responsiveScreenWidth(8),
     height: responsiveScreenWidth(8),
     borderRadius: responsiveScreenWidth(4),
@@ -470,37 +633,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeButtonText: {
-    fontSize: responsiveScreenFontSize(2.5),
+  modalCloseText: {
+    fontSize: responsiveScreenFontSize(2),
     color: '#666',
     fontWeight: '400',
   },
-  inputContainer: {
+  modalInputWrapper: {
     marginBottom: responsiveScreenHeight(2.5),
   },
-  inputLabel: {
-    fontSize: responsiveScreenFontSize(1.75),
+  modalInputLabel: {
+    fontSize: responsiveScreenFontSize(1.7),
     fontFamily: 'Quicksand-Regular',
-    color: '#000',
-    fontWeight: '500',
-    marginBottom: responsiveScreenHeight(1),
+    color: '#4A5568',
+    marginBottom: responsiveScreenHeight(0.8),
   },
-  input: {
-    backgroundColor: '#F9F9F9',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: responsiveScreenWidth(4),
-    paddingVertical: responsiveScreenHeight(1.5),
-    fontSize: responsiveScreenFontSize(1.75),
+  requiredStar: {
+    color: '#E53E3E',
+  },
+  modalInputContainer: {
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: responsiveScreenWidth(3),
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: responsiveScreenWidth(3),
+    minHeight: responsiveScreenHeight(6),
+    justifyContent: 'center',
+  },
+  modalTextAreaContainer: {
+    minHeight: responsiveScreenHeight(12),
+    paddingVertical: responsiveScreenHeight(1),
+  },
+  modalInput: {
+    fontSize: responsiveScreenFontSize(1.7),
+    color: '#1A202C',
     fontFamily: 'Quicksand-Regular',
-    color: '#000',
+    padding: 0,
   },
-  textArea: {
-    height: responsiveScreenHeight(12),
-    paddingTop: responsiveScreenHeight(1.5),
+  modalTextArea: {
+    height: responsiveScreenHeight(10),
+    textAlignVertical: 'top',
   },
   modalButtonContainer: {
     marginTop: responsiveScreenHeight(2),
+    marginBottom: responsiveScreenHeight(2),
+  },
+  modalSaveButton: {
+    backgroundColor: '#2C3E50',
+    borderRadius: responsiveScreenWidth(3),
+    paddingVertical: responsiveScreenHeight(1.8),
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#2C3E50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  modalSaveButtonDisabled: {
+    backgroundColor: '#A0A0A0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  modalSaveButtonText: {
+    color: '#FFFFFF',
+    fontSize: responsiveScreenFontSize(1.8),
+    fontWeight: '600',
+    fontFamily: 'Quicksand-Bold',
   },
 });

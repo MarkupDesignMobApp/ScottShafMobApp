@@ -43,10 +43,7 @@ export default function OptimizedFlatList({ interestId }) {
     [refetch],
   );
 
-  const keyExtractor = React.useCallback(
-    item => item.id.toString(),
-    [],
-  );
+  const keyExtractor = React.useCallback(item => item.id.toString(), []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -62,12 +59,9 @@ export default function OptimizedFlatList({ interestId }) {
       keyExtractor={keyExtractor}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.listContainer}
-
       ItemSeparatorComponent={() => <View style={{ width: 14 }} />}
-
       snapToInterval={responsiveScreenWidth(75) + 14}
       decelerationRate="fast"
-
       initialNumToRender={5}
       maxToRenderPerBatch={5}
       windowSize={5}
@@ -80,7 +74,6 @@ export default function OptimizedFlatList({ interestId }) {
 
 const Row = React.memo(
   ({ item, refetch }: { item: FeaturedListSummary; refetch: () => void }) => {
-
     const navigation =
       useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
@@ -140,8 +133,11 @@ const Row = React.memo(
 
     /* NAVIGATION */
 
+    /* NAVIGATION */
+
     const onPressCard = () => {
-      navigation.navigate('FeaturedDetail', { item });
+      // Pass the item ID instead of the whole item object
+      navigation.navigate('FeaturedDetail', { itemId: item.id });
     };
 
     return (
@@ -157,9 +153,7 @@ const Row = React.memo(
         {/* BODY */}
 
         <View style={styles.cardBody}>
-
           <View style={styles.titleRow}>
-
             <Image
               style={styles.categoryIcon}
               source={require('../../../../assets/image/cofeeshop.png')}
@@ -174,13 +168,11 @@ const Row = React.memo(
                 {item.category?.name} · {item.category?.interest?.name}
               </Text>
             </View>
-
           </View>
 
           {/* ACTIONS */}
 
           <View style={styles.actionsRow}>
-
             <ActionButton
               icon={item.is_liked ? icons.heartFilled : icons.heartOutline}
               value={formatCount(item.likes_count)}
@@ -200,9 +192,7 @@ const Row = React.memo(
               value={formatCount(item.shares_count)}
               onPress={onSharePress}
             />
-
           </View>
-
         </View>
       </Pressable>
     );

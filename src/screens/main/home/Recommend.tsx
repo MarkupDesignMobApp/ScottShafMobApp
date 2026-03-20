@@ -46,7 +46,7 @@ export default function Recommend() {
     if (!data) return;
 
     const rawList = Array.isArray(data) ? data : data?.data ?? [];
-
+    console.log("Raja", rawList)
     const mapped = rawList.map(apiItem => {
       const items = (apiItem.items || [])
         .map((it, index) => {
@@ -190,9 +190,9 @@ function PostCard({ item, onLikePress, onSharePress }) {
           />
         </Pressable>
 
-        <Pressable onPress={() => onSharePress(item.id, item.title)}>
+        {/* <Pressable onPress={() => onSharePress(item.id, item.title)}>
           <ActionButton icon={icons.shareOutline} value="Share" />
-        </Pressable>
+        </Pressable> */}
       </View>
     </View>
   );
