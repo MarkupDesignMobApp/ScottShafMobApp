@@ -6,7 +6,6 @@ import {
   Image,
   StatusBar,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Platform,
   Modal,
@@ -20,6 +19,7 @@ import {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import { KeyboardAvoidingView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   responsiveScreenFontSize,
   responsiveScreenHeight,
@@ -28,6 +28,7 @@ import {
 import {
   useGetCatalogItemsOfListQuery,
   useAddCatalogItemsMutation,
+  useReorderListItemsMutation,
 } from '../../../features/auth/authApi';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -46,6 +47,7 @@ export default function CreateListScreen({ navigation, route }: any) {
 
   const [items, setItems] = useState<ListItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
 
   // modal & inputs
   const [modalVisible, setModalVisible] = useState(false);
@@ -55,6 +57,7 @@ export default function CreateListScreen({ navigation, route }: any) {
   // api hooks
   const { data, isLoading, refetch } = useGetCatalogItemsOfListQuery(listId);
   const [addListItem, { isLoading: isAdding }] = useAddCatalogItemsMutation();
+  const [reorderItems] = useReorderListItemsMutation();
 
   useFocusEffect(
     useCallback(() => {
@@ -128,9 +131,60 @@ export default function CreateListScreen({ navigation, route }: any) {
     [items],
   );
 
-  const handleDragEnd = useCallback(({ data }: { data: ListItem[] }) => {
-    setItems(data);
-  }, []);
+  const handleDragEnd = useCallback(
+    async ({ data, from, to }: { data: ListItem[]; from: number; to: number }) => {
+      console.log(`\n🏁 Drag ended in CreateListScreen - From index: ${from}, To index: ${to}`);
+      
+      // Check if position actually changed
+      if (from === to) {
+        console.log('⚠️ No position change detected');
+        return;
+      }
+
+      const previousItems = [...items];
+      
+      // Update UI immediately
+      setItems(data);
+
+      // Prepare payload with new positions (1-based indexing)
+      const itemsPayload = data.map((item, index) => ({
+        id: Number(item.id),
+        position: index + 1,
+      }));
+
+      console.log('🚀 Sending reorder payload from CreateListScreen:', JSON.stringify(itemsPayload, null, 2));
+
+      try {
+        setIsReordering(true);
+        
+        // Call reorder API
+        const result = await reorderItems({
+          listId: Number(listId),
+          items: itemsPayload,
+        }).unwrap();
+
+        console.log('✅ Reorder API success in CreateListScreen:', result);
+        
+        // Refetch to get updated data from server
+        await refetch();
+        console.log('✅ Refetch completed in CreateListScreen');
+        
+      } catch (error: any) {
+        console.error('❌ Reorder failed in CreateListScreen:', error);
+        
+        Alert.alert(
+          'Reorder Failed',
+          error?.data?.message || error?.message || 'Failed to reorder items',
+        );
+        
+        // Rollback to previous order
+        setItems(previousItems);
+      } finally {
+        setIsReordering(false);
+      }
+    },
+    [items, listId, reorderItems, refetch],
+  );
 
   const handleDone = async () => {
     try {
@@ -179,9 +233,8 @@ export default function CreateListScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.mainContainer}>
+    <SafeAreaView style={styles.mainContainer}>
       <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
 
       {/* Custom Header */}
       <View style={styles.header}>
@@ -226,6 +279,14 @@ export default function CreateListScreen({ navigation, route }: any) {
             automatically.
           </Text>
         </View>
+
+        {/* Reordering Indicator */}
+        {isReordering && (
+          <View style={styles.reorderingBar}>
+            <ActivityIndicator size="small" color="#2C3E50" />
+            <Text style={styles.reorderingText}>Saving order...</Text>
+          </View>
+        )}
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -363,7 +424,7 @@ export default function CreateListScreen({ navigation, route }: any) {
                       style={[
                         styles.modalSaveButton,
                         (isAdding || !newItemName.trim()) &&
-                        styles.modalSaveButtonDisabled,
+                          styles.modalSaveButtonDisabled,
                       ]}
                       onPress={handleAddItem}
                       disabled={isAdding || !newItemName.trim()}
@@ -381,14 +442,14 @@ export default function CreateListScreen({ navigation, route }: any) {
           </View>
         </Modal>
       </SafeAreaView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#FFFF',
   },
   header: {
     flexDirection: 'row',
@@ -451,6 +512,22 @@ const styles = StyleSheet.create({
     fontSize: responsiveScreenFontSize(1.5),
     color: '#4A5568',
     lineHeight: responsiveScreenHeight(2.2),
+  },
+  reorderingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    paddingVertical: 7,
+    marginHorizontal: responsiveScreenWidth(4),
+    marginBottom: responsiveScreenHeight(1),
+  },
+  reorderingText: {
+    fontSize: responsiveScreenFontSize(1.5),
+    color: '#2C3E50',
+    fontFamily: 'Quicksand-SemiBold',
   },
   loadingContainer: {
     flex: 1,

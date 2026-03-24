@@ -11,6 +11,8 @@ export const AUTH_ENDPOINTS = {
   SAVE_USER: '/scott-shafer/api/user_profile',
   UPDATE_PROFILE: '/scott-shafer/api/update_profile',
   GET_PROFILE: '/scott-shafer/api/profile',
+  REMOVE_PROFILE_PHOTO: '/scott-shafer/api/remove_profile',
+  DELETE_ACCOUNT: '/scott-shafer/api/account/delete',
 } as const;
 
 export const FEATURED_LIST_ENDPOINTS = {
@@ -28,7 +30,9 @@ export const FEATURED_LIST_ENDPOINTS = {
 
 export const LIST_ENDPOINTS = {
   CREATE_LIST: '/scott-shafer/api/lists',
-  // ✅ ADD ITEM TO LIST
+  GET_LISTS: '/scott-shafer/api/lists',
+  REORDER_LIST_ITEMS: (listId: number | string) =>
+    `/scott-shafer/api/lists/${listId}/items/reorder`,
   ADD_LIST_ITEM: (listId: number | string) =>
     `/scott-shafer/api/lists/${listId}/items`,
 } as const;
@@ -86,7 +90,8 @@ export const SHARE_LIST_ENDPOINT = (listId: number | string) =>
 export const PublishedLists = {
   PUBLISHED_LISTS_GET: '/scott-shafer/api/all-published-list',
   CURRENT_PUBLISHED_LIST_POST: '/scott-shafer/api/current-published-list',
-  DELETE_PUBLISHED_LIST: (id: number | string) => `/scott-shafer/api/delete/list/${id}`,
+  DELETE_PUBLISHED_LIST: (id: number | string) =>
+    `/scott-shafer/api/delete/list/${id}`,
 } as const;
 
 export const SUB_CATEGORIES_ENDPOINT = (categoryId: number | string) =>

@@ -36,6 +36,7 @@ import {
   Campaign,
   CatalogItemsPublishList,
   FeaturedBookmarksResponse,
+  DeleteAccountResponse, // Add this type
 } from './authTypes';
 
 import {
@@ -140,7 +141,18 @@ export const authApi = baseApi.injectEndpoints({
 
     getUserProfile: builder.query<ProfileResponse, void>({
       query: () => ({ url: AUTH_ENDPOINTS.GET_PROFILE, method: 'GET' }),
-      providesTags: ['Profile'], // ✅ ADD THIS
+      providesTags: ['Profile'],
+    }),
+
+    removeProfilePhoto: builder.mutation<
+      { code: number; message: string },
+      void
+    >({
+      query: () => ({
+        url: AUTH_ENDPOINTS.REMOVE_PROFILE_PHOTO,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Profile'],
     }),
 
     updateUserProfile: builder.mutation<UpdateProfileResponse, FormData>({
@@ -150,7 +162,7 @@ export const authApi = baseApi.injectEndpoints({
         body: formData,
         formData: true,
       }),
-      invalidatesTags: ['Profile'], // ✅ ADD THIS
+      invalidatesTags: ['Profile'],
     }),
 
     saveUserProfile: builder.mutation<UserProfileResponse, UserProfileRequest>({
@@ -159,6 +171,15 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
+    }),
+
+    // ✅ ADD DELETE ACCOUNT MUTATION
+    deleteAccount: builder.mutation<DeleteAccountResponse, void>({
+      query: () => ({
+        url: AUTH_ENDPOINTS.DELETE_ACCOUNT,
+        method: 'DELETE', // or 'POST' based on your API
+      }),
+      invalidatesTags: ['Auth', 'Profile'],
     }),
 
     /* ================= INTERESTS ================= */
@@ -193,6 +214,15 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: ['FeaturedList'],
+    }),
+
+    getLists: builder.query<any, void>({
+      query: () => ({
+        url: LIST_ENDPOINTS.GET_LISTS,
+        method: 'GET',
+      }),
+      transformResponse: (res: any) => res.data,
+      providesTags: ['Lists'],
     }),
 
     getInviteUsers: builder.query<InviteUsersResponse, void>({
@@ -374,6 +404,20 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Mybookmark'],
     }),
 
+    reorderListItems: builder.mutation<
+      any,
+      { listId: number; items: { id: number; position: number }[] }
+    >({
+      query: ({ listId, items }) => ({
+        url: `/scott-shafer/api/lists/${listId}/items/reorder`,
+        method: 'PUT',
+        body: {
+          items,
+        },
+      }),
+      invalidatesTags: ['Lists'],
+    }),
+
     /* ================= PUBLISHED LISTS ================= */
 
     getMyPublishedLists: builder.query<PublishedListsResponse, void>({
@@ -454,4 +498,8 @@ export const {
   useDeletePublishedListMutation,
   useGetSubCategoriesQuery,
   useGetSubCategoryItemsQuery,
+  useGetListsQuery,
+  useReorderListItemsMutation,
+  useRemoveProfilePhotoMutation,
+  useDeleteAccountMutation, // ✅ EXPORT THIS
 } = authApi;

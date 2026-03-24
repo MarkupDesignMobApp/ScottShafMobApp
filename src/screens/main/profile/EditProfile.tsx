@@ -15,20 +15,26 @@ import {
   TextInput,
   StyleSheet,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../app/store';
-import AppHeader from '../../../components/ui/AppButton/AppHeader';
+
 import {
   responsiveScreenWidth,
   responsiveScreenHeight,
   responsiveFontSize,
 } from 'react-native-responsive-dimensions';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { useGetUserProfileQuery } from '../../../features/auth/authApi';
+import {
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+  useRemoveProfilePhotoMutation,
+} from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
 import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /* ─────────────── THEME — #2C3E50 ─────────────── */
 const COLORS = {
@@ -213,16 +219,38 @@ const COUNTRIES = [
 /* ─────────────── STYLES ─────────────── */
 const S = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
   scrollContent: {
     paddingHorizontal: responsiveScreenWidth(5),
     paddingBottom: responsiveScreenHeight(16),
     paddingTop: responsiveScreenHeight(1.5),
   },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2C3E50',
+  },
+  headerIcon: {
+    width: 22,
+    height: 22,
+    tintColor: '#2C3E50',
+  },
   avatarSection: {
     alignItems: 'center',
     marginVertical: responsiveScreenHeight(2.5),
   },
-  avatarWrapper: { position: 'relative', marginBottom: 10 },
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: 10,
+  },
   avatarOuter: {
     width: responsiveScreenWidth(28),
     height: responsiveScreenWidth(28),
@@ -261,17 +289,43 @@ const S = StyleSheet.create({
     elevation: 6,
   },
   cameraIco: { width: 16, height: 16, tintColor: '#FFF' },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: responsiveScreenWidth(13),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   avatarName: {
     fontSize: responsiveFontSize(2.2),
     fontWeight: '700',
     color: COLORS.text,
     marginTop: 8,
     letterSpacing: -0.3,
+    textAlign: 'center',
   },
   avatarEmail: {
     fontSize: responsiveFontSize(1.65),
     color: COLORS.textMuted,
     marginTop: 3,
+    textAlign: 'center',
+  },
+  removePhotoBtn: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: COLORS.error + '20',
+    borderRadius: 20,
+    alignSelf: 'center',
+  },
+  removePhotoTxt: {
+    color: COLORS.error,
+    fontSize: responsiveFontSize(1.4),
+    fontWeight: '600',
   },
   sectionLabel: {
     fontSize: responsiveFontSize(1.35),
@@ -585,7 +639,6 @@ const PickerModal = ({
     ? options.filter(o => o.toLowerCase().includes(query.toLowerCase()))
     : options;
 
-  // Reset search when modal closes
   useEffect(() => {
     if (!visible) setQuery('');
   }, [visible]);
@@ -598,7 +651,7 @@ const PickerModal = ({
       onRequestClose={onClose}
     >
       <Pressable style={S.overlay} onPress={onClose}>
-        <Pressable style={S.sheet} onPress={() => {}}>
+        <Pressable style={S.sheet} onPress={() => { }}>
           <View style={S.handle} />
           <View style={S.mHeader}>
             <Text style={S.mTitle}>{title}</Text>
@@ -741,19 +794,18 @@ export default function EditProfile({ navigation }: any) {
   const [budgetSelect, setBudgetSelect] = useState('');
   const [budgetDesc, setBudgetDesc] = useState('');
   const [hasDogs, setHasDogs] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null); // existing URL from API
-  const [newProfileImage, setNewProfileImage] = useState<any>(null); // newly picked from camera/gallery
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageChanged, setImageChanged] = useState(false);
 
   const [ageModal, setAgeModal] = useState(false);
   const [budgetModal, setBudgetModal] = useState(false);
   const [countryModal, setCountryModal] = useState(false);
 
-  const token = useSelector((state: RootState) => state.auth.token);
-
-  // ✅ FIX: Track whether we've already populated fields from API.
-  // Without this, RTK Query re-fetches after save (due to invalidatesTags
-  // removed from authApi — but other tags could still trigger it),
-  // and the useEffect would overwrite the user's edited values.
+  const [updateUserProfile, { isLoading: isUpdating }] =
+    useUpdateUserProfileMutation();
+  const [removeProfilePhotoMutation, { isLoading: isRemovingPhoto }] =
+    useRemoveProfilePhotoMutation();
   const initialized = useRef(false);
 
   const MAX_WORDS = 200;
@@ -772,34 +824,50 @@ export default function EditProfile({ navigation }: any) {
     refetch,
   } = useGetUserProfileQuery();
 
+  // Fix: Reset initialization and refetch when screen comes into focus
   useFocusEffect(
     useCallback(() => {
+      // Reset initialization flag when screen comes into focus
+      initialized.current = false;
+
+      // Force refetch to get latest data from server
+      refetch();
+
       setTimeout(
         () => scrollRef.current?.scrollTo({ y: 0, animated: true }),
         100,
       );
-      // Reset on blur so re-entering screen loads fresh data
+
       return () => {
-        initialized.current = false;
+        // Cleanup when screen loses focus
+        setImageChanged(false);
       };
-    }, []),
+    }, [refetch]),
   );
 
+  // Load profile data when available
   useEffect(() => {
-    if (initialized.current) return;
-    if (profileResponse?.success) {
+    // Only run if not initialized and we have profile data
+    if (!initialized.current && profileResponse?.success) {
       initialized.current = true;
       const u = profileResponse.data.user;
 
+      console.log('Loading profile data - has_dogs:', u.profile?.has_dogs); // Debug log
+
       setName(u.full_name ?? '');
       setEmail(u.email ?? '');
-      setCountry(u.country ?? ''); // ✅ top-level on user
-      setCity(u.profile?.city ?? ''); // ✅ inside user.profile
+      setCountry(u.country ?? '');
+      setCity(u.profile?.city ?? '');
       setAge(u.profile?.age_band ?? '');
       setBudgetSelect(u.profile?.dining_budget ?? '');
       setBudgetDesc(u.profile?.budget_description ?? '');
-      setHasDogs(u.profile?.has_dogs === 1 || u.profile?.has_dogs === '1');
-      setProfileImageUrl(u.profile?.profile_image ?? null); // only load URL from API once
+
+      // Fix: Properly handle has_dogs value (string "1" or "0" from API)
+      const hasDogsValue = u.profile?.has_dogs;
+      setHasDogs(hasDogsValue === "1" || hasDogsValue === 1);
+
+      setProfileImageUrl(u.profile?.profile_image ?? null);
+      setImageChanged(false);
     }
   }, [profileResponse]);
 
@@ -814,6 +882,44 @@ export default function EditProfile({ navigation }: any) {
       },
     );
     return g === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  // Function to upload image immediately
+  const uploadImageImmediately = async (imageData: any) => {
+    try {
+      setIsUploadingImage(true);
+
+      const formData = new FormData();
+      const imageFile = {
+        uri:
+          Platform.OS === 'ios'
+            ? imageData.uri.replace('file://', '')
+            : imageData.uri,
+        type: imageData.type || 'image/jpeg',
+        name: imageData.name || `profile_${Date.now()}.jpg`,
+      };
+      formData.append('profile_image', imageFile as any);
+
+      // Only send the image field for immediate upload
+      const result = await updateUserProfile(formData).unwrap();
+
+      if (result.success) {
+        // Update the profile image URL with the new one from response
+        if (result.data?.profile_image) {
+          setProfileImageUrl(result.data.profile_image);
+        } else {
+          // Refetch to get updated data
+          await refetch();
+        }
+        setImageChanged(false);
+        Alert.alert('Success', 'Profile photo updated successfully');
+      }
+    } catch (error: any) {
+      console.log('Upload error:', error);
+      Alert.alert('Error', 'Failed to upload photo. Please try again.');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const openCamera = async () => {
@@ -831,11 +937,14 @@ export default function EditProfile({ navigation }: any) {
         const asset = response.assets?.[0];
         if (!asset?.uri) return;
 
-        setNewProfileImage({
+        const imageData = {
           uri: asset.uri,
           type: asset.type || 'image/jpeg',
           name: asset.fileName || `camera_${Date.now()}.jpg`,
-        });
+        };
+
+        // Upload immediately
+        uploadImageImmediately(imageData);
       },
     );
   };
@@ -852,12 +961,56 @@ export default function EditProfile({ navigation }: any) {
         const asset = response.assets?.[0];
         if (!asset?.uri) return;
 
-        setNewProfileImage({
+        const imageData = {
           uri: asset.uri,
           type: asset.type || 'image/jpeg',
           name: asset.fileName || `gallery_${Date.now()}.jpg`,
-        });
+        };
+
+        // Upload immediately
+        uploadImageImmediately(imageData);
       },
+    );
+  };
+
+  const handleRemovePhoto = async () => {
+    Alert.alert(
+      'Remove Photo',
+      'Are you sure you want to remove your profile photo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Call the remove profile photo API
+              const result = await removeProfilePhotoMutation().unwrap();
+
+              if (result.code === 200) {
+                // Update local state
+                setProfileImageUrl(null);
+                setImageChanged(true);
+
+                // Refetch profile data to ensure consistency
+                await refetch();
+
+                Alert.alert('Success', 'Profile photo removed successfully');
+              } else {
+                throw new Error(result.message || 'Failed to remove photo');
+              }
+            } catch (error: any) {
+              console.log('Remove photo error:', error);
+              Alert.alert(
+                'Error',
+                error?.data?.message ||
+                error?.message ||
+                'Failed to remove profile photo. Please try again.',
+              );
+            }
+          },
+        },
+      ],
     );
   };
 
@@ -871,55 +1024,69 @@ export default function EditProfile({ navigation }: any) {
     try {
       setIsSaving(true);
 
-      const fd = new FormData();
+      const formData = new FormData();
 
-      fd.append('full_name', name || '');
-      fd.append('age_band', age || '');
-      fd.append('city', city || '');
-      fd.append('dining_budget', budgetSelect || budgetDesc || '');
-      fd.append('has_dogs', hasDogs ? '1' : '0');
-      fd.append('country', country || '');
+      // Add all text fields
+      formData.append('age_band', age || '');
+      formData.append('city', city || '');
+      formData.append('dining_budget', budgetSelect || '');
+      // Send has_dogs as '1' for true, '0' for false
+      formData.append('has_dogs', hasDogs ? '1' : '0');
+      formData.append('country', country || '');
 
-      if (newProfileImage?.uri) {
-        fd.append('profile_image', {
-          uri:
-            Platform.OS === 'android'
-              ? newProfileImage.uri
-              : newProfileImage.uri.replace('file://', ''),
-          type: newProfileImage.type || 'image/jpeg',
-          name: newProfileImage.name || `profile_${Date.now()}.jpg`,
-        } as any);
+      console.log('Saving - has_dogs value being sent:', hasDogs ? '1' : '0'); // Debug log
+
+      // Add budget description if it exists
+      if (budgetDesc) {
+        formData.append('budget_description', budgetDesc);
       }
 
-      const response = await fetch(
-        'https://www.markupdesigns.net/scott-shafer/api/update_profile',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
-          body: fd,
-        },
-      );
-
-      const res = await response.json();
-
-      if (!response.ok || !res.success) {
-        throw new Error(res.message || 'Update failed');
+      // ONLY include profile_image if it was changed during this session
+      if (imageChanged && profileImageUrl) {
+        formData.append('profile_image', profileImageUrl);
+        console.log('Including profile image URL in save');
+      } else if (!imageChanged) {
+        console.log('No image changes, skipping profile_image field');
       }
 
-      // ✅ IMPORTANT FIX
-      await refetch(); // 👈 THIS LINE FIXES YOUR ISSUE
+      console.log('Saving profile with fields:');
+      console.log('- age_band:', age);
+      console.log('- city:', city);
+      console.log('- dining_budget:', budgetSelect);
+      console.log('- has_dogs:', hasDogs ? '1' : '0');
+      console.log('- country:', country);
+      console.log('- budget_description:', budgetDesc);
 
+      // Use the RTK Query mutation
+      const result = await updateUserProfile(formData).unwrap();
+
+      console.log('Update successful:', result);
+
+      // Refetch profile to get updated data
+      await refetch();
+
+      // Navigate back after successful update
       navigation.goBack();
 
       setTimeout(() => {
-        Alert.alert('Saved!', res.message || 'Profile updated successfully');
+        Alert.alert('Saved!', result.message || 'Profile updated successfully');
       }, 300);
     } catch (err: any) {
-      console.log('❌ Save error:', err);
-      Alert.alert('Error', err?.message || 'Update failed. Please try again.');
+      console.log('❌ Save error details:', err);
+
+      if (err.data) {
+        console.log('Error response data:', err.data);
+      }
+      if (err.status) {
+        console.log('Error status:', err.status);
+      }
+
+      Alert.alert(
+        'Error',
+        err?.data?.message ||
+        err?.message ||
+        'Update failed. Please try again.',
+      );
     } finally {
       setIsSaving(false);
     }
@@ -930,20 +1097,41 @@ export default function EditProfile({ navigation }: any) {
     : 0;
   const wordPct = Math.min((wordCount / MAX_WORDS) * 100, 100);
 
-  return (
-    <View style={S.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.bg} />
-      <Loader visible={isSaving || profileLoading} />
+  // Determine which image to display
+  const displayImage = () => {
+    if (profileImageUrl) {
+      return { uri: profileImageUrl };
+    }
+    return require('../../../../assets/image/nophoto.jpg');
+  };
 
-      <AppHeader
-        title="Edit Profile"
-        onLeftPress={() => navigation.goBack()}
-        leftImage={require('../../../../assets/image/left-icon.png')}
-      />
+  const isLoading =
+    isSaving ||
+    profileLoading ||
+    isUpdating ||
+    isRemovingPhoto ||
+    isUploadingImage;
+
+  return (
+    <SafeAreaView style={S.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.bg} />
+      <Loader visible={isLoading} />
+
+      <View style={S.header}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Image
+            source={require('../../../../assets/image/left-icon.png')}
+            style={S.headerIcon}
+          />
+        </Pressable>
+        <Text style={S.headerTitle}>Edit Profile</Text>
+        <View style={{ width: 22 }} />
+      </View>
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView
           ref={scrollRef}
@@ -951,21 +1139,20 @@ export default function EditProfile({ navigation }: any) {
           contentContainerStyle={S.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ── Avatar ── */}
+          {/* ── Avatar Section ── */}
           <View style={S.avatarSection}>
             <View style={S.avatarWrapper}>
               <View style={S.avatarOuter}>
                 <Image
                   resizeMode="cover"
                   style={S.avatarImg}
-                  source={
-                    newProfileImage
-                      ? { uri: newProfileImage.uri } // newly picked
-                      : profileImageUrl
-                      ? { uri: profileImageUrl } // existing from API
-                      : require('../../../../assets/image/nophoto.jpg') // fallback
-                  }
+                  source={displayImage()}
                 />
+                {isUploadingImage && (
+                  <View style={S.uploadingOverlay}>
+                    <ActivityIndicator size="large" color="#FFF" />
+                  </View>
+                )}
               </View>
               <Pressable
                 style={S.cameraBtn}
@@ -973,9 +1160,15 @@ export default function EditProfile({ navigation }: any) {
                   Alert.alert('Update Photo', 'Choose an option', [
                     { text: '📷  Camera', onPress: openCamera },
                     { text: '🖼  Gallery', onPress: openGallery },
+                    {
+                      text: '🗑️  Remove Photo',
+                      onPress: handleRemovePhoto,
+                      style: 'destructive',
+                    },
                     { text: 'Cancel', style: 'cancel' },
                   ])
                 }
+                disabled={isUploadingImage}
               >
                 <Image
                   source={require('../../../../assets/image/camera.png')}
@@ -985,6 +1178,13 @@ export default function EditProfile({ navigation }: any) {
             </View>
             {!!name && <Text style={S.avatarName}>{name}</Text>}
             {!!email && <Text style={S.avatarEmail}>{email}</Text>}
+
+            {/* Show remove photo button if photo exists */}
+            {profileImageUrl && (
+              <Pressable style={S.removePhotoBtn} onPress={handleRemovePhoto}>
+                <Text style={S.removePhotoTxt}>Remove Photo</Text>
+              </Pressable>
+            )}
           </View>
 
           {/* ── Personal Info ── */}
@@ -1018,7 +1218,6 @@ export default function EditProfile({ navigation }: any) {
                 setTimeout(() => setAgeModal(true), 150);
               }}
             />
-            {/* ✅ Country ABOVE City */}
             <FieldRow
               icon="🌍"
               label="Country"
@@ -1060,51 +1259,15 @@ export default function EditProfile({ navigation }: any) {
             />
           </View>
 
-          <View style={S.taCard}>
-            <View style={S.taHeader}>
-              <View style={S.taIconBox}>
-                <Text style={{ fontSize: 16 }}>📝</Text>
-              </View>
-              <Text style={S.taLbl}>
-                Describe your dining budget<Text style={S.reqDot}> *</Text>
-              </Text>
-            </View>
-            <TextInput
-              value={budgetDesc}
-              onChangeText={handleBudgetDescChange}
-              multiline
-              textAlignVertical="top"
-              placeholder="Tell us about your dining preferences and budget expectations..."
-              placeholderTextColor={COLORS.textMuted}
-              style={S.taInput}
-            />
-            <View style={S.wcRow}>
-              <View style={S.wcTrack}>
-                <View
-                  style={[
-                    S.wcFill,
-                    {
-                      width: `${wordPct}%`,
-                      backgroundColor:
-                        wordCount > 180 ? COLORS.error : COLORS.primary,
-                    },
-                  ]}
-                />
-              </View>
-              <Text
-                style={[S.wcTxt, wordCount > 180 && { color: COLORS.error }]}
-              >
-                {wordCount}/{MAX_WORDS}
-              </Text>
-            </View>
-          </View>
-
           {/* ── Other Preferences ── */}
           <Text style={S.sectionLabel}>Other Preferences</Text>
           <TouchableOpacity
             style={S.toggleCard}
             activeOpacity={0.8}
-            onPress={() => setHasDogs(p => !p)}
+            onPress={() => {
+              console.log('Toggling has_dogs from:', hasDogs, 'to:', !hasDogs); // Debug log
+              setHasDogs(p => !p);
+            }}
           >
             <View style={S.iconBox}>
               <Text style={S.iconTxt}>🐕</Text>
@@ -1178,6 +1341,6 @@ export default function EditProfile({ navigation }: any) {
         }}
         onClose={() => setCountryModal(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 }

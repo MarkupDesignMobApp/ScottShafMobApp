@@ -131,7 +131,6 @@ export interface CampaignsResponse {
   message: string;
 }
 
-
 // =====================================================
 // LIST API
 // GET /scott-shafer/api/featured-lists
@@ -356,7 +355,12 @@ export interface TermsAndPrivacyRequest {
   campaign_marketing: boolean;
   user_id: number | string;
 }
-
+// features/auth/authTypes.ts
+export interface DeleteAccountResponse {
+  code: number;
+  message: string;
+  data?: any;
+}
 export interface TermsAndPrivacyResponse {
   success: boolean;
   message: string;
@@ -376,7 +380,7 @@ export interface TermsAndPrivacyResponse {
 export interface CreateListRequest {
   title: string;
   category_id: number;
-  sub_category_ids:number[];
+  sub_category_ids: number[];
   list_size: number;
   is_group: boolean;
   user_ids?: number[];
@@ -557,37 +561,36 @@ export interface CatalogItemsPublishList {
   list_ids: number[];
 }
 
-
 export interface FeaturedBookmarksResponse {
-  success: boolean
-  message: string
-  data: FeaturedBookmarkItem[]
+  success: boolean;
+  message: string;
+  data: FeaturedBookmarkItem[];
 }
 
 export interface FeaturedBookmarkItem {
-  id: number
-  title: string
-  list_size: number
-  status: 'live' | 'draft' | string
+  id: number;
+  title: string;
+  list_size: number;
+  status: 'live' | 'draft' | string;
 
   category: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
 
   interest: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
 
-  image: string
+  image: string;
 
-  likes_count: number
-  saves_count: number
-  shares_count: number
+  likes_count: number;
+  saves_count: number;
+  shares_count: number;
 
-  is_liked: boolean
-  is_saved: boolean
+  is_liked: boolean;
+  is_saved: boolean;
 }
 
 export interface SubCategoryItem {
