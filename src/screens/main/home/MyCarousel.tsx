@@ -183,7 +183,7 @@ const Row = React.memo(
               icon={
                 item.is_saved ? icons.bookmarkFilled : icons.bookmarkOutline
               }
-              value={formatCount(item.saves_count)}
+              // value={formatCount(item.saves_count)}
               onPress={onBookmarkPress}
             />
 

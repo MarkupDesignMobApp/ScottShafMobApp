@@ -36,6 +36,8 @@ import {
   Campaign,
   CatalogItemsPublishList,
   FeaturedBookmarksResponse,
+  ReorderListsRequest,
+  ReorderListsResponse,
   DeleteAccountResponse, // Add this type
 } from './authTypes';
 
@@ -403,7 +405,15 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Mybookmark'],
     }),
-
+    // features/auth/authApi.ts
+    reorderLists: builder.mutation<ReorderListsResponse, ReorderListsRequest>({
+      query: body => ({
+        url: '/scott-shafer/api/lists/reorder', // POST endpoint
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Lists'], // optional: refresh list queries
+    }),
     reorderListItems: builder.mutation<
       any,
       { listId: number; items: { id: number; position: number }[] }
@@ -501,5 +511,6 @@ export const {
   useGetListsQuery,
   useReorderListItemsMutation,
   useRemoveProfilePhotoMutation,
+  useReorderListsMutation,
   useDeleteAccountMutation, // ✅ EXPORT THIS
 } = authApi;

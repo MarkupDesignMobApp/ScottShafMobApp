@@ -604,3 +604,12 @@ export interface SubCategoryResponse {
   message: string;
   data: SubCategoryItem[];
 }
+// features/auth/authTypes.ts
+export interface ReorderListsRequest {
+  lists: { id: number; position: number }[];
+}
+
+export interface ReorderListsResponse {
+  status: boolean;
+  message: string;
+}

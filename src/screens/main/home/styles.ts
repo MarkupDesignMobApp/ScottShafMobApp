@@ -8,7 +8,181 @@ import {
 
 export const styles = StyleSheet.create({
   /* ---------------- HEADER ---------------- */
+  // Add these new styles for centered onboarding
 
+  emojiIcon: {
+    fontSize: responsiveScreenFontSize(8),
+    marginBottom: responsiveScreenHeight(2),
+    textAlign: 'center',
+  },
+
+  // Update these styles in your styles.ts
+  onboardingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+   overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tooltip: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  emoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 12,
+    color: '#2C3E50',
+  },
+  description: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  progressDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ccc',
+    marginHorizontal: 4,
+  },
+  progressDotActive: {
+    backgroundColor: '#00C4FA',
+    width: 20,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  skipButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  skipText: {
+    color: '#666',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  nextButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#00C4FA',
+  },
+  nextText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  centeredTooltip: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    padding: responsiveScreenWidth(6),
+    width: responsiveScreenWidth(85),
+    maxWidth: 340,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  centeredTitle: {
+    fontSize: responsiveScreenFontSize(2.5),
+    fontWeight: '800',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginBottom: responsiveScreenHeight(1),
+    lineHeight: responsiveScreenFontSize(3.2),
+  },
+  centeredDescription: {
+    fontSize: responsiveScreenFontSize(1.6),
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: responsiveScreenFontSize(2.2),
+    marginBottom: responsiveScreenHeight(2.5),
+    paddingHorizontal: responsiveScreenWidth(2),
+  },
+  centeredProgressContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: responsiveScreenHeight(2.5),
+  },
+  centeredProgressDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 6,
+  },
+  centeredProgressDotActive: {
+    width: 24,
+    backgroundColor: '#00C4FA',
+  },
+  centeredButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: responsiveScreenWidth(4),
+  },
+  centeredSkipButton: {
+    flex: 1,
+    paddingVertical: responsiveScreenHeight(1.2),
+    borderRadius: 40,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  centeredSkipButtonText: {
+    fontSize: responsiveScreenFontSize(1.6),
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  centeredNextButton: {
+    flex: 1,
+    paddingVertical: responsiveScreenHeight(1.2),
+    borderRadius: 40,
+    backgroundColor: '#00C4FA',
+    alignItems: 'center',
+    shadowColor: '#00C4FA',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  centeredNextButtonText: {
+    fontSize: responsiveScreenFontSize(1.6),
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -17,7 +191,26 @@ export const styles = StyleSheet.create({
     paddingHorizontal: responsiveScreenWidth(4),
     paddingVertical: responsiveScreenHeight(1.8),
   },
-
+  loadingInterests: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(1),
+  },
+  loadingText: {
+    marginLeft: responsiveScreenWidth(2),
+    fontSize: responsiveScreenFontSize(1.4),
+    color: '#6B7280',
+  },
+  emptyInterests: {
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingVertical: responsiveScreenHeight(1),
+  },
+  emptyInterestsText: {
+    fontSize: responsiveScreenFontSize(1.4),
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+  },
   profileContainer: {
     width: responsiveScreenWidth(10),
     height: responsiveScreenWidth(10),

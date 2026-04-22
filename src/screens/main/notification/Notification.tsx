@@ -121,7 +121,7 @@ export default function Notification({ navigation }: any) {
                       <Text style={styles.title}>{item.title}</Text>
                       <Text style={styles.sub}>{item.body}</Text>
                       <Text style={styles.time}>
-                        {item.created_at} hours ago
+                        {item.created_at} 
                       </Text>
 
                       <View style={styles.btnRow}>

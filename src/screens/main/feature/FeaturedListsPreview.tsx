@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { styles } from  '../home/styles';
+import { styles } from '../home/styles';
 import { responsiveScreenWidth } from 'react-native-responsive-dimensions';
 
 import {
@@ -313,7 +313,7 @@ const Row = memo(({ item, refetch }: RowProps) => {
 
           <ActionButton
             icon={icons.shareOutline}
-            value={formatCount(localItem.shares_count)}
+            // value={formatCount(localItem.shares_count)}
             onPress={onSharePress}
             disabled={isSharing}
           />

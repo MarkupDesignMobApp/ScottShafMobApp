@@ -1242,7 +1242,7 @@ export default function EditProfile({ navigation }: any) {
           </View>
 
           {/* ── Dining Preferences ── */}
-          <Text style={S.sectionLabel}>Dining Preferences</Text>
+          <Text style={S.sectionLabel}>Budget Preferences</Text>
           <View style={S.card}>
             <FieldRow
               icon="💰"
