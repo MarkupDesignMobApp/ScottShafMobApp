@@ -18,12 +18,17 @@ export const styles = StyleSheet.create({
 
   // Update these styles in your styles.ts
   onboardingOverlay: {
-    flex: 1,
+    position: 'absolute', // 🔥 REQUIRED for iOS
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 9999, // 🔥 helps stacking
   },
-   overlay: {
+  overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
@@ -226,9 +231,10 @@ export const styles = StyleSheet.create({
   },
 
   logo: {
-    width: responsiveScreenWidth(12),
+    width: responsiveScreenWidth(20),
     height: responsiveScreenWidth(12),
-    tintColor: '#FFFFFF',
+    resizeMode: 'contain',
+    // tintColor: '#FFFFFF',
   },
 
   notificationButton: {

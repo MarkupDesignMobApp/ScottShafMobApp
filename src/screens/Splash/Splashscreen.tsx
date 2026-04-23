@@ -13,7 +13,7 @@ export default function Splashscreen() {
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
         <View style={styles.imgcontainer}>
           <Image
-            source={require('../../../assets/image/logo.png')}
+            source={require('../../../assets/image/logo3.png')}
             style={styles.img}
             resizeMode="contain"
           />

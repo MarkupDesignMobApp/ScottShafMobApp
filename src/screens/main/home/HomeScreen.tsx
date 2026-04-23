@@ -9,8 +9,9 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +21,6 @@ import { styles } from './styles';
 import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import Button from '../../../components/ui/SocialButton/Button';
 
-import ImageCarousel from './MyCarousel';
 import ImageCarousel2 from './MyCarousel2';
 import Recommend from './Recommend';
 import FeaturedListsPreview from '../feature/FeaturedListsPreview';
@@ -31,7 +31,7 @@ import {
 } from '../../../features/auth/authApi';
 import { MainStackParamList } from '../../../navigation/types/navigation';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 interface HomeScreenProps {
   navigation: NativeStackNavigationProp<MainStackParamList, 'Home'>;
@@ -56,7 +56,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { data: interestsData, isLoading: interestsLoading } =
     useGetUserInterestsQuery();
 
-  // Handle interests data - ensure it's always an array
   const safeInterestsData = Array.isArray(interestsData) ? interestsData : [];
 
   const interestsWithForYou = [
@@ -66,50 +65,48 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const user = profileData?.data?.user;
 
-  // Onboarding hint steps - using emoji icons
   const hintSteps: HintStep[] = [
     {
       id: 'welcome',
-      title: '👋 Welcome to the App!',
+      title: 'Welcome to the App!',
       description: 'Let us show you around and help you get started',
       emoji: '👋',
     },
     {
       id: 'search',
-      title: '🔍 Search Anything',
+      title: 'Search Anything',
       description:
         "Find lists, users, topics, or anything you're interested in",
       emoji: '🔍',
     },
     {
       id: 'interests',
-      title: '🎯 Your Interests',
+      title: 'Your Interests',
       description:
         'Select your interests to see personalized content just for you',
       emoji: '🎯',
     },
     {
       id: 'create',
-      title: '✍️ Create Your First List',
+      title: 'Create Your First List',
       description:
         'Share your top picks and recommendations with the community',
       emoji: '✍️',
     },
     {
       id: 'featured',
-      title: '⭐ Featured Lists',
+      title: 'Featured Lists',
       description: 'Explore hand-picked lists from top creators',
       emoji: '⭐',
     },
     {
       id: 'sponsored',
-      title: '💝 Sponsored Campaigns',
+      title: 'Sponsored Campaigns',
       description: 'Discover amazing offers and exclusive deals',
       emoji: '💝',
     },
   ];
 
-  // Check if it's first launch
   useEffect(() => {
     checkFirstLaunch();
   }, []);
@@ -118,8 +115,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     try {
       const hasLaunched = await AsyncStorage.getItem('hasLaunched');
       if (hasLaunched === null) {
+        console.log('First launch - showing onboarding');
         setShowOnboarding(true);
         await AsyncStorage.setItem('hasLaunched', 'true');
+      } else {
+        console.log('Not first launch');
       }
     } catch (error) {
       console.error('Error checking first launch:', error);
@@ -150,12 +150,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const currentHint = hintSteps[currentStep];
 
-  return (
+  // Main content of the screen
+  const MainContent = () => (
     <SafeAreaProvider>
       <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
 
-      {/* MAIN CONTENT */}
       <View style={{ flex: 1 }}>
         {/* HEADER */}
         <View style={styles.header}>
@@ -176,7 +176,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <Image
             resizeMode="contain"
             style={styles.logo}
-            source={require('../../../../assets/image/logo.png')}
+            source={require('../../../../assets/image/logo2.png')}
           />
 
           <Pressable
@@ -195,7 +195,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           edges={['left', 'right', 'bottom']}
           style={styles.innercontainer}
         >
-          {/* SEARCH + INTEREST */}
           <View style={styles.topSection}>
             <SearchBar placeholder="Search lists, users, topics..." />
 
@@ -239,13 +238,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             </ScrollView>
           </View>
 
-          {/* MAIN CONTENT */}
           <View style={styles.contentContainer}>
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContainer}
             >
-              {/* CREATE LIST */}
               <View style={styles.createCard}>
                 <Text style={styles.createTitle}>Create Your First List</Text>
                 <Text style={styles.createSubtitle}>
@@ -260,7 +257,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 />
               </View>
 
-              {/* FEATURED - Preview with 3 items */}
               <View style={styles.cardHeading}>
                 <Text style={styles.headingText}>Featured Lists</Text>
                 <Text
@@ -276,77 +272,151 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 navigation={navigation}
               />
 
-              {/* SPONSORED */}
               <View style={styles.cardHeading}>
                 <Text style={styles.headingText}>Sponsored Campaign</Text>
               </View>
 
               <ImageCarousel2 />
-
-              {/* RECOMMENDED */}
               <Recommend />
             </ScrollView>
           </View>
         </SafeAreaView>
       </View>
-
-      {/* ✅ FIXED MODAL FOR iOS + ANDROID */}
-      {showOnboarding && (
-        <Modal
-          transparent
-          visible={showOnboarding}
-          animationType="fade"
-          statusBarTranslucent
-          presentationStyle="overFullScreen" // iOS full-screen overlay fix
-          onRequestClose={handleSkip} // Android back button closes modal
-        >
-          <SafeAreaView style={{ flex: 1 }}>
-            <View style={styles.onboardingOverlay}>
-              <View style={styles.centeredTooltip}>
-                <Text style={styles.emojiIcon}>{currentHint.emoji}</Text>
-                <Text style={styles.centeredTitle}>{currentHint.title}</Text>
-                <Text style={styles.centeredDescription}>
-                  {currentHint.description}
-                </Text>
-
-                {/* Progress indicator */}
-                <View style={styles.centeredProgressContainer}>
-                  {hintSteps.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.centeredProgressDot,
-                        index === currentStep &&
-                          styles.centeredProgressDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-
-                <View style={styles.centeredButtons}>
-                  <TouchableOpacity
-                    onPress={handleSkip}
-                    style={styles.centeredSkipButton}
-                  >
-                    <Text style={styles.centeredSkipButtonText}>Skip</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={handleNext}
-                    style={styles.centeredNextButton}
-                  >
-                    <Text style={styles.centeredNextButtonText}>
-                      {currentStep === hintSteps.length - 1
-                        ? 'Get Started'
-                        : 'Next'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </SafeAreaView>
-        </Modal>
-      )}
     </SafeAreaProvider>
+  );
+
+  // Separate Onboarding Modal component with its OWN SafeAreaProvider
+  const OnboardingModal = () => (
+    <Modal
+      visible={showOnboarding}
+      transparent={true}
+      animationType="slide"
+      statusBarTranslucent={true}
+      onRequestClose={handleSkip}
+    >
+      {/* CRITICAL FIX: iOS needs its own SafeAreaProvider inside the Modal */}
+      <SafeAreaProvider>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              width: screenWidth * 0.85,
+              backgroundColor: '#FFFFFF',
+              borderRadius: 20,
+              padding: 24,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 48, marginBottom: 16 }}>
+              {currentHint.emoji}
+            </Text>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: '#2C3E50',
+                marginBottom: 12,
+                textAlign: 'center',
+              }}
+            >
+              {currentHint.title}
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                color: '#666666',
+                textAlign: 'center',
+                marginBottom: 24,
+                lineHeight: 22,
+              }}
+            >
+              {currentHint.description}
+            </Text>
+
+            {/* Progress indicator */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginBottom: 24,
+              }}
+            >
+              {hintSteps.map((_, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor:
+                      index === currentStep ? '#00C4FA' : '#D1D1D6',
+                    marginHorizontal: 4,
+                  }}
+                />
+              ))}
+            </View>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleSkip}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  marginRight: 8,
+                  borderRadius: 8,
+                  backgroundColor: '#F5F5F5',
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{ fontSize: 16, fontWeight: '600', color: '#666666' }}
+                >
+                  Skip
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleNext}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  marginLeft: 8,
+                  borderRadius: 8,
+                  backgroundColor: '#00C4FA',
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF' }}
+                >
+                  {currentStep === hintSteps.length - 1
+                    ? 'Get Started'
+                    : 'Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </SafeAreaProvider>
+    </Modal>
+  );
+
+  return (
+    <>
+      <MainContent />
+      <OnboardingModal />
+    </>
   );
 }
