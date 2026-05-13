@@ -24,6 +24,7 @@ export const baseApi = createApi({
     'FeaturedList', // ✅ FIXED (removed wrong "a")
     'InviteUsers',
     'Lists',
+    "Product",
     'Categories',
     'CatalogItems',
     'Campaigns',

@@ -38,7 +38,14 @@ import {
   FeaturedBookmarksResponse,
   ReorderListsRequest,
   ReorderListsResponse,
-  DeleteAccountResponse, // Add this type
+  DeleteAccountResponse,
+  InvitableUser,
+  InviteListResponse,
+  PublishedListsResponse,
+  CloneListResponse,
+  ClonedListData,
+  SubCategoryItem,
+  SubCategoryResponse,
 } from './authTypes';
 
 import {
@@ -451,7 +458,32 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['PublishedList'],
     }),
+    getInviteList: builder.query<InvitableUser[], number | string>({
+      query: categoryId => ({
+        url: `/scott-shafer/api/users/invite-list`,
+        method: 'GET',
+        params: {
+          category_id: categoryId,
+        },
+      }),
+      transformResponse: (response: InviteListResponse): InvitableUser[] => {
+        console.log('Invite API Response:', response);
+        return response?.data || [];
+      },
+    }),
+    cloneList: builder.mutation<ClonedListData, number | string>({
+      query: listId => ({
+        url: `/scott-shafer/api/lists/${listId}/clone`,
+        method: 'POST',
+      }),
 
+      transformResponse: (response: CloneListResponse) => {
+        console.log('Clone Response:', response);
+        return response.data;
+      },
+
+      invalidatesTags: ['Lists', 'FeaturedList'],
+    }),
     getSubCategories: builder.query<any, number | string>({
       query: categoryId => ({
         url: SUB_CATEGORIES_ENDPOINT(categoryId),
@@ -512,5 +544,7 @@ export const {
   useReorderListItemsMutation,
   useRemoveProfilePhotoMutation,
   useReorderListsMutation,
-  useDeleteAccountMutation, // ✅ EXPORT THIS
+  useDeleteAccountMutation,
+  useGetInviteListQuery,
+  useCloneListMutation,
 } = authApi;

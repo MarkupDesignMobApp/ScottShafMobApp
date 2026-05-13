@@ -614,7 +614,7 @@ export default function MyListScreen({ navigation }) {
               </Text>
             </View>
 
-            <Pressable
+            {/* <Pressable
               onPress={() => handleShare(item)}
               style={styles.shareBtn}
               hitSlop={8}
@@ -623,7 +623,7 @@ export default function MyListScreen({ navigation }) {
                 source={require('../../../../assets/image/unfillshare.png')}
                 style={styles.shareIcon}
               />
-            </Pressable>
+            </Pressable> */}
           </Pressable>
 
           <Pressable

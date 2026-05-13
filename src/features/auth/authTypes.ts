@@ -598,7 +598,55 @@ export interface SubCategoryItem {
   name: string;
   slug: string;
 }
+export interface InvitableUser {
+  id: number;
+  full_name: string;
+  email: string;
+}
+export interface PublishedListsResponse {
+  success: boolean;
+  message: string;
+  data: FeaturedBookmarkItem[];
+}
+export interface ListItem {
+  id: number;
+  list_id: string;
+  catalog_item_id: number | null;
+  status: string;
+  custom_item_name: string | null;
+  custom_text: string | null;
+  position: number | null;
+  user_positions: any | null;
+  position_updated_count: string;
+  created_at: string;
+  updated_at: string;
+  catalog_item: any | null;
+}
 
+export interface ClonedListData {
+  id: number;
+  user_id: number;
+  title: string;
+  category_id: string;
+  sub_category_id: number | null;
+  list_size: string;
+  is_group: boolean;
+  status: string;
+  visibility: string;
+  created_at: string;
+  updated_at: string;
+  items: ListItem[];
+}
+
+export interface CloneListResponse {
+  success: boolean;
+  message: string;
+  data: ClonedListData;
+}
+export interface InviteListResponse {
+  success: boolean;
+  data: InvitableUser[];
+}
 export interface SubCategoryResponse {
   success: boolean;
   message: string;

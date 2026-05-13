@@ -25,12 +25,11 @@ import {
   responsiveScreenHeight,
   responsiveScreenWidth,
 } from 'react-native-responsive-dimensions';
-
 import { useFocusEffect } from '@react-navigation/native';
 import {
   useCreateListMutation,
-  useGetInviteUsersQuery,
   useGetCatalogCategoriesQuery,
+  useGetInviteListQuery, // ✅ use the category‑filtered version
 } from '../../../features/auth/authApi';
 
 export default function CreateListScreen({ navigation }) {
@@ -58,9 +57,18 @@ export default function CreateListScreen({ navigation }) {
 
   /* ================= API ================= */
   const [createList, { isLoading }] = useCreateListMutation();
-  const { data: inviteUsersResponse, isLoading: inviteUsersLoading } =
-    useGetInviteUsersQuery(undefined, { skip: !isGroup });
-  const inviteUsers = inviteUsersResponse?.data ?? [];
+
+  const {
+    data: inviteUsersResponse,
+    isLoading: inviteUsersLoading,
+    error,
+  } = useGetInviteListQuery(selectedCategory?.id, {
+    skip: !isGroup || !selectedCategory?.id,
+  });
+
+  console.log('inviteUsersResponse', inviteUsersResponse);
+  console.log('invite error', error);
+  const inviteUsers = inviteUsersResponse ?? [];
 
   const { data: categories = [], isLoading: categoryLoading } =
     useGetCatalogCategoriesQuery();
@@ -79,7 +87,7 @@ export default function CreateListScreen({ navigation }) {
     setSelectedUsers(prev =>
       prev.some(u => u.id === user.id)
         ? prev.filter(u => u.id !== user.id)
-        : [...prev, user],
+        : [...prev, user]
     );
   };
 
@@ -93,7 +101,7 @@ export default function CreateListScreen({ navigation }) {
       setIsGroup(false);
       setSelectedUsers([]);
       setFocusedInput(null);
-    }, []),
+    }, [])
   );
 
   const handleCreateList = async () => {
@@ -277,11 +285,7 @@ export default function CreateListScreen({ navigation }) {
             <Text style={styles.groupEmoji}>👥</Text>
             <Text style={styles.groupCardTitle}>Group List</Text>
           </View>
-          <Switch
-            color="#2C3E50"
-            value={isGroup}
-            onValueChange={setIsGroup}
-          />
+          <Switch color="#2C3E50" value={isGroup} onValueChange={setIsGroup} />
         </View>
         <Text style={styles.groupCardDescription}>
           Let friends collaborate & add their own picks to your list
@@ -364,7 +368,14 @@ export default function CreateListScreen({ navigation }) {
                   </Text>
                 </View>
 
-                {inviteUsersLoading ? (
+                {!selectedCategory ? (
+                  <View style={styles.emptyUsersContainer}>
+                    <Text style={styles.emptyUsersEmoji}>📁⚠️</Text>
+                    <Text style={styles.emptyUsersText}>
+                      Select a category first to see collaborators
+                    </Text>
+                  </View>
+                ) : inviteUsersLoading ? (
                   <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#2C3E50" />
                   </View>
@@ -372,7 +383,7 @@ export default function CreateListScreen({ navigation }) {
                   <View style={styles.emptyUsersContainer}>
                     <Text style={styles.emptyUsersEmoji}>👤❌</Text>
                     <Text style={styles.emptyUsersText}>
-                      No users to invite
+                      No collaborators available for this category
                     </Text>
                   </View>
                 ) : (
@@ -384,7 +395,7 @@ export default function CreateListScreen({ navigation }) {
                     contentContainerStyle={styles.chipContainer}
                     renderItem={({ item }) => {
                       const selected = selectedUsers.some(
-                        u => u.id === item.id,
+                        u => u.id === item.id
                       );
 
                       return (
@@ -474,8 +485,7 @@ export default function CreateListScreen({ navigation }) {
                     key={cat.id}
                     style={[
                       styles.modalItem,
-                      selectedCategory?.id === cat.id &&
-                      styles.modalItemSelected,
+                      selectedCategory?.id === cat.id && styles.modalItemSelected,
                     ]}
                     onPress={() => {
                       setSelectedCategory(cat);
@@ -504,6 +514,7 @@ export default function CreateListScreen({ navigation }) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   mainContainer: {
