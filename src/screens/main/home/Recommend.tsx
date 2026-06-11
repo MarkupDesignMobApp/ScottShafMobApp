@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   Image,
-  Share,               // ✅ built-in Share API
+  Share,
   Alert,
   Pressable,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 
@@ -22,27 +21,22 @@ import {
   useGetRecommendItemsQuery,
   useLikeRecommendedMutation,
   useShareRecommendedMutation,
-  useCloneListMutation,
 } from '../../../features/auth/authApi';
 
 const icons = {
   heartFilled: require('../../../../assets/image/heart.png'),
   heartOutline: require('../../../../assets/image/unfillheart.png'),
   shareOutline: require('../../../../assets/image/unfillshare.png'),
-  clone: require('../../../../assets/image/copy.png'),
-  // 'more' icon removed
 };
 
 const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png');
 
 export default function Recommend() {
   const [posts, setPosts] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'original' | 'cloned'>('original');
 
   const { data, isLoading, error, refetch } = useGetRecommendItemsQuery();
   const [likeRecommended] = useLikeRecommendedMutation();
   const [shareRecommended] = useShareRecommendedMutation();
-  const [cloneList, { isLoading: cloneLoading }] = useCloneListMutation();
 
   useEffect(() => {
     if (!data) return;
@@ -64,8 +58,6 @@ export default function Recommend() {
         })
         .filter(Boolean);
 
-      const isCloned = isClonedList(apiItem);
-
       return {
         id: String(apiItem.id),
         user: apiItem.user?.full_name ?? 'Unknown',
@@ -74,25 +66,11 @@ export default function Recommend() {
         likes: Number(apiItem.likes_count ?? 0),
         isLiked: Boolean(apiItem.is_liked),
         items,
-        isCloned,
-        canClone: !isCloned,
       };
     });
 
     setPosts(mapped);
   }, [data]);
-
-  const originalPosts = useMemo(
-    () => posts.filter(item => !item.isCloned),
-    [posts]
-  );
-
-  const clonedPosts = useMemo(
-    () => posts.filter(item => item.isCloned),
-    [posts]
-  );
-
-  const visiblePosts = activeTab === 'original' ? originalPosts : clonedPosts;
 
   const onLikePress = async (postId: string) => {
     try {
@@ -103,7 +81,6 @@ export default function Recommend() {
     }
   };
 
-  // ✅ Using React Native's built-in Share API
   const onSharePress = async (postId: string, title: string) => {
     try {
       const res: any = await shareRecommended({ id: postId }).unwrap();
@@ -114,7 +91,6 @@ export default function Recommend() {
         return;
       }
 
-      // Opens native share sheet (supports all social media platforms)
       await Share.share({
         title: title,
         message: `${title}\n\n${url}`,
@@ -123,23 +99,6 @@ export default function Recommend() {
     } catch (e) {
       console.log(e);
       Alert.alert('Error', 'Failed to share');
-    }
-  };
-
-  const onClonePress = async (item: any) => {
-    if (!item.canClone) {
-      Alert.alert('Not allowed', 'You can clone only original lists.');
-      return;
-    }
-
-    try {
-      const res: any = await cloneList(item.id).unwrap();
-      Alert.alert('Success', `${res.title} cloned successfully`);
-      console.log('CLONED LIST', res);
-      refetch();
-    } catch (e: any) {
-      console.log('CLONE ERROR', e);
-      Alert.alert('Error', e?.data?.message || 'Failed to clone list');
     }
   };
 
@@ -165,56 +124,16 @@ export default function Recommend() {
     <View style={styles.container}>
       <Text style={styles.heading}>Recommended For You</Text>
 
-      <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === 'original' && styles.tabButtonActive,
-          ]}
-          onPress={() => setActiveTab('original')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'original' && styles.tabTextActive,
-            ]}
-          >
-            Original ({originalPosts.length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === 'cloned' && styles.tabButtonActive,
-          ]}
-          onPress={() => setActiveTab('cloned')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'cloned' && styles.tabTextActive,
-            ]}
-          >
-            Cloned ({clonedPosts.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <FlatList
-        data={visiblePosts}
+        data={posts}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={
-          visiblePosts.length === 0 ? styles.emptyList : undefined
+          posts.length === 0 ? styles.emptyList : undefined
         }
         ListEmptyComponent={
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>
-              {activeTab === 'original'
-                ? 'No original lists found'
-                : 'No cloned lists found'}
-            </Text>
+            <Text style={styles.emptyText}>No recommendations found</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -222,9 +141,6 @@ export default function Recommend() {
             item={item}
             onLikePress={onLikePress}
             onSharePress={onSharePress}
-            onClonePress={onClonePress}
-            cloneLoading={cloneLoading}
-            showCloneButton={activeTab === 'original'}
           />
         )}
       />
@@ -233,14 +149,7 @@ export default function Recommend() {
 }
 
 // ------------------- PostCard Component -------------------
-function PostCard({
-  item,
-  onLikePress,
-  onSharePress,
-  onClonePress,
-  cloneLoading,
-  showCloneButton,
-}: any) {
+function PostCard({ item, onLikePress, onSharePress }: any) {
   return (
     <View style={styles.card}>
       <View style={styles.userRow}>
@@ -248,24 +157,10 @@ function PostCard({
           source={require('../../../../assets/image/women1.png')}
           style={styles.avatar}
         />
-
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>{item.user}</Text>
           <Text style={styles.time}>{item.time}</Text>
         </View>
-
-        <View style={styles.badgeWrap}>
-          <Text
-            style={[
-              styles.badge,
-              item.isCloned ? styles.badgeCloned : styles.badgeOriginal,
-            ]}
-          >
-            {item.isCloned ? 'Cloned' : 'Original'}
-          </Text>
-        </View>
-
-        {/* Three vertical dots removed */}
       </View>
 
       <Text style={styles.title}>{item.title}</Text>
@@ -289,25 +184,8 @@ function PostCard({
         </Pressable>
 
         <Pressable onPress={() => onSharePress(item.id, item.title)}>
-          {/* <ActionButton icon={icons.shareOutline} value="Share" /> */}
+          <ActionButton icon={icons.shareOutline} value="Share" />
         </Pressable>
-
-        {showCloneButton && item.canClone ? (
-          <TouchableOpacity
-            style={styles.cloneButton}
-            onPress={() => onClonePress(item)}
-            disabled={cloneLoading}
-          >
-            {cloneLoading ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <>
-                <Image source={icons.clone} style={styles.cloneIcon} />
-                <Text style={styles.cloneText}>Clone</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        ) : null}
       </View>
     </View>
   );
@@ -338,25 +216,6 @@ function formatTimeAgo(isoString: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-function isClonedList(apiItem: any) {
-  const title = String(apiItem?.title ?? '').toLowerCase();
-  return Boolean(
-    apiItem?.is_clone ||
-    apiItem?.is_cloned ||
-    apiItem?.cloned ||
-    apiItem?.parent_id ||
-    apiItem?.parent_list_id ||
-    apiItem?.original_list_id ||
-    apiItem?.copied_from_list_id ||
-    apiItem?.clone_of ||
-    apiItem?.source_list_id ||
-    apiItem?.from_list_id ||
-    title.includes('(copy)') ||
-    title.endsWith(' copy') ||
-    title.includes('copy')
-  );
-}
-
 // ------------------- Styles -------------------
 const styles = StyleSheet.create({
   container: {
@@ -370,30 +229,6 @@ const styles = StyleSheet.create({
     color: '#2C3E50',
     marginTop: responsiveScreenHeight(1),
     marginBottom: responsiveScreenHeight(1.5),
-  },
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: '#EAF0F6',
-    borderRadius: 14,
-    padding: 4,
-    marginBottom: responsiveScreenHeight(2),
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: responsiveScreenHeight(1.1),
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  tabButtonActive: {
-    backgroundColor: '#2C3E50',
-  },
-  tabText: {
-    fontSize: responsiveScreenFontSize(1.6),
-    fontFamily: 'Quicksand-SemiBold',
-    color: '#5F6B7A',
-  },
-  tabTextActive: {
-    color: '#FFFFFF',
   },
   loader: {
     flex: 1,
@@ -445,25 +280,6 @@ const styles = StyleSheet.create({
     fontSize: responsiveScreenFontSize(1.4),
     color: '#7F8C8D',
   },
-  badgeWrap: {
-    marginRight: responsiveScreenWidth(2),
-  },
-  badge: {
-    fontSize: responsiveScreenFontSize(1.2),
-    paddingHorizontal: responsiveScreenWidth(2.5),
-    paddingVertical: responsiveScreenHeight(0.4),
-    borderRadius: 999,
-    overflow: 'hidden',
-    fontFamily: 'Quicksand-SemiBold',
-  },
-  badgeOriginal: {
-    backgroundColor: '#E8F5E9',
-    color: '#2E7D32',
-  },
-  badgeCloned: {
-    backgroundColor: '#FFF3E0',
-    color: '#EF6C00',
-  },
   title: {
     fontSize: responsiveScreenFontSize(2),
     fontFamily: 'Quicksand-SemiBold',
@@ -512,25 +328,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Medium',
     fontSize: responsiveScreenFontSize(1.6),
     color: '#2C3E50',
-  },
-  cloneButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2C3E50',
-    paddingHorizontal: responsiveScreenWidth(3),
-    paddingVertical: responsiveScreenHeight(0.8),
-    borderRadius: 8,
-    marginLeft: 'auto',
-  },
-  cloneIcon: {
-    width: responsiveScreenWidth(4),
-    height: responsiveScreenWidth(4),
-    tintColor: '#FFF',
-    marginRight: responsiveScreenWidth(1),
-  },
-  cloneText: {
-    color: '#FFF',
-    fontFamily: 'Quicksand-SemiBold',
-    fontSize: responsiveScreenFontSize(1.5),
   },
 });

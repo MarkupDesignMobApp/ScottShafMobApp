@@ -39,6 +39,7 @@ import {
   useGetListsQuery,
   useReorderListItemsMutation,
   useGetUserProfileQuery,
+  useCloneListMutation,
 } from '../../../features/auth/authApi';
 
 // Enable LayoutAnimation for Android
@@ -49,9 +50,27 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-/* ─────────────────────────────────────────────
-   BADGE helpers
-───────────────────────────────────────────── */
+// ------------------- Helper: detect cloned list -------------------
+function isClonedList(apiItem: any): boolean {
+  const title = String(apiItem?.title ?? '').toLowerCase();
+  return Boolean(
+    apiItem?.is_clone ||
+    apiItem?.is_cloned ||
+    apiItem?.cloned ||
+    apiItem?.parent_id ||
+    apiItem?.parent_list_id ||
+    apiItem?.original_list_id ||
+    apiItem?.copied_from_list_id ||
+    apiItem?.clone_of ||
+    apiItem?.source_list_id ||
+    apiItem?.from_list_id ||
+    title.includes('(copy)') ||
+    title.endsWith(' copy') ||
+    title.includes('copy')
+  );
+}
+
+// ------------------- Badge helpers (unchanged) -------------------
 const STATUS_COLORS = {
   published: { bg: '#D1FAE5', text: '#065F46' },
   draft: { bg: '#FEF3C7', text: '#92400E' },
@@ -75,9 +94,7 @@ const Badge = ({ label, colorMap }) => {
   );
 };
 
-/* ─────────────────────────────────────────────
-   DRAGGABLE ITEMS LIST - COMPLETE FIX
-───────────────────────────────────────────── */
+// ------------------- DraggableItemsList (unchanged) -------------------
 const DraggableItemsList = ({
   listId,
   initialItems,
@@ -91,202 +108,87 @@ const DraggableItemsList = ({
   const flatListRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  /* ── CRITICAL FIX: Get user position from user_positions JSON ── */
   const getUserPosition = useCallback(
     item => {
       try {
-        console.log(`\n🔍 [Item ${item.id}] Getting user position...`);
-        console.log(`   Raw user_positions:`, item.user_positions);
-        console.log(`   Type: ${typeof item.user_positions}`);
-
-        if (!item?.user_positions) {
-          console.log(`   ❌ No user_positions field`);
-          return 999;
-        }
-
-        // Parse the JSON string - IMPORTANT: Handle if it's already parsed
-        let parsed;
-        if (typeof item.user_positions === 'string') {
-          console.log(`   📝 Parsing JSON string...`);
-          parsed = JSON.parse(item.user_positions);
-        } else if (typeof item.user_positions === 'object') {
-          console.log(`   📝 Already an object`);
-          parsed = item.user_positions;
-        } else {
-          console.log(`   ❌ Unexpected type: ${typeof item.user_positions}`);
-          return 999;
-        }
-
-        console.log(`   📊 Parsed object:`, parsed);
-
-        // Try to get position with different key formats
+        if (!item?.user_positions) return 999;
+        let parsed =
+          typeof item.user_positions === 'string'
+            ? JSON.parse(item.user_positions)
+            : item.user_positions;
         const userIdStr = String(userId);
         const userIdNum = Number(userId);
-
         let position = parsed[userIdStr];
+        if (position === undefined) position = parsed[userIdNum];
         if (position === undefined) {
-          position = parsed[userIdNum];
-        }
-        if (position === undefined) {
-          // Try all keys to see what's available
           const keys = Object.keys(parsed);
-          console.log(`   🔑 Available keys:`, keys);
-          if (keys.length > 0) {
-            position = parsed[keys[0]];
-            console.log(
-              `   📌 Using first available key: ${keys[0]} = ${position}`,
-            );
-          }
+          if (keys.length > 0) position = parsed[keys[0]];
         }
-
-        console.log(`   ✅ Final position: ${position}`);
-
-        if (position === undefined || position === null) {
-          console.log(`   ⚠️ No position found`);
-          return 999;
-        }
-
-        return Number(position);
-      } catch (error) {
-        console.error(`❌ Error parsing for item ${item.id}:`, error);
+        return position !== undefined && position !== null ? Number(position) : 999;
+      } catch {
         return 999;
       }
     },
-    [userId],
+    [userId]
   );
 
-  /* ── Sort items by user position (ascending - lower number comes first) ── */
   const sortItemsByUserPosition = useCallback(
     itemsToSort => {
-      if (!Array.isArray(itemsToSort) || itemsToSort.length === 0) {
-        return [];
-      }
-
-      console.log(`\n🔍 ===== SORTING ITEMS FOR LIST ${listId} =====`);
-      console.log(`User ID: ${userId}`);
-
-      const sorted = [...itemsToSort].sort((a, b) => {
+      if (!itemsToSort.length) return [];
+      return [...itemsToSort].sort((a, b) => {
         const posA = getUserPosition(a);
         const posB = getUserPosition(b);
-
-        console.log(
-          `   Compare: Item ${a.id} (pos: ${posA}) vs Item ${b.id} (pos: ${posB})`,
-        );
-
-        if (posA !== posB) {
-          return posA - posB;
-        }
-
+        if (posA !== posB) return posA - posB;
         return (a.id || 0) - (b.id || 0);
       });
-
-      console.log('\n✅ Sorted result:');
-      sorted.forEach((item, idx) => {
-        const pos = getUserPosition(item);
-        console.log(
-          `   ${idx + 1}. Item ID ${item.id}: "${item.catalog_item?.name || item.custom_item_name
-          }" - Position: ${pos}`,
-        );
-      });
-      console.log('');
-
-      return sorted;
     },
-    [getUserPosition, listId, userId],
+    [getUserPosition]
   );
 
-  /* ── Initialize items from GET API (always sort by user_positions) ── */
   useEffect(() => {
-    if (!initialItems || initialItems.length === 0) {
+    if (!initialItems?.length) {
       setItems([]);
       return;
     }
+    setItems(sortItemsByUserPosition(initialItems));
+  }, [initialItems, sortItemsByUserPosition]);
 
-    console.log(`\n🔄 ===== INITIALIZING LIST ${listId} =====`);
-    console.log(`User ID: ${userId}`);
-    console.log('Raw items count:', initialItems.length);
-
-    // Log raw items
-    initialItems.forEach(item => {
-      console.log(`\n📦 Item ${item.id}:`);
-      console.log(
-        `   Name: ${item.catalog_item?.name || item.custom_item_name}`,
-      );
-      console.log(`   user_positions raw:`, item.user_positions);
-      console.log(`   user_positions type: ${typeof item.user_positions}`);
-    });
-
-    // Sort items by user position from GET API
-    const sortedItems = sortItemsByUserPosition(initialItems);
-    setItems(sortedItems);
-  }, [initialItems, listId, userId, sortItemsByUserPosition]);
-
-  /* ── Drag handlers ── */
   const handleDragBegin = useCallback(() => {
     setIsDragging(true);
     onDragStateChange?.(true);
-    console.log('🎯 Drag started');
   }, [onDragStateChange]);
 
   const handleDragEnd = useCallback(
     async ({ data, from, to }) => {
-      console.log(`\n🏁 Drag ended - From index: ${from}, To index: ${to}`);
-
       setIsDragging(false);
       onDragStateChange?.(false);
-
-      if (!data || data.length === 0) return;
-
-      if (from === to) {
-        console.log('⚠️ No position change detected');
-        return;
-      }
-
+      if (from === to) return;
       const previousItems = [...items];
-
-      // Update UI immediately
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setItems(data);
-
-      // Prepare payload
-      const itemsPayload = data.map((item, index) => ({
+      const itemsPayload = data.map((item, idx) => ({
         id: Number(item.id),
-        position: index + 1,
+        position: idx + 1,
       }));
-
-      console.log(
-        '🚀 Sending reorder payload:',
-        JSON.stringify(itemsPayload, null, 2),
-      );
-
       try {
-        const result = await reorderItems({
+        await reorderItems({
           listId: Number(listId),
           items: itemsPayload,
         }).unwrap();
-
-        console.log('✅ Reorder API success:', result);
-
-        // Refetch
-        console.log('📡 Refetching lists...');
         await refetch();
-        console.log('✅ Refetch completed!');
       } catch (error) {
-        console.error('❌ Reorder failed:', error);
-
         Alert.alert(
           'Reorder Failed',
-          error?.data?.message || error?.message || 'Failed to reorder items',
+          error?.data?.message || error?.message || 'Failed to reorder items'
         );
-
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setItems(previousItems);
       }
     },
-    [items, listId, reorderItems, refetch, onDragStateChange],
+    [items, listId, reorderItems, refetch, onDragStateChange]
   );
 
-  if (!items || items.length === 0) {
+  if (!items?.length) {
     return (
       <View style={styles.noItemsContainer}>
         <Text style={styles.noItemsText}>No items in this list</Text>
@@ -302,7 +204,6 @@ const DraggableItemsList = ({
           <Text style={styles.reorderingText}>Saving order...</Text>
         </View>
       )}
-
       <NestableDraggableFlatList
         ref={flatListRef}
         data={items}
@@ -310,7 +211,6 @@ const DraggableItemsList = ({
         renderItem={({ item, drag, isActive, getIndex }) => {
           const index = getIndex?.() ?? 0;
           const userPosition = getUserPosition(item);
-
           const imageUrl = item.catalog_item?.image_url || null;
           const itemName =
             item.catalog_item?.name || item.custom_item_name || 'Unnamed Item';
@@ -421,81 +321,86 @@ const DraggableItemsList = ({
   );
 };
 
-/* ─────────────────────────────────────────────
-   MAIN SCREEN
-───────────────────────────────────────────── */
+// ------------------- MAIN SCREEN (with tabs and clone) -------------------
 export default function MyListScreen({ navigation }) {
   const { data, isLoading, isFetching, refetch } = useGetListsQuery();
   const { data: userProfile } = useGetUserProfileQuery();
   const userId = userProfile?.id;
+  const [cloneList, { isLoading: cloneLoading }] = useCloneListMutation();
 
-  console.log('\n👤 ===== USER INFO =====');
-  console.log(`User ID: ${userId}`);
-  console.log(`User ID type: ${typeof userId}`);
-  console.log(`Full user profile:`, userProfile);
-
-  const [lists, setLists] = useState([]);
+  const [lists, setLists] = useState([]); // full lists with isCloned & canClone flags
   const [expandedIds, setExpandedIds] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [activeTab, setActiveTab] = useState<'original' | 'cloned'>('original');
   const scrollViewRef = useRef(null);
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      console.log('\n📱 Screen focused - Refetching...');
       refetch();
-    }, [refetch]),
+    }, [refetch])
   );
 
+  // Transform API data and add isCloned / canClone flags
   useEffect(() => {
     const raw = Array.isArray(data) ? data : [];
-
-    console.log('\n📡 ===== GET API RESPONSE =====');
-    console.log(`Total lists: ${raw.length}`);
-
-    if (raw.length > 0 && raw[0]?.items) {
-      console.log(`\n📋 First list "${raw[0].title}" items:`);
-      raw[0].items.forEach(item => {
-        console.log(
-          `   Item ${item.id}: ${item.catalog_item?.name || item.custom_item_name
-          }`,
-        );
-        console.log(`      user_positions: ${item.user_positions}`);
-      });
-    }
-
     if (!raw.length) {
       setLists([]);
       return;
     }
 
-    setLists(
-      raw.map(list => ({
+    const mapped = raw.map(list => {
+      const isCloned = isClonedList(list);
+      return {
         ...list,
         selected: false,
         items: Array.isArray(list?.items) ? list.items : [],
-      })),
-    );
+        isCloned,
+        canClone: !isCloned, // only original lists can be cloned
+      };
+    });
+    setLists(mapped);
   }, [data]);
 
-  const filteredLists = useMemo(() => {
-    if (!searchText.trim()) return lists;
-    return lists.filter(l =>
-      l?.title?.toLowerCase().includes(searchText.toLowerCase()),
+  // Filter original and cloned lists
+  const originalLists = useMemo(
+    () => lists.filter(item => !item.isCloned),
+    [lists]
+  );
+  const clonedLists = useMemo(
+    () => lists.filter(item => item.isCloned),
+    [lists]
+  );
+
+  // Apply search filter on the currently active tab's lists
+  const filteredOriginal = useMemo(() => {
+    if (!searchText.trim()) return originalLists;
+    return originalLists.filter(l =>
+      l?.title?.toLowerCase().includes(searchText.toLowerCase())
     );
-  }, [searchText, lists]);
+  }, [searchText, originalLists]);
+
+  const filteredCloned = useMemo(() => {
+    if (!searchText.trim()) return clonedLists;
+    return clonedLists.filter(l =>
+      l?.title?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [searchText, clonedLists]);
+
+  const visibleLists = activeTab === 'original' ? filteredOriginal : filteredCloned;
+  const visibleCount = visibleLists.length;
 
   const toggleSelect = useCallback(id => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setLists(prev =>
-      prev.map(l => (l.id === id ? { ...l, selected: !l.selected } : l)),
+      prev.map(l => (l.id === id ? { ...l, selected: !l.selected } : l))
     );
   }, []);
 
   const toggleExpand = useCallback(id => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   }, []);
 
@@ -517,8 +422,23 @@ export default function MyListScreen({ navigation }) {
     }
   };
 
+  const onClonePress = async (list: any) => {
+    if (!list.canClone) {
+      Alert.alert('Not allowed', 'You can only clone original lists.');
+      return;
+    }
+    try {
+      const res: any = await cloneList(list.id).unwrap();
+      Alert.alert('Success', `${res.title || 'List'} cloned successfully`);
+      await refetch(); // Refresh – the new cloned list will appear in "Cloned" tab
+    } catch (e: any) {
+      console.log('CLONE ERROR', e);
+      Alert.alert('Error', e?.data?.message || 'Failed to clone list');
+    }
+  };
+
   const getListThumbnail = useCallback(items => {
-    if (!items || items.length === 0) return null;
+    if (!items?.length) return null;
     const catalogItem = items.find(item => item?.catalog_item?.image_url);
     return catalogItem?.catalog_item?.image_url || null;
   }, []);
@@ -614,16 +534,37 @@ export default function MyListScreen({ navigation }) {
               </Text>
             </View>
 
-            {/* <Pressable
-              onPress={() => handleShare(item)}
-              style={styles.shareBtn}
-              hitSlop={8}
-            >
-              <Image
-                source={require('../../../../assets/image/unfillshare.png')}
-                style={styles.shareIcon}
-              />
-            </Pressable> */}
+            {/* Action buttons: Share + Clone (only for original lists) */}
+            <View style={styles.cardActions}>
+              {/* <Pressable
+                onPress={() => handleShare(item)}
+                style={styles.actionIconBtn}
+                hitSlop={8}
+              >
+                <Image
+                  source={require('../../../../assets/image/unfillshare.png')}
+                  style={styles.actionIcon}
+                />
+              </Pressable> */}
+
+              {item.canClone && activeTab === 'original' && (
+                <Pressable
+                  onPress={() => onClonePress(item)}
+                  style={styles.actionIconBtn}
+                  hitSlop={8}
+                  disabled={cloneLoading}
+                >
+                  {cloneLoading ? (
+                    <ActivityIndicator size="small" color="#1A2B3C" />
+                  ) : (
+                    <Image
+                      source={require('../../../../assets/image/copy.png')}
+                      style={styles.actionIcon}
+                    />
+                  )}
+                </Pressable>
+              )}
+            </View>
           </Pressable>
 
           <Pressable
@@ -673,7 +614,9 @@ export default function MyListScreen({ navigation }) {
       getListThumbnail,
       handleDragStateChange,
       refetch,
-    ],
+      cloneLoading,
+      activeTab,
+    ]
   );
 
   return (
@@ -698,8 +641,7 @@ export default function MyListScreen({ navigation }) {
             <View>
               <Text style={styles.headerTitle}>My Lists</Text>
               <Text style={styles.headerSubtitle}>
-                {filteredLists.length} list
-                {filteredLists.length !== 1 ? 's' : ''}
+                {visibleCount} {activeTab === 'original' ? 'original' : 'cloned'} list{visibleCount !== 1 ? 's' : ''}
               </Text>
             </View>
 
@@ -708,6 +650,43 @@ export default function MyListScreen({ navigation }) {
               onPress={() => navigation.navigate('Create')}
             >
               <Text style={styles.createBtnText}>+ New</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Tab Bar */}
+          <View style={styles.tabRow}>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === 'original' && styles.tabButtonActive,
+              ]}
+              onPress={() => setActiveTab('original')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'original' && styles.tabTextActive,
+                ]}
+              >
+                My Lists ({originalLists.length})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === 'cloned' && styles.tabButtonActive,
+              ]}
+              onPress={() => setActiveTab('cloned')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'cloned' && styles.tabTextActive,
+                ]}
+              >
+                Cloned ({clonedLists.length})
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -730,19 +709,23 @@ export default function MyListScreen({ navigation }) {
           nestedScrollEnabled={true}
           bounces={false}
         >
-          {!isLoading && filteredLists.length === 0 ? (
+          {!isLoading && visibleLists.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Image
                 source={require('../../../../assets/image/notificationnotfount.jpg')}
                 style={styles.emptyImg}
               />
-              <Text style={styles.emptyTitle}>No lists found</Text>
+              <Text style={styles.emptyTitle}>
+                No {activeTab === 'original' ? 'original' : 'cloned'} lists found
+              </Text>
               <Text style={styles.emptySubtitle}>
                 {searchText
                   ? 'Try a different search term'
-                  : 'Create your first list to get started'}
+                  : activeTab === 'original'
+                    ? 'Create your first list to get started'
+                    : 'Clone an original list to see it here'}
               </Text>
-              {!searchText && (
+              {!searchText && activeTab === 'original' && (
                 <TouchableOpacity
                   style={styles.emptyCreateBtn}
                   onPress={() => navigation.navigate('Create')}
@@ -752,7 +735,7 @@ export default function MyListScreen({ navigation }) {
               )}
             </View>
           ) : (
-            filteredLists.map(item => (
+            visibleLists.map(item => (
               <View key={String(item.id)}>{renderListCard({ item })}</View>
             ))
           )}
@@ -762,16 +745,14 @@ export default function MyListScreen({ navigation }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   STYLES - UPDATED
-───────────────────────────────────────────── */
+// ------------------- STYLES (added tab styles and adjusted) -------------------
 export const styles = StyleSheet.create({
   /* Header */
   header: {
     backgroundColor: '#1A2B3C',
     paddingHorizontal: responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(1.5),
-    paddingBottom: responsiveScreenHeight(2.2),
+    paddingBottom: responsiveScreenHeight(1),
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     shadowColor: '#000',
@@ -784,6 +765,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: responsiveScreenHeight(1.5),
   },
   headerTitle: {
     fontSize: responsiveScreenFontSize(2.4),
@@ -817,7 +799,34 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Bold',
     fontSize: responsiveScreenFontSize(1.7),
   },
-  searchWrap: { marginTop: responsiveScreenHeight(1.8) },
+
+  /* Tab bar */
+  tabRow: {
+    flexDirection: 'row',
+    backgroundColor: '#2D3E4E',
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: responsiveScreenHeight(1.5),
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: responsiveScreenHeight(0.8),
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: '#3B82F6',
+  },
+  tabText: {
+    fontSize: responsiveScreenFontSize(1.6),
+    fontFamily: 'Quicksand-SemiBold',
+    color: '#CBD5E1',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
+
+  searchWrap: { marginBottom: responsiveScreenHeight(0.5) },
 
   /* List content */
   listContent: {
@@ -956,14 +965,22 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Regular',
     marginTop: 2,
   },
-  shareBtn: {
-    backgroundColor: '#F1F5F9',
-    padding: 10,
-    borderRadius: 12,
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     marginLeft: 8,
-    alignSelf: 'flex-start',
   },
-  shareIcon: { width: 18, height: 18, tintColor: '#1A2B3C' },
+  actionIconBtn: {
+    padding: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+  },
+  actionIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#1A2B3C',
+  },
   expandRow: {
     marginHorizontal: responsiveScreenHeight(2),
     paddingVertical: responsiveScreenHeight(1.2),
@@ -1257,5 +1274,4 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Bold',
     fontSize: responsiveScreenFontSize(1.9),
   },
-
 });
