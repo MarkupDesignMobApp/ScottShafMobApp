@@ -13,6 +13,7 @@ import {
   Alert,
   Share as RNShare,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   StyleSheet,
   ActivityIndicator,
   LayoutAnimation,
@@ -22,6 +23,9 @@ import {
   TextInput,
   Switch,
   Dimensions,
+  KeyboardAvoidingView,
+  ScrollView,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -404,7 +408,10 @@ export default function MyListScreen({ navigation }) {
         SCREEN_WIDTH - menuWidth - 12,
       ),
     );
-    const top = Math.min(menuLayout.y + menuLayout.height + 8, SCREEN_HEIGHT - 220);
+    const top = Math.min(
+      menuLayout.y + menuLayout.height + 8,
+      SCREEN_HEIGHT - 220,
+    );
     return { top, left };
   }, [menuLayout, SCREEN_HEIGHT, SCREEN_WIDTH]);
 
@@ -475,7 +482,6 @@ export default function MyListScreen({ navigation }) {
     );
   }, []);
 
-  // Open edit modal with list data
   const openEditModal = list => {
     setEditingList(list);
     setEditTitle(list.title || '');
@@ -488,8 +494,9 @@ export default function MyListScreen({ navigation }) {
     closeMenu();
   };
 
-  // Handle update via modal
   const handleUpdateSubmit = async () => {
+    Keyboard.dismiss();
+
     if (!editTitle.trim()) {
       Alert.alert('Error', 'Title is required');
       return;
@@ -522,7 +529,6 @@ export default function MyListScreen({ navigation }) {
     }
   };
 
-  // ---------- Other Action Handlers ----------
   const handleDelete = async list => {
     closeMenu();
     Alert.alert(
@@ -910,6 +916,7 @@ export default function MyListScreen({ navigation }) {
         </NestableScrollContainer>
       </SafeAreaProvider>
 
+      {/* Dots menu modal */}
       <Modal
         visible={isMenuVisible}
         transparent
@@ -982,69 +989,100 @@ export default function MyListScreen({ navigation }) {
         animationType="slide"
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit List</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              style={styles.modalKeyboardWrapper}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+            >
+              <TouchableWithoutFeedback onPress={() => { }}>
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeaderRow}>
+                    <Text style={styles.modalTitle}>Edit List</Text>
+                    <Pressable
+                      onPress={() => setEditModalVisible(false)}
+                      style={styles.modalCloseBtn}
+                      hitSlop={10}
+                    >
+                      <Text style={styles.modalCloseText}>✕</Text>
+                    </Pressable>
+                  </View>
 
-            <Text style={styles.modalLabel}>Title</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editTitle}
-              onChangeText={setEditTitle}
-              placeholder="Enter title"
-              placeholderTextColor="#999"
-            />
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.modalScrollContent}
+                  >
+                    <Text style={styles.modalLabel}>Title</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editTitle}
+                      onChangeText={setEditTitle}
+                      placeholder="Enter title"
+                      placeholderTextColor="#999"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
 
-            <Text style={styles.modalLabel}>Category ID</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editCategoryId}
-              onChangeText={setEditCategoryId}
-              keyboardType="numeric"
-              placeholder="e.g., 5"
-              placeholderTextColor="#999"
-            />
+                    <Text style={styles.modalLabel}>Category ID</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editCategoryId}
+                      onChangeText={setEditCategoryId}
+                      keyboardType="numeric"
+                      placeholder="e.g., 5"
+                      placeholderTextColor="#999"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
 
-            <Text style={styles.modalLabel}>List Size</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editListSize}
-              onChangeText={setEditListSize}
-              keyboardType="numeric"
-              placeholder="Number of items"
-              placeholderTextColor="#999"
-            />
+                    <Text style={styles.modalLabel}>List Size</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editListSize}
+                      onChangeText={setEditListSize}
+                      keyboardType="numeric"
+                      placeholder="Number of items"
+                      placeholderTextColor="#999"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
 
-            <View style={styles.modalSwitchRow}>
-              <Text style={styles.modalLabel}>Group List</Text>
-              <Switch
-                value={editIsGroup}
-                onValueChange={setEditIsGroup}
-                trackColor={{ false: '#ccc', true: '#3B82F6' }}
-              />
-            </View>
+                    <View style={styles.modalSwitchRow}>
+                      <Text style={styles.modalLabel}>Group List</Text>
+                      <Switch
+                        value={editIsGroup}
+                        onValueChange={setEditIsGroup}
+                        trackColor={{ false: '#ccc', true: '#3B82F6' }}
+                      />
+                    </View>
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalCancelButton]}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalUpdateButton]}
-                onPress={handleUpdateSubmit}
-                disabled={isUpdating}
-              >
-                {isUpdating ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.modalUpdateText}>Update</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                    <View style={styles.modalButtons}>
+                      <TouchableOpacity
+                        style={[styles.modalButton, styles.modalCancelButton]}
+                        onPress={() => setEditModalVisible(false)}
+                      >
+                        <Text style={styles.modalCancelText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.modalButton, styles.modalUpdateButton]}
+                        onPress={handleUpdateSubmit}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text style={styles.modalUpdateText}>Update</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </ScrollView>
+                </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </>
   );
@@ -1614,32 +1652,58 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  modalKeyboardWrapper: {
+    width: '100%',
+    alignItems: 'center',
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    padding: 24,
-    width: '85%',
-    maxWidth: 400,
+    padding: 20,
+    width: '100%',
+    maxWidth: 420,
+    maxHeight: '85%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
+  modalScrollContent: {
+    paddingBottom: 10,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   modalTitle: {
     fontSize: responsiveScreenFontSize(2.2),
     fontWeight: 'bold',
     color: '#1E293B',
-    marginBottom: 20,
-    textAlign: 'center',
+  },
+  modalCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: '#334155',
+    fontWeight: '700',
   },
   modalLabel: {
     fontSize: responsiveScreenFontSize(1.6),
     fontWeight: '500',
     color: '#334155',
     marginBottom: 5,
-    marginTop: 10,
+    marginTop: 12,
   },
   modalInput: {
     borderWidth: 1,
@@ -1648,6 +1712,7 @@ export const styles = StyleSheet.create({
     padding: 12,
     fontSize: responsiveScreenFontSize(1.6),
     backgroundColor: '#F8FAFC',
+    color: '#111827',
   },
   modalSwitchRow: {
     flexDirection: 'row',
@@ -1658,7 +1723,7 @@ export const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 18,
     gap: 12,
   },
   modalButton: {

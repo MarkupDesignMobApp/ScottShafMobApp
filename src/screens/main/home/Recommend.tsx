@@ -184,7 +184,7 @@ function PostCard({ item, onLikePress, onSharePress }: any) {
         </Pressable>
 
         <Pressable onPress={() => onSharePress(item.id, item.title)}>
-          <ActionButton icon={icons.shareOutline} value="Share" />
+          {/* <ActionButton icon={icons.shareOutline} value="Share" /> */}
         </Pressable>
       </View>
     </View>
