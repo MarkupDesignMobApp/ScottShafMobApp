@@ -20,9 +20,7 @@ import {
   RefreshControl,
   TextInput,
 } from 'react-native';
-import {
-  responsiveScreenWidth,
-} from 'react-native-responsive-dimensions';
+import { responsiveScreenWidth } from 'react-native-responsive-dimensions';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -130,7 +128,9 @@ export default function FeaturedLists({
         safeData = (data as any).data || [];
       } else if (data && typeof data === 'object') {
         // Try to convert object to array if possible
-        safeData = Object.values(data).filter(item => item && typeof item === 'object');
+        safeData = Object.values(data).filter(
+          item => item && typeof item === 'object',
+        );
       }
     }
 
@@ -210,7 +210,9 @@ export default function FeaturedLists({
       dataMapRef.current.set(updatedItem.id, updatedItem);
       setAllData(prev => {
         const prevArray = Array.isArray(prev) ? prev : [];
-        return prevArray.map(item => (item.id === updatedItem.id ? updatedItem : item));
+        return prevArray.map(item =>
+          item.id === updatedItem.id ? updatedItem : item,
+        );
       });
     }
   }, []);
@@ -230,8 +232,12 @@ export default function FeaturedLists({
       const query = searchQuery.toLowerCase().trim();
       result = result.filter(item => {
         const titleMatch = item.title?.toLowerCase().includes(query);
-        const categoryMatch = item.category?.name?.toLowerCase().includes(query);
-        const interestMatch = item.category?.interest?.name?.toLowerCase().includes(query);
+        const categoryMatch = item.category?.name
+          ?.toLowerCase()
+          .includes(query);
+        const interestMatch = item.category?.interest?.name
+          ?.toLowerCase()
+          .includes(query);
         return titleMatch || categoryMatch || interestMatch;
       });
     }
@@ -303,10 +309,7 @@ export default function FeaturedLists({
             : 'There are no featured lists available'}
         </Text>
         {searchQuery && (
-          <Pressable
-            onPress={clearSearch}
-            style={styles.clearSearchButton}
-          >
+          <Pressable onPress={clearSearch} style={styles.clearSearchButton}>
             <Text style={styles.clearSearchText}>Clear Search</Text>
           </Pressable>
         )}
@@ -382,7 +385,8 @@ export default function FeaturedLists({
         </View>
         {isSearchActive && (
           <Text style={styles.searchResultsText}>
-            {flatListData.length} {flatListData.length === 1 ? 'result' : 'results'}
+            {flatListData.length}{' '}
+            {flatListData.length === 1 ? 'result' : 'results'}
           </Text>
         )}
       </View>
@@ -530,20 +534,21 @@ const FullRow = React.memo(({ item, onUpdate }: FullRowProps) => {
     try {
       const res = await shareFeaturedItem(localItem.id).unwrap();
 
-      if (res?.share_url) {
-        await Share.share({
-          title: localItem.title,
-          message: `Check out this list: ${localItem.title}\n\n${res.share_url}`,
-        });
+      // ✅ Build custom scheme URL
+      const customUrl = `markupdesigns://scott-shafer/featured-lists/${localItem.id}`;
 
-        const updatedItem = {
-          ...localItem,
-          shares_count: (localItem.shares_count || 0) + 1,
-        };
+      await Share.share({
+        title: localItem.title,
+        message: `Check out this list: ${localItem.title}\n\n${customUrl}`,
+      });
 
-        setLocalItem(updatedItem);
-        onUpdate(updatedItem);
-      }
+      const updatedItem = {
+        ...localItem,
+        shares_count: (localItem.shares_count || 0) + 1,
+      };
+
+      setLocalItem(updatedItem);
+      onUpdate(updatedItem);
     } catch (error) {
       console.log('Share error:', error);
     }
@@ -602,13 +607,20 @@ const FullRow = React.memo(({ item, onUpdate }: FullRowProps) => {
             disabled={isLiking}
           >
             <Image
-              source={localItem.is_liked ? icons.heartFilled : icons.heartOutline}
+              source={
+                localItem.is_liked ? icons.heartFilled : icons.heartOutline
+              }
               style={[
                 styles.actionIcon,
                 localItem.is_liked && styles.likedIcon,
               ]}
             />
-            <Text style={[styles.actionText, localItem.is_liked && styles.likedText]}>
+            <Text
+              style={[
+                styles.actionText,
+                localItem.is_liked && styles.likedText,
+              ]}
+            >
               {formatCount(localItem.likes_count || 0)}
             </Text>
           </Pressable>
@@ -619,13 +631,22 @@ const FullRow = React.memo(({ item, onUpdate }: FullRowProps) => {
             disabled={isBookmarking}
           >
             <Image
-              source={localItem.is_saved ? icons.bookmarkFilled : icons.bookmarkOutline}
+              source={
+                localItem.is_saved
+                  ? icons.bookmarkFilled
+                  : icons.bookmarkOutline
+              }
               style={[
                 styles.actionIcon,
                 localItem.is_saved && styles.bookmarkedIcon,
               ]}
             />
-            <Text style={[styles.actionText, localItem.is_saved && styles.bookmarkedText]}>
+            <Text
+              style={[
+                styles.actionText,
+                localItem.is_saved && styles.bookmarkedText,
+              ]}
+            >
               {formatCount(localItem.saves_count || 0)}
             </Text>
           </Pressable>
@@ -635,10 +656,7 @@ const FullRow = React.memo(({ item, onUpdate }: FullRowProps) => {
             style={styles.actionButton}
             disabled={isSharing}
           >
-            <Image
-              source={icons.shareOutline}
-              style={styles.actionIcon}
-            />
+            <Image source={icons.shareOutline} style={styles.actionIcon} />
             <Text style={styles.actionText}>
               {formatCount(localItem.shares_count || 0)}
             </Text>

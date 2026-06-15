@@ -4,9 +4,11 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   StyleSheet,
   ActivityIndicator,
+  StatusBar,
+  Alert,
+  Platform,
 } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import AppHeader from '../../../components/ui/AppButton/AppHeader';
@@ -14,6 +16,10 @@ import {
   useGetNotificationsQuery,
   useAcceptNotificationMutation,
   useRejectNotificationMutation,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
+  useDeleteNotificationMutation,
+  useDeleteAllNotificationsMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
 import {
@@ -27,14 +33,19 @@ export default function Notification({ navigation }: any) {
   const { data: Notify, isLoading, refetch } = useGetNotificationsQuery();
   const [acceptNotification] = useAcceptNotificationMutation();
   const [rejectNotification] = useRejectNotificationMutation();
+  const [markAsRead] = useMarkNotificationAsReadMutation();
+  const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
+  const [deleteNotification] = useDeleteNotificationMutation();
+  const [deleteAllNotifications] = useDeleteAllNotificationsMutation();
 
-  // per-item loading state: { [id]: boolean }
   const [actionLoading, setActionLoading] = useState<
     Record<string | number, boolean>
   >({});
-  // selectedAction for styling (accept/decline active look)
   const [selectedAction, setSelectedAction] = useState<
     Record<string | number, string>
+  >({});
+  const [singleActionLoading, setSingleActionLoading] = useState<
+    Record<string | number, boolean>
   >({});
 
   useFocusEffect(
@@ -43,33 +54,120 @@ export default function Notification({ navigation }: any) {
     }, [refetch]),
   );
 
-  const Data = Notify?.data?.data || [];
+  // API returns: { success, data: { current_page, data: [], ... } }
+  const notifications = Notify?.data?.data || [];
+
+  const isUnread = (item: any) => item.is_read === false;
+
+  const handleMarkAsRead = async (item: any) => {
+    if (!isUnread(item)) return;
+    setSingleActionLoading(prev => ({ ...prev, [item.id]: true }));
+    try {
+      await markAsRead(item.id).unwrap();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to mark as read');
+    } finally {
+      setSingleActionLoading(prev => ({ ...prev, [item.id]: false }));
+    }
+  };
+
+  const handleDelete = async (item: any) => {
+    Alert.alert(
+      'Delete Notification',
+      'Are you sure you want to delete this notification?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setSingleActionLoading(prev => ({ ...prev, [item.id]: true }));
+            try {
+              await deleteNotification(item.id).unwrap();
+            } catch (err) {
+              Alert.alert('Error', 'Failed to delete notification');
+            } finally {
+              setSingleActionLoading(prev => ({ ...prev, [item.id]: false }));
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleMarkAllRead = () => {
+    if (notifications.length === 0) return;
+    Alert.alert('Mark All Read', 'Mark all notifications as read?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Mark All',
+        onPress: async () => {
+          try {
+            await markAllAsRead().unwrap();
+          } catch (err) {
+            Alert.alert('Error', 'Failed to mark all as read');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleDeleteAll = () => {
+    if (notifications.length === 0) return;
+    Alert.alert(
+      'Delete All Notifications',
+      'Are you sure you want to delete ALL notifications? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete All',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAllNotifications().unwrap();
+            } catch (err) {
+              Alert.alert('Error', 'Failed to delete all notifications');
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const handleAccept = async (item: any) => {
+    if (item.action_status === 'accepted') return;
     setSelectedAction(prev => ({ ...prev, [item.id]: 'accept' }));
     setActionLoading(prev => ({ ...prev, [item.id]: true }));
     try {
       await acceptNotification({ list_id: item.list_id }).unwrap();
-      // refresh list
       refetch();
     } catch (err) {
-      console.log('Accept error', err);
+      Alert.alert('Error', 'Failed to accept invitation');
     } finally {
       setActionLoading(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
   const handleDecline = async (item: any) => {
+    if (item.action_status === 'declined') return;
     setSelectedAction(prev => ({ ...prev, [item.id]: 'decline' }));
     setActionLoading(prev => ({ ...prev, [item.id]: true }));
     try {
       await rejectNotification({ list_id: item.list_id }).unwrap();
       refetch();
     } catch (err) {
-      console.log('Decline error', err);
+      Alert.alert('Error', 'Failed to decline invitation');
     } finally {
       setActionLoading(prev => ({ ...prev, [item.id]: false }));
     }
+  };
+
+  const getButtonState = (item: any) => {
+    if (item.action_status === 'accepted')
+      return { disabled: true, label: 'Accepted', active: true };
+    if (item.action_status === 'declined')
+      return { disabled: true, label: 'Declined', active: false };
+    return { disabled: false, label: null, active: false };
   };
 
   if (isLoading) {
@@ -81,258 +179,367 @@ export default function Notification({ navigation }: any) {
   }
 
   return (
-    <View style={styles.container}>
-      <AppHeader
-        onLeftPress={() => navigation.goBack()}
-        title="Notifications"
-        leftImage={require('../../../../assets/image/arrow-down.png')}
-      />
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FC" />
+      <View style={styles.container}>
+        <AppHeader
+          onLeftPress={() => navigation.goBack()}
+          title="Notifications"
+          leftImage={require('../../../../assets/image/left-icon.png')}
+          leftImageTintColor="#000"
+        />
 
-      {Data.length === 0 ? (
-        <View style={styles.emptyWrap}>
-          <Image
-            source={require('../../../../assets/image/notificationnotfount.jpg')}
-            style={styles.emptyImg}
-          />
-          <Text style={styles.emptyText}>No notifications found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={Data}
-          contentContainerStyle={{
-            paddingTop: hp(1.5),
-            paddingBottom: hp(1.5),
-          }}
-          keyExtractor={item => item.id.toString()}
-          renderItem={({ item, index }) => {
-            const isLoadingThis = !!actionLoading[item.id];
-            return (
-              <View>
-                <View style={styles.card}>
-                  <View style={styles.row}>
-                    <View style={styles.imgWrap}>
-                      <Image
-                        source={require('../../../../assets/image/women1.png')}
-                        style={styles.profileImg}
-                      />
-                    </View>
+        {notifications.length > 0 && (
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerActionBtn}
+              onPress={handleMarkAllRead}
+            >
+              <Text style={styles.headerActionText}>Mark all read</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerActionBtn}
+              onPress={handleDeleteAll}
+            >
+              <Text style={[styles.headerActionText, styles.deleteAllText]}>
+                Delete all
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-                    <View style={styles.textWrap}>
-                      <Text style={styles.title}>{item.title}</Text>
-                      <Text style={styles.sub}>{item.body}</Text>
-                      <Text style={styles.time}>
-                        {item.created_at} 
-                      </Text>
+        {notifications.length === 0 ? (
+          <View style={styles.emptyWrap}>
+            <Image
+              source={require('../../../../assets/image/notificationnotfount.jpg')}
+              style={styles.emptyImg}
+            />
+            <Text style={styles.emptyText}>No notifications yet</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={notifications}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            keyExtractor={item => item.id.toString()}
+            renderItem={({ item }) => {
+              const isActionLoading = !!actionLoading[item.id];
+              const isSingleLoading = !!singleActionLoading[item.id];
+              const unread = isUnread(item);
+              const acceptState = getButtonState(item);
+              const declineState = getButtonState(item);
+              const showButtons = item.can_respond === true;
 
-                      <View style={styles.btnRow}>
-                        <TouchableOpacity
-                          disabled={isLoadingThis}
-                          style={[
-                            styles.btn,
-                            selectedAction[item.id] === 'accept' &&
-                              styles.acceptActive,
-                          ]}
-                          onPress={() => handleAccept(item)}
-                        >
-                          {isLoadingThis &&
-                          selectedAction[item.id] === 'accept' ? (
-                            <ActivityIndicator size="small" color="#fff" />
-                          ) : (
-                            <Text
+              // Profile image fallback
+              const profileImage = item.sender?.profile_image
+                ? { uri: item.sender.profile_image }
+                : require('../../../../assets/image/women1.png');
+
+              return (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => handleMarkAsRead(item)}
+                  disabled={isSingleLoading || !unread}
+                >
+                  <View style={[styles.card, unread && styles.cardUnread]}>
+                    <View style={styles.row}>
+                      <View style={styles.avatar}>
+                        <Image source={profileImage} style={styles.avatarImg} />
+                      </View>
+
+                      <View style={styles.content}>
+                        <View style={styles.titleRow}>
+                          <Text style={styles.title} numberOfLines={1}>
+                            {item.title}
+                          </Text>
+                          {unread && <View style={styles.dot} />}
+                        </View>
+                        <Text style={styles.body} numberOfLines={2}>
+                          {item.body}
+                        </Text>
+                        <Text style={styles.time}>{item.created_at}</Text>
+
+                        {showButtons && (
+                          <View style={styles.buttonGroup}>
+                            <TouchableOpacity
+                              disabled={isActionLoading || acceptState.disabled}
                               style={[
-                                styles.btnText,
-                                selectedAction[item.id] === 'accept' &&
-                                  styles.activeText,
+                                styles.actionBtn,
+                                styles.acceptBtn,
+                                (acceptState.active ||
+                                  selectedAction[item.id] === 'accept') &&
+                                  styles.acceptBtnActive,
                               ]}
+                              onPress={() => handleAccept(item)}
                             >
-                              {selectedAction[item.id] === 'accept'
-                                ? 'Accepted'
-                                : 'Accept'}
-                            </Text>
-                          )}
-                        </TouchableOpacity>
+                              {isActionLoading &&
+                              selectedAction[item.id] === 'accept' ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                              ) : (
+                                <Text
+                                  style={[
+                                    styles.actionBtnText,
+                                    (acceptState.active ||
+                                      selectedAction[item.id] === 'accept') &&
+                                      styles.actionBtnTextActive,
+                                  ]}
+                                >
+                                  {acceptState.label ||
+                                    (selectedAction[item.id] === 'accept'
+                                      ? 'Accepted'
+                                      : 'Accept')}
+                                </Text>
+                              )}
+                            </TouchableOpacity>
 
-                        <TouchableOpacity
-                          disabled={isLoadingThis}
-                          style={[
-                            styles.btn,
-                            styles.declineBtn,
-                            selectedAction[item.id] === 'decline' &&
-                              styles.declineActive,
-                          ]}
-                          onPress={() => handleDecline(item)}
-                        >
-                          {isLoadingThis &&
-                          selectedAction[item.id] === 'decline' ? (
-                            <ActivityIndicator size="small" color="#fff" />
-                          ) : (
-                            <Text
+                            <TouchableOpacity
+                              disabled={
+                                isActionLoading || declineState.disabled
+                              }
                               style={[
-                                styles.btnText,
-                                selectedAction[item.id] === 'decline' &&
-                                  styles.activeText,
+                                styles.actionBtn,
+                                styles.declineBtn,
+                                declineState.active && styles.declineBtnActive,
                               ]}
+                              onPress={() => handleDecline(item)}
                             >
-                              Decline
-                            </Text>
-                          )}
-                        </TouchableOpacity>
+                              {isActionLoading &&
+                              selectedAction[item.id] === 'decline' ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                              ) : (
+                                <Text
+                                  style={[
+                                    styles.actionBtnText,
+                                    declineState.active &&
+                                      styles.actionBtnTextActive,
+                                  ]}
+                                >
+                                  {declineState.label || 'Decline'}
+                                </Text>
+                              )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={styles.deleteBtn}
+                              onPress={() => handleDelete(item)}
+                              disabled={isSingleLoading}
+                            >
+                              {isSingleLoading ? (
+                                <ActivityIndicator
+                                  size="small"
+                                  color="#FF3B30"
+                                />
+                              ) : (
+                                <Image
+                                  source={require('../../../../assets/image/delete.png')}
+                                  style={styles.deleteIcon}
+                                />
+                              )}
+                            </TouchableOpacity>
+                          </View>
+                        )}
                       </View>
                     </View>
-
-                    <View style={styles.dot} />
                   </View>
-                </View>
-
-                {/* Divider below every item, including last */}
-                <View style={styles.divider} />
-              </View>
-            );
-          }}
-        />
-      )}
-    </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FC',
   },
-
   loaderWrap: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F8F9FC',
   },
-
+  listContent: {
+    paddingTop: hp(1),
+    paddingBottom: hp(3),
+  },
+  headerActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(5),
+    paddingVertical: hp(1.2),
+    backgroundColor: '#F8F9FC',
+  },
+  headerActionBtn: {
+    marginLeft: wp(5),
+    paddingVertical: hp(0.6),
+    paddingHorizontal: wp(3),
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  headerActionText: {
+    fontSize: fp(1.6),
+    fontWeight: '500',
+    color: '#00C4FA',
+  },
+  deleteAllText: {
+    color: '#FF3B30',
+  },
   emptyWrap: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -hp(20),
+    marginTop: -hp(10),
   },
-
   emptyImg: {
-    width: wp(70),
-    height: wp(70),
+    width: wp(50),
+    height: wp(50),
     resizeMode: 'contain',
+    marginBottom: hp(2),
   },
-
   emptyText: {
     fontSize: fp(2),
-    color: '#666',
+    color: '#8E8E93',
+    fontWeight: '500',
   },
-
   card: {
-    backgroundColor: '#fff',
-    marginHorizontal: wp(4.3),
-    marginBottom: hp(1.6),
-    borderRadius: wp(3.2),
-    padding: wp(3.2),
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: wp(5),
+    marginBottom: hp(1.5),
+    borderRadius: 16,
+    padding: wp(4),
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-
+  cardUnread: {
+    backgroundColor: '#FFFFFF',
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF04D7',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-
-  imgWrap: {
+  avatar: {
     width: wp(12),
     height: wp(12),
     borderRadius: wp(6),
-    backgroundColor: '#F4F4F4',
+    backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: wp(3),
+    overflow: 'hidden',
   },
-
-  profileImg: {
-    width: wp(10),
-    height: wp(10),
-    resizeMode: 'contain',
+  avatarImg: {
+    width: wp(12),
+    height: wp(12),
+    resizeMode: 'cover',
   },
-
-  textWrap: {
+  content: {
     flex: 1,
-    marginLeft: wp(3.2),
   },
-
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: hp(0.4),
+  },
   title: {
+    flex: 1,
     fontSize: fp(2),
     fontWeight: '600',
-    color: '#000',
+    color: '#1C1C1E',
+    letterSpacing: -0.3,
   },
-
-  sub: {
-    fontSize: fp(1.8),
-    color: '#777',
-    marginTop: hp(0.5),
+  dot: {
+    width: wp(1.8),
+    height: wp(1.8),
+    borderRadius: wp(0.9),
+    backgroundColor: '#FF04D7',
+    marginLeft: wp(2),
   },
-
+  body: {
+    fontSize: fp(1.7),
+    color: '#6C6C70',
+    lineHeight: fp(2.2),
+    marginBottom: hp(0.5),
+  },
   time: {
-    fontSize: fp(1.6),
-    color: '#999',
-    marginTop: hp(0.5),
+    fontSize: fp(1.4),
+    color: '#8E8E93',
+    marginBottom: hp(1.2),
   },
-
-  btnRow: {
+  buttonGroup: {
     flexDirection: 'row',
-    marginTop: hp(1.2),
-  },
-
-  btn: {
-    borderWidth: 1,
-    borderColor: '#00C4FA',
-    paddingVertical: hp(0.8),
-    paddingHorizontal: wp(4.5),
-    borderRadius: wp(5),
-    minWidth: wp(20),
     alignItems: 'center',
-    justifyContent: 'center',
   },
-
-  declineBtn: {
-    marginLeft: wp(2.7),
+  actionBtn: {
+    paddingVertical: hp(0.7),
+    paddingHorizontal: wp(4),
+    borderRadius: 30,
+    borderWidth: 1,
+    backgroundColor: 'transparent',
+    marginRight: wp(2.5),
+    minWidth: wp(18),
+    alignItems: 'center',
+  },
+  acceptBtn: {
     borderColor: '#00C4FA',
   },
-
-  btnText: {
-    fontSize: fp(1.8),
+  acceptBtnActive: {
+    backgroundColor: '#00C4FA',
+    borderColor: '#00C4FA',
+  },
+  declineBtn: {
+    borderColor: '#FF3B30',
+  },
+  declineBtnActive: {
+    backgroundColor: '#FF3B30',
+    borderColor: '#FF3B30',
+  },
+  actionBtnText: {
+    fontSize: fp(1.6),
+    fontWeight: '500',
     color: '#00C4FA',
   },
-
-  acceptActive: {
-    backgroundColor: '#00C4FA',
+  actionBtnTextActive: {
+    color: '#FFFFFF',
   },
-
-  declineActive: {
-    backgroundColor: '#FF0000',
+  deleteBtn: {
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(4),
+    backgroundColor: '#F2F2F7',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-
-  activeText: {
-    color: '#fff',
-  },
-
-  dot: {
-    width: wp(2),
-    height: wp(2),
-    borderRadius: wp(1),
-    backgroundColor: '#FF04D7',
-    position: 'absolute',
-    top: hp(1),
-    right: wp(2),
-  },
-
-  separator: {
-    height: 1,
-    backgroundColor: '#EAEAEA',
-    marginHorizontal: wp(4.3),
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#EAEAEA',
-    marginHorizontal: wp(4.3),
-    marginBottom: hp(0.5),
+  deleteIcon: {
+    width: wp(4.5),
+    height: wp(4.5),
+    tintColor: '#FF3B30',
+    resizeMode: 'contain',
   },
 });

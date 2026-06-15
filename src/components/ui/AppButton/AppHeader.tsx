@@ -8,6 +8,7 @@ import {
   ViewStyle,
   Image,
   ImageSourcePropType,
+  ColorValue,
 } from 'react-native';
 import { responsiveScreenFontSize } from 'react-native-responsive-dimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,8 +20,10 @@ interface AppHeaderProps {
   onLeftPress?: () => void;
   onRightPress?: () => void;
   containerStyle?: ViewStyle;
-  backgroundColor?: string; // NEW PROP
-  titleColor?: string; // NEW PROP
+  backgroundColor?: string;
+  titleColor?: string;
+  leftImageTintColor?: ColorValue; // NEW: optional tint for left icon
+  rightImageTintColor?: ColorValue; // NEW: optional tint for right icon
 }
 
 const AppHeader: React.FC<AppHeaderProps> = ({
@@ -30,8 +33,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onLeftPress,
   onRightPress,
   containerStyle,
-  backgroundColor = '#FFFFFF', // default white
-  titleColor = '#000000', // default black
+  backgroundColor = '#FFFFFF',
+  titleColor = '#000000',
+  leftImageTintColor, // default undefined → no tint
+  rightImageTintColor, // default undefined → no tint
 }) => {
   return (
     <SafeAreaView
@@ -48,9 +53,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               style={styles.iconWrapper}
             >
               <Image
-                tintColor={'#fff'}
                 source={leftImage}
                 style={styles.icon}
+                tintColor={leftImageTintColor} // apply if provided
               />
             </TouchableOpacity>
           )}
@@ -71,7 +76,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               hitSlop={10}
               style={styles.iconWrapper}
             >
-              <Image source={rightImage} style={styles.icon} />
+              <Image
+                source={rightImage}
+                style={styles.icon}
+                tintColor={rightImageTintColor}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -84,13 +93,13 @@ export default AppHeader;
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#FFFFFF', // default, overridden by prop
+    backgroundColor: '#FFFFFF',
   },
   container: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF', // default, overridden by prop
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E0E0E0',
   },

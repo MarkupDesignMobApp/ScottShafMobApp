@@ -10,15 +10,18 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
+  Clipboard,
 } from 'react-native';
 import React, { useState } from 'react';
 import { styles } from './styles';
 import { Data } from './data';
 import { removeTokenFromKeychain } from '../../../app/keychain';
 import { useNavigation } from '@react-navigation/native';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 import {
   useGetUserProfileQuery,
-  useDeleteAccountMutation // ✅ Import the delete account hook
+  useDeleteAccountMutation,
+  useRequestDataExportMutation,
 } from '../../../features/auth/authApi';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -27,9 +30,11 @@ export default function ProfileScreen() {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading } = useGetUserProfileQuery();
-  const [deleteAccount] = useDeleteAccountMutation(); // ✅ Initialize the mutation
+  const [deleteAccount] = useDeleteAccountMutation();
+  const [requestDataExport] = useRequestDataExportMutation();
 
   const user = data?.data?.user;
 
@@ -47,48 +52,130 @@ export default function ProfileScreen() {
     setIsDeleting(true);
 
     try {
-      // ✅ Call the delete account API
       const response = await deleteAccount().unwrap();
-
-      console.log('Delete account response:', response);
-
-      // Show success message
       Alert.alert(
         'Account Deletion Request',
-        response?.message || 'Your account deletion request has been submitted successfully. We will process your request and notify you via email once completed.',
+        response?.message ||
+          'Your account deletion request has been submitted successfully. We will process your request and notify you via email once completed.',
         [
           {
             text: 'OK',
             onPress: async () => {
-              // Clear token and navigate to login
               await removeTokenFromKeychain();
               navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
               });
-            }
-          }
+            },
+          },
         ],
-        { cancelable: false }
+        { cancelable: false },
       );
     } catch (error: any) {
       console.error('Delete account error:', error);
-
-      // Show error message
       Alert.alert(
         'Deletion Failed',
-        error?.data?.message || error?.message || 'Unable to process your request. Please try again later or contact support.',
-        [{ text: 'OK' }]
+        error?.data?.message ||
+          error?.message ||
+          'Unable to process your request. Please try again later or contact support.',
+        [{ text: 'OK' }],
       );
     } finally {
       setIsDeleting(false);
     }
   };
 
+  const handleDataExport = async () => {
+    Alert.alert(
+      'Request Data Export',
+      'Your data will be prepared as a ZIP file. This may take a few moments. Do you want to proceed?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Proceed',
+          onPress: async () => {
+            setIsExporting(true);
+            try {
+              const response = await requestDataExport().unwrap();
+              if (response.success && response.data?.file_path) {
+                const fileUrl = response.data.file_path;
+                Alert.alert(
+                  'Export Ready',
+                  'Your data export is ready. Do you want to download it now?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Download',
+                      onPress: async () => {
+                        try {
+                          if (await InAppBrowser.isAvailable()) {
+                            await InAppBrowser.open(fileUrl, {
+                              dismissButtonStyle: 'cancel',
+                              preferredBarTintColor: '#453AA4',
+                              preferredControlTintColor: 'white',
+                              readerMode: false,
+                              showTitle: true,
+                              toolbarColor: '#6200EE',
+                              secondaryToolbarColor: 'black',
+                              enableUrlBarHiding: true,
+                              enableDefaultShare: true,
+                              forceCloseOnRedirection: false,
+                            });
+                          } else {
+                            Alert.alert('Error', 'InAppBrowser not available');
+                          }
+                        } catch (error) {
+                          Alert.alert(
+                            'Error',
+                            'Could not open the download link.',
+                          );
+                        }
+                      },
+                    },
+                    {
+                      text: 'Copy Link',
+                      onPress: () => {
+                        Clipboard.setString(fileUrl);
+                        Alert.alert(
+                          'Link Copied',
+                          'Export link copied to clipboard.',
+                        );
+                      },
+                    },
+                  ],
+                );
+              } else {
+                Alert.alert(
+                  'Success',
+                  response.message || 'Data export request completed.',
+                );
+              }
+            } catch (error: any) {
+              console.error('Export error:', error);
+              Alert.alert(
+                'Export Failed',
+                error?.data?.message ||
+                  error?.message ||
+                  'Unable to request data export. Please try again later.',
+              );
+            } finally {
+              setIsExporting(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const handleSettingPress = (item: any) => {
-    if (item.action === 'DELETE_ACCOUNT') {
+    if (item.title === 'Request Data Export') {
+      handleDataExport();
+    } else if (item.action === 'DELETE_ACCOUNT') {
       setDeleteModalVisible(true);
-    } else if (item.navigate === 'Privacy' || item.navigate === 'Notification') {
+    } else if (
+      item.navigate === 'Privacy' ||
+      item.navigate === 'Notification'
+    ) {
       navigation.getParent()?.navigate(item.navigate);
     } else {
       navigation.navigate('Profile', {
@@ -110,7 +197,6 @@ export default function ProfileScreen() {
       <SafeAreaView style={styles.container}>
         <StatusBar backgroundColor={'#fff'} barStyle={'dark-content'} />
 
-        {/* HEADER */}
         <View style={styles.header}>
           <Pressable onPress={() => navigation.goBack()}>
             <Image
@@ -118,9 +204,7 @@ export default function ProfileScreen() {
               style={styles.headerIcon}
             />
           </Pressable>
-
           <Text style={styles.headerTitle}>My Account</Text>
-
           <Pressable onPress={() => setLogoutModalVisible(true)}>
             <Image
               source={require('../../../../assets/image/logout.png')}
@@ -133,7 +217,6 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
         >
-          {/* PROFILE CARD */}
           <View style={styles.profileCard}>
             <View style={styles.avatarWrapper}>
               <Image
@@ -149,10 +232,8 @@ export default function ProfileScreen() {
                 <Text style={styles.avatarBadgeText}>✨</Text>
               </View>
             </View>
-
             <Text style={styles.name}>{user?.full_name ?? ''}</Text>
             <Text style={styles.email}>{user?.email ?? ''}</Text>
-
             {user?.created_at && (
               <View style={styles.memberBadge}>
                 <Text style={styles.memberSince}>
@@ -164,22 +245,23 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
-
             <Pressable
-              onPress={() => navigation.navigate('ProfileEdit', { Edit: 'edit' })}
+              onPress={() =>
+                navigation.navigate('ProfileEdit', { Edit: 'edit' })
+              }
               style={styles.editButton}
             >
               <Text style={styles.editText}>Edit Profile</Text>
             </Pressable>
           </View>
 
-          {/* SETTINGS */}
           <View style={styles.settingsCard}>
             {Data.map(item => (
               <Pressable
                 key={item.id}
                 style={styles.settingItem}
                 onPress={() => handleSettingPress(item)}
+                disabled={isExporting && item.title === 'Request Data Export'}
               >
                 <View style={styles.settingLeft}>
                   <View style={styles.iconContainer}>
@@ -187,16 +269,18 @@ export default function ProfileScreen() {
                   </View>
                   <Text style={styles.settingTitle}>{item.title}</Text>
                 </View>
-
-                <Image
-                  source={require('../../../../assets/image/next1.png')}
-                  style={styles.arrow}
-                />
+                {isExporting && item.title === 'Request Data Export' ? (
+                  <ActivityIndicator size="small" color="#00C4FA" />
+                ) : (
+                  <Image
+                    source={require('../../../../assets/image/next1.png')}
+                    style={styles.arrow}
+                  />
+                )}
               </Pressable>
             ))}
           </View>
 
-          {/* LOGOUT BUTTON */}
           <Pressable
             style={styles.logoutButton}
             onPress={() => setLogoutModalVisible(true)}
@@ -207,12 +291,11 @@ export default function ProfileScreen() {
             />
             <Text style={styles.logoutText}>Sign Out</Text>
           </Pressable>
-
           <Text style={styles.versionText}>Version 1.0.0</Text>
         </ScrollView>
       </SafeAreaView>
 
-      {/* LOGOUT CONFIRMATION MODAL */}
+      {/* Logout Modal */}
       <Modal
         visible={logoutModalVisible}
         transparent
@@ -230,7 +313,8 @@ export default function ProfileScreen() {
             </View>
             <Text style={styles.modalTitle}>Sign Out</Text>
             <Text style={styles.modalMessage}>
-              Are you sure you want to sign out? You'll need to sign in again to access your account.
+              Are you sure you want to sign out? You'll need to sign in again to
+              access your account.
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -250,7 +334,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* DELETE ACCOUNT CONFIRMATION MODAL */}
+      {/* Delete Account Modal */}
       <Modal
         visible={deleteModalVisible}
         transparent
@@ -263,12 +347,16 @@ export default function ProfileScreen() {
           onPress={() => setDeleteModalVisible(false)}
         >
           <View style={styles.modalContainer}>
-            <View style={[styles.modalIconContainer, styles.deleteIconContainer]}>
+            <View
+              style={[styles.modalIconContainer, styles.deleteIconContainer]}
+            >
               <Text style={styles.modalIcon}>⚠️</Text>
             </View>
             <Text style={styles.modalTitle}>Delete Account</Text>
             <Text style={styles.modalMessage}>
-              This action is permanent and cannot be undone. All your data, including lists, bookmarks, and preferences, will be permanently deleted.
+              This action is permanent and cannot be undone. All your data,
+              including lists, bookmarks, and preferences, will be permanently
+              deleted.
             </Text>
             <Text style={styles.modalWarning}>
               Are you sure you want to proceed?

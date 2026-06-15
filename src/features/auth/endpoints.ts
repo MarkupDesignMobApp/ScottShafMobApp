@@ -13,6 +13,8 @@ export const AUTH_ENDPOINTS = {
   GET_PROFILE: '/scott-shafer/api/profile',
   REMOVE_PROFILE_PHOTO: '/scott-shafer/api/remove_profile',
   DELETE_ACCOUNT: '/scott-shafer/api/account/delete',
+  REQUEST_DATA_EXPORT: '/scott-shafer/api/user/request-data-export',
+  TERMS_AND_PRIVACY_LIST: '/scott-shafer/api/termsAndPrivacy/',
 } as const;
 
 export const FEATURED_LIST_ENDPOINTS = {
@@ -58,6 +60,10 @@ export const Notification = {
   NOTIFICATION_LIST: '/scott-shafer/api/my/notifications',
   ACCEPT_NOTIFICATION: '/scott-shafer/api/list-invites/accept',
   REJECT_NOTIFICATION: '/scott-shafer/api/list-invites/reject',
+  // ✅ ADD THESE TWO:
+  READ_NOTIFICATION: (id: number | string) =>
+    `/scott-shafer/api/notifications/${id}/read`,
+  READ_ALL_NOTIFICATIONS: '/scott-shafer/api/notifications/read-all',
 } as const;
 
 export const Recommended = {

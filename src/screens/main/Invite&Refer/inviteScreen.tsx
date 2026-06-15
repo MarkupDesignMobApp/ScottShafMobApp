@@ -11,8 +11,8 @@ import {
   ActivityIndicator,
   Alert,
   StatusBar,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   useGetCatalogItemsOfListQuery,
@@ -28,30 +28,23 @@ import { CommonActions } from '@react-navigation/native';
 export default function InviteScreen({ navigation, route }) {
   const { listId } = route.params;
   const { data, isLoading } = useGetCatalogItemsOfListQuery(listId);
-
   const [publishList, { isLoading: publishing }] = usePublishListMutation();
-
-  const [title, setTitle] = useState('My Ranked List');
+  const [title, setTitle] = useState('');
 
   const onPublish = async () => {
     const ids = [listId];
-    console.log(ids);
-
     if (!ids.length) {
       Alert.alert('Nothing to publish', 'No items found to publish.');
       return;
     }
-
     try {
       const res = await publishList({ list_ids: ids }).unwrap();
-      console.log(res);
       const ok =
         res?.success === true ||
         res?.status === true ||
         res?.ok === true ||
         res?.code === 200;
       if (ok) {
-        // Reset navigation to ListPublishedScreen
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -61,24 +54,22 @@ export default function InviteScreen({ navigation, route }) {
                 params: { publishedIds: ids },
               },
             ],
-          })
+          }),
         );
         return;
       }
-      console.warn('Publish response (unexpected):', res);
       Alert.alert(
         'Publish failed',
         'Server did not confirm publish. Try again.',
       );
     } catch (err) {
-      console.warn('Publish error', err);
       Alert.alert('Publish failed', 'Unable to publish list. Try again.');
     }
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingWrap}>
+      <SafeAreaView style={styles.loadingWrap} edges={['top', 'bottom']}>
         <ActivityIndicator size="large" color="#2C3E50" />
         <Text style={styles.loadingText}>Loading items…</Text>
       </SafeAreaView>
@@ -86,33 +77,35 @@ export default function InviteScreen({ navigation, route }) {
   }
 
   return (
-    <View style={styles.mainContainer}>
+    <SafeAreaView style={styles.mainContainer} edges={['top']}>
       <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#2C3E50' }} />
 
-      {/* Custom Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.headerLeft}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../../../../assets/image/left-icon.png')}
-            style={styles.headerIcon}
-            tintColor="#FFFFFF"
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>List Preview</Text>
-        <View style={styles.headerRight} />
+      {/* Header Container (dark) */}
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Image
+              tintColor="#fff"
+              resizeMode="contain"
+              style={styles.backIcon}
+              source={require('../../../../assets/image/left-icon.png')}
+            />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>List Preview</Text>
+          <View style={styles.headerRightPlaceholder} />
+        </View>
       </View>
 
-      <SafeAreaView style={styles.container}>
+      {/* Scrollable Content */}
+      <View style={styles.content}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* CARD */}
           <View style={styles.card}>
             <View style={styles.cardTopBar}>
               <Text style={styles.cardHeader}>Your Ranked List</Text>
@@ -141,22 +134,10 @@ export default function InviteScreen({ navigation, route }) {
                       {String(index + 1).padStart(2, '0')}
                     </Text>
                   </View>
-
                   <View style={styles.inputWrap}>
                     <Text style={styles.itemName} numberOfLines={1}>
                       {item?.name ?? 'Untitled'}
                     </Text>
-
-                    {item?.image_url ? (
-                      <Image
-                        source={{ uri: item.image_url }}
-                        style={styles.itemImage}
-                      />
-                    ) : (
-                      <View style={styles.itemImagePlaceholder}>
-                        <Text style={styles.itemImagePlaceholderText}>📷</Text>
-                      </View>
-                    )}
                   </View>
                 </View>
               )}
@@ -170,7 +151,10 @@ export default function InviteScreen({ navigation, route }) {
             />
 
             <TouchableOpacity
-              style={[styles.publishBtn, publishing && styles.publishBtnDisabled]}
+              style={[
+                styles.publishBtn,
+                publishing && styles.publishBtnDisabled,
+              ]}
               onPress={onPublish}
               disabled={publishing}
               activeOpacity={0.8}
@@ -183,21 +167,20 @@ export default function InviteScreen({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          {/* Extra bottom padding */}
           <View style={styles.bottomPadding} />
         </ScrollView>
+      </View>
 
-        {/* Fullscreen loader overlay while publishing */}
-        {publishing && (
-          <View style={styles.publishOverlay}>
-            <View style={styles.publishLoader}>
-              <ActivityIndicator size="large" color="#2C3E50" />
-              <Text style={styles.publishLoaderText}>Publishing list…</Text>
-            </View>
+      {/* Publishing Overlay */}
+      {publishing && (
+        <View style={styles.publishOverlay}>
+          <View style={styles.publishLoader}>
+            <ActivityIndicator size="large" color="#2C3E50" />
+            <Text style={styles.publishLoaderText}>Publishing list…</Text>
           </View>
-        )}
-      </SafeAreaView>
-    </View>
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
 
@@ -206,46 +189,55 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
+  headerContainer: {
+    backgroundColor: '#2C3E50',
+    paddingHorizontal: responsiveScreenWidth(4),
+    paddingBottom: responsiveScreenHeight(2),
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#2C3E50',
-    paddingHorizontal: responsiveScreenWidth(4),
-    paddingVertical: responsiveScreenHeight(2),
+    paddingVertical: responsiveScreenHeight(1.5),
   },
-  headerLeft: {
+  backButton: {
     width: responsiveScreenHeight(3),
     height: responsiveScreenHeight(3),
     justifyContent: 'center',
   },
-  headerRight: {
-    width: responsiveScreenHeight(3),
-  },
-  headerIcon: {
+  backIcon: {
     width: '100%',
     height: '100%',
     tintColor: '#FFFFFF',
   },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     color: '#FFFFFF',
+    fontFamily: 'Quicksand-Bold',
     fontSize: responsiveFontSize(2.2),
     fontWeight: '600',
-    fontFamily: 'Quicksand-Bold',
+    letterSpacing: 0.5,
+    paddingHorizontal: responsiveScreenWidth(2),
   },
-  container: {
+  headerRightPlaceholder: {
+    width: responsiveScreenHeight(3),
+    height: responsiveScreenHeight(3),
+  },
+  content: {
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
   scrollContent: {
     paddingHorizontal: responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(2),
+    paddingBottom: responsiveScreenHeight(2),
   },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: responsiveScreenWidth(4),
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -278,7 +270,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Regular',
   },
   titleInputContainer: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: responsiveScreenWidth(3),
     backgroundColor: '#FFFFFF',
@@ -304,11 +296,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: responsiveScreenWidth(3),
-    shadowColor: '#2C3E50',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
   },
   indexText: {
     color: '#FFFFFF',
@@ -318,39 +305,18 @@ const styles = StyleSheet.create({
   },
   inputWrap: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: responsiveScreenWidth(3),
     paddingHorizontal: responsiveScreenWidth(3),
-    paddingVertical: responsiveScreenHeight(1),
+    paddingVertical: responsiveScreenHeight(1.2),
     backgroundColor: '#FFFFFF',
-    minHeight: responsiveScreenHeight(6),
+    justifyContent: 'center',
   },
   itemName: {
-    flex: 1,
     fontSize: responsiveFontSize(1.7),
     color: '#2C3E50',
     fontFamily: 'Quicksand-Medium',
-    marginRight: responsiveScreenWidth(2),
-  },
-  itemImage: {
-    width: responsiveScreenWidth(8),
-    height: responsiveScreenWidth(8),
-    borderRadius: 6,
-  },
-  itemImagePlaceholder: {
-    width: responsiveScreenWidth(8),
-    height: responsiveScreenWidth(8),
-    borderRadius: 6,
-    backgroundColor: '#F5F5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemImagePlaceholderText: {
-    fontSize: responsiveFontSize(1.8),
   },
   publishBtn: {
     backgroundColor: '#2C3E50',
@@ -359,16 +325,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: responsiveScreenHeight(2),
-    shadowColor: '#2C3E50',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
   publishBtnDisabled: {
     backgroundColor: '#A0A0A0',
-    shadowOpacity: 0,
-    elevation: 0,
   },
   publishText: {
     color: '#FFFFFF',
@@ -390,11 +349,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: responsiveScreenWidth(4),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
   },
   publishLoaderText: {
     marginTop: responsiveScreenHeight(1.5),
@@ -429,6 +383,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Regular',
   },
   bottomPadding: {
-    height: responsiveScreenHeight(4),
+    height: responsiveScreenHeight(2),
   },
 });

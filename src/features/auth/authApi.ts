@@ -61,6 +61,7 @@ import {
   PublishedLists,
   SUB_CATEGORIES_ENDPOINT,
   SUB_CATEGORY_ITEMS_ENDPOINT,
+  
 } from './endpoints';
 
 /* ================= API ================= */
@@ -96,7 +97,13 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
       }),
     }),
-
+    getShareLink: builder.query<{ share_link: string }, number | string>({
+      query: listId => ({
+        url: SHARE_LIST_ENDPOINT(listId),
+        method: 'GET',
+      }),
+      providesTags: ['ShareLink'],
+    }),
     likeFeaturedItem: builder.mutation<
       LikeFeaturedItemResponse,
       number | string
@@ -126,7 +133,22 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Auth'],
     }),
-
+    updateListItem: builder.mutation<
+      any,
+      {
+        listId: number;
+        itemId: number;
+        custom_item_name: string;
+        custom_text?: string | null;
+      }
+    >({
+      query: ({ listId, itemId, ...body }) => ({
+        url: `/scott-shafer/api/lists/${listId}/items/${itemId}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['CatalogItems'],
+    }),
     signup: builder.mutation<SignupResponse, SignupRequest>({
       query: body => ({
         url: AUTH_ENDPOINTS.REGISTER,
@@ -190,7 +212,15 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Auth', 'Profile'],
     }),
-
+    requestDataExport: builder.mutation<
+      { success: boolean; message?: string },
+      void
+    >({
+      query: () => ({
+        url: AUTH_ENDPOINTS.REQUEST_DATA_EXPORT,
+        method: 'POST',
+      }),
+    }),
     /* ================= INTERESTS ================= */
 
     getAllInterests: builder.query<Interest[], void>({
@@ -233,7 +263,21 @@ export const authApi = baseApi.injectEndpoints({
       transformResponse: (res: any) => res.data,
       providesTags: ['Lists'],
     }),
-
+    deleteList: builder.mutation<any, number | string>({
+      query: listId => ({
+        url: `/scott-shafer/api/delete/list/${listId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Lists'],
+    }),
+    updateList: builder.mutation<any, { listId: number; data: any }>({
+      query: ({ listId, data }) => ({
+        url: `/scott-shafer/api/lists/${listId}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Lists'],
+    }),
     getInviteUsers: builder.query<InviteUsersResponse, void>({
       query: () => '/scott-shafer/api/users/invite-list',
       providesTags: ['InviteUsers'],
@@ -363,7 +407,36 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Notifications'],
     }),
+    deleteNotification: builder.mutation<any, number | string>({
+      query: id => ({
+        url: `/scott-shafer/api/notifications/delete/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
 
+    deleteAllNotifications: builder.mutation<any, void>({
+      query: () => ({
+        url: `/scott-shafer/api/notifications/delete-all`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+    markNotificationAsRead: builder.mutation<any, number | string>({
+      query: id => ({
+        url: Notification.READ_NOTIFICATION(id),
+        method: 'POST',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
+    markAllNotificationsAsRead: builder.mutation<any, void>({
+      query: () => ({
+        url: Notification.READ_ALL_NOTIFICATIONS,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
     /* ================= RECOMMENDED ================= */
 
     getRecommendItems: builder.query<any[], void>({
@@ -413,6 +486,14 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Mybookmark'],
     }),
     // features/auth/authApi.ts
+
+    getTermsAndPrivacyList: builder.query<any[], void>({
+      query: () => ({
+        url: AUTH_ENDPOINTS.TERMS_AND_PRIVACY_LIST,
+        method: 'GET',
+      }),
+      transformResponse: (response: any) => response?.data || [],
+    }),
     reorderLists: builder.mutation<ReorderListsResponse, ReorderListsRequest>({
       query: body => ({
         url: '/scott-shafer/api/lists/reorder', // POST endpoint
@@ -545,6 +626,15 @@ export const {
   useRemoveProfilePhotoMutation,
   useReorderListsMutation,
   useDeleteAccountMutation,
+  useDeleteNotificationMutation,
   useGetInviteListQuery,
   useCloneListMutation,
+  useDeleteAllNotificationsMutation,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
+  useRequestDataExportMutation,
+  useDeleteListMutation,
+  useUpdateListMutation,
+  useGetTermsAndPrivacyListQuery,
+  useUpdateListItemMutation,
 } = authApi;

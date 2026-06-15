@@ -18,6 +18,10 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
+  Modal,
+  TextInput,
+  Switch,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -40,6 +44,9 @@ import {
   useReorderListItemsMutation,
   useGetUserProfileQuery,
   useCloneListMutation,
+  useDeleteListMutation,
+  useLazyShareListQuery,
+  useUpdateListMutation,
 } from '../../../features/auth/authApi';
 
 // Enable LayoutAnimation for Android
@@ -66,11 +73,11 @@ function isClonedList(apiItem: any): boolean {
     apiItem?.from_list_id ||
     title.includes('(copy)') ||
     title.endsWith(' copy') ||
-    title.includes('copy')
+    title.includes('copy'),
   );
 }
 
-// ------------------- Badge helpers (unchanged) -------------------
+// ------------------- Badge helpers -------------------
 const STATUS_COLORS = {
   published: { bg: '#D1FAE5', text: '#065F46' },
   draft: { bg: '#FEF3C7', text: '#92400E' },
@@ -94,7 +101,7 @@ const Badge = ({ label, colorMap }) => {
   );
 };
 
-// ------------------- DraggableItemsList (unchanged) -------------------
+// ------------------- DraggableItemsList -------------------
 const DraggableItemsList = ({
   listId,
   initialItems,
@@ -124,12 +131,14 @@ const DraggableItemsList = ({
           const keys = Object.keys(parsed);
           if (keys.length > 0) position = parsed[keys[0]];
         }
-        return position !== undefined && position !== null ? Number(position) : 999;
+        return position !== undefined && position !== null
+          ? Number(position)
+          : 999;
       } catch {
         return 999;
       }
     },
-    [userId]
+    [userId],
   );
 
   const sortItemsByUserPosition = useCallback(
@@ -142,7 +151,7 @@ const DraggableItemsList = ({
         return (a.id || 0) - (b.id || 0);
       });
     },
-    [getUserPosition]
+    [getUserPosition],
   );
 
   useEffect(() => {
@@ -179,13 +188,13 @@ const DraggableItemsList = ({
       } catch (error) {
         Alert.alert(
           'Reorder Failed',
-          error?.data?.message || error?.message || 'Failed to reorder items'
+          error?.data?.message || error?.message || 'Failed to reorder items',
         );
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setItems(previousItems);
       }
     },
-    [items, listId, reorderItems, refetch, onDragStateChange]
+    [items, listId, reorderItems, refetch, onDragStateChange],
   );
 
   if (!items?.length) {
@@ -321,27 +330,90 @@ const DraggableItemsList = ({
   );
 };
 
-// ------------------- MAIN SCREEN (with tabs and clone) -------------------
+// ------------------- MAIN SCREEN -------------------
 export default function MyListScreen({ navigation }) {
   const { data, isLoading, isFetching, refetch } = useGetListsQuery();
   const { data: userProfile } = useGetUserProfileQuery();
   const userId = userProfile?.id;
   const [cloneList, { isLoading: cloneLoading }] = useCloneListMutation();
+  const [deleteList] = useDeleteListMutation();
+  const [getShareLink] = useLazyShareListQuery();
+  const [updateList, { isLoading: isUpdating }] = useUpdateListMutation();
 
-  const [lists, setLists] = useState([]); // full lists with isCloned & canClone flags
+  const [lists, setLists] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'original' | 'cloned'>('original');
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [menuLayout, setMenuLayout] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
   const scrollViewRef = useRef(null);
   const [isAnyDragging, setIsAnyDragging] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const actionBtnRefs = useRef<Record<string, View | null>>({});
+
+  // Edit modal state
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingList, setEditingList] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCategoryId, setEditCategoryId] = useState('');
+  const [editListSize, setEditListSize] = useState('');
+  const [editIsGroup, setEditIsGroup] = useState(false);
+
+  const closeMenu = useCallback(() => {
+    setOpenMenuId(null);
+    setMenuLayout(null);
+  }, []);
+
+  const openDotsMenu = useCallback(
+    (item: any) => {
+      if (openMenuId === item.id) {
+        closeMenu();
+        return;
+      }
+
+      const node = actionBtnRefs.current[String(item.id)];
+
+      if (node?.measureInWindow) {
+        node.measureInWindow((x, y, width, height) => {
+          setMenuLayout({ x, y, width, height });
+          setOpenMenuId(item.id);
+        });
+      } else {
+        setMenuLayout({ x: 0, y: 0, width: 0, height: 0 });
+        setOpenMenuId(item.id);
+      }
+    },
+    [openMenuId, closeMenu],
+  );
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+  const menuPositionStyle = useMemo(() => {
+    if (!menuLayout) return { top: 0, left: 0 };
+    const menuWidth = 155;
+    const left = Math.max(
+      12,
+      Math.min(
+        menuLayout.x + menuLayout.width - menuWidth,
+        SCREEN_WIDTH - menuWidth - 12,
+      ),
+    );
+    const top = Math.min(menuLayout.y + menuLayout.height + 8, SCREEN_HEIGHT - 220);
+    return { top, left };
+  }, [menuLayout, SCREEN_HEIGHT, SCREEN_WIDTH]);
 
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
-  // Transform API data and add isCloned / canClone flags
   useEffect(() => {
     const raw = Array.isArray(data) ? data : [];
     if (!raw.length) {
@@ -356,84 +428,169 @@ export default function MyListScreen({ navigation }) {
         selected: false,
         items: Array.isArray(list?.items) ? list.items : [],
         isCloned,
-        canClone: !isCloned, // only original lists can be cloned
+        canClone: !isCloned,
       };
     });
     setLists(mapped);
   }, [data]);
 
-  // Filter original and cloned lists
   const originalLists = useMemo(
     () => lists.filter(item => !item.isCloned),
-    [lists]
+    [lists],
   );
   const clonedLists = useMemo(
     () => lists.filter(item => item.isCloned),
-    [lists]
+    [lists],
   );
 
-  // Apply search filter on the currently active tab's lists
   const filteredOriginal = useMemo(() => {
     if (!searchText.trim()) return originalLists;
     return originalLists.filter(l =>
-      l?.title?.toLowerCase().includes(searchText.toLowerCase())
+      l?.title?.toLowerCase().includes(searchText.toLowerCase()),
     );
   }, [searchText, originalLists]);
 
   const filteredCloned = useMemo(() => {
     if (!searchText.trim()) return clonedLists;
     return clonedLists.filter(l =>
-      l?.title?.toLowerCase().includes(searchText.toLowerCase())
+      l?.title?.toLowerCase().includes(searchText.toLowerCase()),
     );
   }, [searchText, clonedLists]);
 
-  const visibleLists = activeTab === 'original' ? filteredOriginal : filteredCloned;
+  const visibleLists =
+    activeTab === 'original' ? filteredOriginal : filteredCloned;
   const visibleCount = visibleLists.length;
 
   const toggleSelect = useCallback(id => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setLists(prev =>
-      prev.map(l => (l.id === id ? { ...l, selected: !l.selected } : l))
+      prev.map(l => (l.id === id ? { ...l, selected: !l.selected } : l)),
     );
   }, []);
 
   const toggleExpand = useCallback(id => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
     );
   }, []);
 
-  const handleShare = async list => {
+  // Open edit modal with list data
+  const openEditModal = list => {
+    setEditingList(list);
+    setEditTitle(list.title || '');
+    setEditCategoryId(String(list.category_id || ''));
+    setEditListSize(String(list.list_size || ''));
+    setEditIsGroup(
+      list.is_group === true || list.is_group === 'true' || list.is_group === 1,
+    );
+    setEditModalVisible(true);
+    closeMenu();
+  };
+
+  // Handle update via modal
+  const handleUpdateSubmit = async () => {
+    if (!editTitle.trim()) {
+      Alert.alert('Error', 'Title is required');
+      return;
+    }
+    const parsedCategoryId = parseInt(editCategoryId, 10);
+    const parsedListSize = parseInt(editListSize, 10);
+    if (isNaN(parsedCategoryId) || parsedCategoryId <= 0) {
+      Alert.alert('Error', 'Valid Category ID is required');
+      return;
+    }
+    if (isNaN(parsedListSize) || parsedListSize < 0) {
+      Alert.alert('Error', 'Valid List Size is required');
+      return;
+    }
+
+    const payload = {
+      title: editTitle.trim(),
+      category_id: parsedCategoryId,
+      list_size: parsedListSize,
+      is_group: editIsGroup,
+    };
+
     try {
-      const url = list?.share_url || list?.share_link || '';
-      if (!url) {
+      await updateList({ listId: editingList.id, data: payload }).unwrap();
+      Alert.alert('Success', 'List updated successfully');
+      setEditModalVisible(false);
+      refetch();
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to update list');
+    }
+  };
+
+  // ---------- Other Action Handlers ----------
+  const handleDelete = async list => {
+    closeMenu();
+    Alert.alert(
+      'Delete List',
+      `Are you sure you want to delete "${list.title}"? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setActionLoadingId(list.id);
+            try {
+              await deleteList(list.id).unwrap();
+              await refetch();
+              Alert.alert('Success', 'List deleted successfully');
+            } catch (error: any) {
+              Alert.alert(
+                'Error',
+                error?.data?.message || 'Failed to delete list',
+              );
+            } finally {
+              setActionLoadingId(null);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleShare = async list => {
+    closeMenu();
+    setActionLoadingId(list.id);
+    try {
+      const res = await getShareLink(list.id).unwrap();
+      const shareUrl =
+        res?.share_url || res?.share_link || res?.data?.share_link;
+      if (!shareUrl) {
         Alert.alert('Error', 'Share link not available');
         return;
       }
       await RNShare.share({
-        title: list?.title || 'My List',
-        message: `Check out my list "${list?.title}"\n${url}`,
-        url,
+        title: list.title,
+        message: `Check out my list "${list.title}"\n${shareUrl}`,
+        url: shareUrl,
       });
-    } catch (error) {
-      console.error('Share error:', error);
-      Alert.alert('Error', 'Unable to share list');
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to get share link');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
-  const onClonePress = async (list: any) => {
+  const handleClone = async list => {
+    closeMenu();
     if (!list.canClone) {
       Alert.alert('Not allowed', 'You can only clone original lists.');
       return;
     }
+    setActionLoadingId(list.id);
     try {
-      const res: any = await cloneList(list.id).unwrap();
+      const res = await cloneList(list.id).unwrap();
       Alert.alert('Success', `${res.title || 'List'} cloned successfully`);
-      await refetch(); // Refresh – the new cloned list will appear in "Cloned" tab
-    } catch (e: any) {
-      console.log('CLONE ERROR', e);
-      Alert.alert('Error', e?.data?.message || 'Failed to clone list');
+      await refetch();
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to clone list');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -453,11 +610,15 @@ export default function MyListScreen({ navigation }) {
       const thumbnailUrl = getListThumbnail(item.items);
       const itemCount = item.items?.length || 0;
       const totalSize = Number(item.list_size) || 0;
+      const isActionLoading = actionLoadingId === item.id;
 
       return (
         <View style={[styles.card, item.selected && styles.cardActive]}>
           <Pressable
-            onPress={() => toggleSelect(item.id)}
+            onPress={() => {
+              toggleSelect(item.id);
+              closeMenu();
+            }}
             style={styles.cardTop}
           >
             <View style={styles.cardThumb}>
@@ -534,41 +695,37 @@ export default function MyListScreen({ navigation }) {
               </Text>
             </View>
 
-            {/* Action buttons: Share + Clone (only for original lists) */}
             <View style={styles.cardActions}>
-              {/* <Pressable
-                onPress={() => handleShare(item)}
-                style={styles.actionIconBtn}
-                hitSlop={8}
+              <View
+                ref={el => {
+                  actionBtnRefs.current[String(item.id)] = el;
+                }}
+                collapsable={false}
               >
-                <Image
-                  source={require('../../../../assets/image/unfillshare.png')}
-                  style={styles.actionIcon}
-                />
-              </Pressable> */}
-
-              {item.canClone && activeTab === 'original' && (
                 <Pressable
-                  onPress={() => onClonePress(item)}
+                  onPress={() => openDotsMenu(item)}
                   style={styles.actionIconBtn}
                   hitSlop={8}
-                  disabled={cloneLoading}
+                  disabled={isActionLoading}
                 >
-                  {cloneLoading ? (
+                  {isActionLoading ? (
                     <ActivityIndicator size="small" color="#1A2B3C" />
                   ) : (
                     <Image
-                      source={require('../../../../assets/image/copy.png')}
+                      source={require('../../../../assets/image/dots.png')}
                       style={styles.actionIcon}
                     />
                   )}
                 </Pressable>
-              )}
+              </View>
             </View>
           </Pressable>
 
           <Pressable
-            onPress={() => toggleExpand(item.id)}
+            onPress={() => {
+              toggleExpand(item.id);
+              closeMenu();
+            }}
             style={styles.expandRow}
           >
             <View style={styles.expandContent}>
@@ -614,10 +771,13 @@ export default function MyListScreen({ navigation }) {
       getListThumbnail,
       handleDragStateChange,
       refetch,
-      cloneLoading,
-      activeTab,
-    ]
+      actionLoadingId,
+      openDotsMenu,
+      closeMenu,
+    ],
   );
+
+  const isMenuVisible = Boolean(openMenuId);
 
   return (
     <>
@@ -641,7 +801,9 @@ export default function MyListScreen({ navigation }) {
             <View>
               <Text style={styles.headerTitle}>My Lists</Text>
               <Text style={styles.headerSubtitle}>
-                {visibleCount} {activeTab === 'original' ? 'original' : 'cloned'} list{visibleCount !== 1 ? 's' : ''}
+                {visibleCount}{' '}
+                {activeTab === 'original' ? 'original' : 'cloned'} list
+                {visibleCount !== 1 ? 's' : ''}
               </Text>
             </View>
 
@@ -653,14 +815,16 @@ export default function MyListScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Tab Bar */}
           <View style={styles.tabRow}>
             <TouchableOpacity
               style={[
                 styles.tabButton,
                 activeTab === 'original' && styles.tabButtonActive,
               ]}
-              onPress={() => setActiveTab('original')}
+              onPress={() => {
+                setActiveTab('original');
+                closeMenu();
+              }}
             >
               <Text
                 style={[
@@ -677,7 +841,10 @@ export default function MyListScreen({ navigation }) {
                 styles.tabButton,
                 activeTab === 'cloned' && styles.tabButtonActive,
               ]}
-              onPress={() => setActiveTab('cloned')}
+              onPress={() => {
+                setActiveTab('cloned');
+                closeMenu();
+              }}
             >
               <Text
                 style={[
@@ -716,7 +883,8 @@ export default function MyListScreen({ navigation }) {
                 style={styles.emptyImg}
               />
               <Text style={styles.emptyTitle}>
-                No {activeTab === 'original' ? 'original' : 'cloned'} lists found
+                No {activeTab === 'original' ? 'original' : 'cloned'} lists
+                found
               </Text>
               <Text style={styles.emptySubtitle}>
                 {searchText
@@ -741,13 +909,149 @@ export default function MyListScreen({ navigation }) {
           )}
         </NestableScrollContainer>
       </SafeAreaProvider>
+
+      <Modal
+        visible={isMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeMenu}
+      >
+        <View style={styles.menuBackdropContainer}>
+          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeMenu} />
+          {menuLayout && (
+            <View style={[styles.floatingMenu, menuPositionStyle]}>
+              <Pressable
+                style={styles.optionMenuItem}
+                onPress={() => {
+                  const currentItem = lists.find(l => l.id === openMenuId);
+                  if (currentItem) handleShare(currentItem);
+                  else closeMenu();
+                }}
+              >
+                <Text style={styles.optionMenuText}>Share</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.optionMenuItem}
+                onPress={() => {
+                  const currentItem = lists.find(l => l.id === openMenuId);
+                  if (currentItem) openEditModal(currentItem);
+                  else closeMenu();
+                }}
+              >
+                <Text style={styles.optionMenuText}>Edit</Text>
+              </Pressable>
+
+              {lists.find(l => l.id === openMenuId)?.canClone &&
+                activeTab === 'original' && (
+                  <Pressable
+                    style={styles.optionMenuItem}
+                    onPress={() => {
+                      const currentItem = lists.find(l => l.id === openMenuId);
+                      if (currentItem) handleClone(currentItem);
+                      else closeMenu();
+                    }}
+                  >
+                    <Text style={styles.optionMenuText}>Clone</Text>
+                  </Pressable>
+                )}
+
+              <Pressable
+                style={styles.optionMenuItem}
+                onPress={() => {
+                  const currentItem = lists.find(l => l.id === openMenuId);
+                  if (currentItem) handleDelete(currentItem);
+                  else closeMenu();
+                }}
+              >
+                <Text
+                  style={[styles.optionMenuText, styles.optionMenuDeleteText]}
+                >
+                  Delete
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit List</Text>
+
+            <Text style={styles.modalLabel}>Title</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editTitle}
+              onChangeText={setEditTitle}
+              placeholder="Enter title"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.modalLabel}>Category ID</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editCategoryId}
+              onChangeText={setEditCategoryId}
+              keyboardType="numeric"
+              placeholder="e.g., 5"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.modalLabel}>List Size</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editListSize}
+              onChangeText={setEditListSize}
+              keyboardType="numeric"
+              placeholder="Number of items"
+              placeholderTextColor="#999"
+            />
+
+            <View style={styles.modalSwitchRow}>
+              <Text style={styles.modalLabel}>Group List</Text>
+              <Switch
+                value={editIsGroup}
+                onValueChange={setEditIsGroup}
+                trackColor={{ false: '#ccc', true: '#3B82F6' }}
+              />
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalUpdateButton]}
+                onPress={handleUpdateSubmit}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalUpdateText}>Update</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
 
-// ------------------- STYLES (added tab styles and adjusted) -------------------
+// ------------------- STYLES -------------------
 export const styles = StyleSheet.create({
-  /* Header */
   header: {
     backgroundColor: '#1A2B3C',
     paddingHorizontal: responsiveScreenWidth(4),
@@ -800,7 +1104,6 @@ export const styles = StyleSheet.create({
     fontSize: responsiveScreenFontSize(1.7),
   },
 
-  /* Tab bar */
   tabRow: {
     flexDirection: 'row',
     backgroundColor: '#2D3E4E',
@@ -828,14 +1131,12 @@ export const styles = StyleSheet.create({
 
   searchWrap: { marginBottom: responsiveScreenHeight(0.5) },
 
-  /* List content */
   listContent: {
     paddingHorizontal: responsiveScreenWidth(4),
     paddingTop: responsiveScreenHeight(2),
     paddingBottom: responsiveScreenHeight(12),
   },
 
-  /* Card */
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -847,7 +1148,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.07,
     shadowRadius: 14,
     elevation: 4,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   cardActive: {
     borderColor: '#3B82F6',
@@ -967,20 +1268,57 @@ export const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 12,
     marginLeft: 8,
+    position: 'relative',
+    zIndex: 20,
   },
   actionIconBtn: {
     padding: 8,
     backgroundColor: '#F1F5F9',
     borderRadius: 12,
+    minWidth: 36,
+    alignItems: 'center',
   },
   actionIcon: {
     width: 20,
     height: 20,
     tintColor: '#1A2B3C',
   },
+
+  menuBackdropContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  floatingMenu: {
+    position: 'absolute',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 12,
+    minWidth: 155,
+    overflow: 'hidden',
+  },
+  optionMenuItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  optionMenuText: {
+    fontSize: responsiveScreenFontSize(1.5),
+    fontFamily: 'Quicksand-SemiBold',
+    color: '#111827',
+  },
+  optionMenuDeleteText: {
+    color: '#DC2626',
+  },
+
   expandRow: {
     marginHorizontal: responsiveScreenHeight(2),
     paddingVertical: responsiveScreenHeight(1.2),
@@ -1011,7 +1349,6 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Bold',
   },
 
-  /* Items wrapper */
   itemsWrapper: {
     paddingHorizontal: responsiveScreenWidth(3),
     paddingBottom: responsiveScreenHeight(1.5),
@@ -1041,7 +1378,6 @@ export const styles = StyleSheet.create({
   draggableContainer: { flex: 1 },
   draggableContent: { paddingBottom: 8 },
 
-  /* Reordering bar */
   reorderingBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1058,7 +1394,6 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-SemiBold',
   },
 
-  /* Draggable item row */
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1232,7 +1567,6 @@ export const styles = StyleSheet.create({
     fontFamily: 'Quicksand-Regular',
   },
 
-  /* Empty state */
   emptyContainer: {
     alignItems: 'center',
     paddingTop: responsiveScreenHeight(6),
@@ -1273,5 +1607,80 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Quicksand-Bold',
     fontSize: responsiveScreenFontSize(1.9),
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: responsiveScreenFontSize(2.2),
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalLabel: {
+    fontSize: responsiveScreenFontSize(1.6),
+    fontWeight: '500',
+    color: '#334155',
+    marginBottom: 5,
+    marginTop: 10,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: responsiveScreenFontSize(1.6),
+    backgroundColor: '#F8FAFC',
+  },
+  modalSwitchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 15,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCancelButton: {
+    backgroundColor: '#F1F5F9',
+  },
+  modalCancelText: {
+    color: '#64748B',
+    fontSize: responsiveScreenFontSize(1.6),
+    fontWeight: '500',
+  },
+  modalUpdateButton: {
+    backgroundColor: '#3B82F6',
+  },
+  modalUpdateText: {
+    color: '#FFFFFF',
+    fontSize: responsiveScreenFontSize(1.6),
+    fontWeight: '500',
   },
 });

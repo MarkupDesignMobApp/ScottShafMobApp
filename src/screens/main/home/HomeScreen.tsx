@@ -196,7 +196,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           style={styles.innercontainer}
         >
           <View style={styles.topSection}>
-            <SearchBar placeholder="Search lists, users, topics..." />
+
 
             <ScrollView
               horizontal

@@ -24,7 +24,7 @@ export const baseApi = createApi({
     'FeaturedList', // ✅ FIXED (removed wrong "a")
     'InviteUsers',
     'Lists',
-    "Product",
+    'Product',
     'Categories',
     'CatalogItems',
     'Campaigns',
@@ -32,6 +32,7 @@ export const baseApi = createApi({
     'RecommendItems',
     'Mybookmark',
     'PublishedList',
+    'ShareLink',
   ],
   endpoints: () => ({}),
 });

@@ -47,15 +47,12 @@
             </intent-filter>
 
             <!-- Custom Scheme Deep Link -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="markupdesigns"
-                    android:host="Tabs"
-                    android:pathPrefix="/Home/featured" />
-            </intent-filter>
+           <intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="markupdesigns" />
+</intent-filter>
 
             <!-- Web/App Link (https) -->
             <intent-filter android:autoVerify="true">
