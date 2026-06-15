@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   Image,
-  Share,
   Alert,
   Pressable,
   ActivityIndicator,
@@ -20,35 +19,52 @@ import {
 import {
   useGetRecommendItemsQuery,
   useLikeRecommendedMutation,
-  useShareRecommendedMutation,
 } from '../../../features/auth/authApi';
 
 const icons = {
   heartFilled: require('../../../../assets/image/heart.png'),
   heartOutline: require('../../../../assets/image/unfillheart.png'),
-  shareOutline: require('../../../../assets/image/unfillshare.png'),
 };
 
 const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png');
 
+// Helper: detect if a list is cloned/copied
+function isClonedList(apiItem: any): boolean {
+  const title = String(apiItem?.title ?? '').toLowerCase();
+  return Boolean(
+    apiItem?.is_clone ||
+    apiItem?.is_cloned ||
+    apiItem?.cloned ||
+    apiItem?.parent_id ||
+    apiItem?.parent_list_id ||
+    apiItem?.original_list_id ||
+    apiItem?.copied_from_list_id ||
+    apiItem?.clone_of ||
+    apiItem?.source_list_id ||
+    apiItem?.from_list_id ||
+    title.includes('(copy)') ||
+    title.endsWith(' copy') ||
+    title.includes('copy'),
+  );
+}
+
 export default function Recommend() {
   const [posts, setPosts] = useState<any[]>([]);
-
   const { data, isLoading, error, refetch } = useGetRecommendItemsQuery();
   const [likeRecommended] = useLikeRecommendedMutation();
-  const [shareRecommended] = useShareRecommendedMutation();
 
   useEffect(() => {
     if (!data) return;
-
     const rawList = Array.isArray(data) ? data : data?.data ?? [];
 
-    const mapped = rawList.map((apiItem: any) => {
+    // Filter out cloned lists
+    const filtered = rawList.filter((apiItem: any) => !isClonedList(apiItem));
+
+    const mapped = filtered.map((apiItem: any) => {
       const items = (apiItem.items || [])
         .map((it: any, index: number) => {
           const ci = it.catalog_item;
           if (!ci) return null;
-
           return {
             uid: `${apiItem.id}-${ci.id}-${index}`,
             id: String(ci.id),
@@ -57,7 +73,6 @@ export default function Recommend() {
           };
         })
         .filter(Boolean);
-
       return {
         id: String(apiItem.id),
         user: apiItem.user?.full_name ?? 'Unknown',
@@ -68,7 +83,6 @@ export default function Recommend() {
         items,
       };
     });
-
     setPosts(mapped);
   }, [data]);
 
@@ -78,27 +92,6 @@ export default function Recommend() {
       refetch();
     } catch (e) {
       console.log(e);
-    }
-  };
-
-  const onSharePress = async (postId: string, title: string) => {
-    try {
-      const res: any = await shareRecommended({ id: postId }).unwrap();
-      const url = res?.share_url;
-
-      if (!url) {
-        Alert.alert('Error', 'Share link not available');
-        return;
-      }
-
-      await Share.share({
-        title: title,
-        message: `${title}\n\n${url}`,
-        url: url,
-      });
-    } catch (e) {
-      console.log(e);
-      Alert.alert('Error', 'Failed to share');
     }
   };
 
@@ -123,14 +116,11 @@ export default function Recommend() {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Recommended For You</Text>
-
       <FlatList
         data={posts}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={
-          posts.length === 0 ? styles.emptyList : undefined
-        }
+        contentContainerStyle={posts.length === 0 ? styles.emptyList : undefined}
         ListEmptyComponent={
           <View style={styles.emptyBox}>
             <Text style={styles.emptyText}>No recommendations found</Text>
@@ -140,7 +130,6 @@ export default function Recommend() {
           <PostCard
             item={item}
             onLikePress={onLikePress}
-            onSharePress={onSharePress}
           />
         )}
       />
@@ -148,8 +137,8 @@ export default function Recommend() {
   );
 }
 
-// ------------------- PostCard Component -------------------
-function PostCard({ item, onLikePress, onSharePress }: any) {
+// ------------------- PostCard Component (no share button) -------------------
+function PostCard({ item, onLikePress }: any) {
   return (
     <View style={styles.card}>
       <View style={styles.userRow}>
@@ -182,10 +171,7 @@ function PostCard({ item, onLikePress, onSharePress }: any) {
             value={formatNumber(item.likes)}
           />
         </Pressable>
-
-        <Pressable onPress={() => onSharePress(item.id, item.title)}>
-          {/* <ActionButton icon={icons.shareOutline} value="Share" /> */}
-        </Pressable>
+        {/* Share button removed – no "Copy" option appears */}
       </View>
     </View>
   );

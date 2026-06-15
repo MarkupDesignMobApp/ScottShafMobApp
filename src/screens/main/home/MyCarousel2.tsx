@@ -32,6 +32,15 @@ const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 const CONTENT_RIGHT_PADDING = responsiveScreenWidth(4);
 const FALLBACK_IMAGE = require('../../../../assets/image/cofee.png');
 
+// Helper to get correct image URL (handles both full URLs and relative paths)
+const getImageUrl = (imageUrl: string | null | undefined): string | null => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  return `https://www.markupdesigns.net/scott-shafer/${imageUrl}`;
+};
+
 /* ---------------- MAIN CAROUSEL LIST ---------------- */
 export default function OptimizedFlatList2({
   ListHeaderComponent,
@@ -44,7 +53,7 @@ export default function OptimizedFlatList2({
 
   const openModal = (item: any) => {
     setSelectedCampaign(item);
-    setModalImageError(false); // reset error when opening new campaign
+    setModalImageError(false);
     setModalVisible(true);
   };
 
@@ -88,11 +97,11 @@ export default function OptimizedFlatList2({
     );
   }
 
-  // Modal image source (same logic as carousel card)
-  const modalImageSource =
-    selectedCampaign?.image_url && !modalImageError
-      ? { uri: `https://www.markupdesigns.net/scott-shafer/${selectedCampaign.image_url}` }
-      : FALLBACK_IMAGE;
+  // Modal image source using the helper
+  const modalImageSource = (() => {
+    const url = getImageUrl(selectedCampaign?.image_url);
+    return url && !modalImageError ? { uri: url } : FALLBACK_IMAGE;
+  })();
 
   return (
     <>
@@ -130,7 +139,6 @@ export default function OptimizedFlatList2({
                     <Text style={styles.bigCardCloseText}>✕</Text>
                   </TouchableOpacity>
 
-                  {/* Modal Image with error handling */}
                   <View style={styles.bigCardImageContainer}>
                     <Image
                       resizeMode="cover"
@@ -157,7 +165,6 @@ export default function OptimizedFlatList2({
                         {selectedCampaign.description}
                       </Text>
                     )}
-                    {/* Optional: Add any additional campaign details here */}
                     {selectedCampaign?.start_date && (
                       <View style={styles.bigCardDetailRow}>
                         <Text style={styles.bigCardDetailLabel}>Start Date:</Text>
@@ -200,10 +207,10 @@ type CarouselCardProps = {
 const CarouselCard = React.memo(({ item, onPress }: CarouselCardProps) => {
   const [imageError, setImageError] = React.useState(false);
 
-  const imageSource =
-    item?.image_url && !imageError
-      ? { uri: `https://www.markupdesigns.net/scott-shafer/${item.image_url}` }
-      : FALLBACK_IMAGE;
+  const imageSource = (() => {
+    const url = getImageUrl(item?.image_url);
+    return url && !imageError ? { uri: url } : FALLBACK_IMAGE;
+  })();
 
   return (
     <View style={styles.cardWrapper}>
@@ -235,7 +242,6 @@ const CarouselCard = React.memo(({ item, onPress }: CarouselCardProps) => {
           </View>
         </TouchableOpacity>
 
-        {/* Learn More Button */}
         <TouchableOpacity
           style={styles.learnMoreButton}
           onPress={onPress}
