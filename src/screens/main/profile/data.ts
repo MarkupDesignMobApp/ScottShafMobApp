@@ -20,7 +20,7 @@ export const Data = [
   {
     id: '6',
     icon: require('../../../../assets/image/Request.png'),
-    title: 'Request Data Export',
+    title: 'Data Export',
     navigate: 'Privacy',
   },
   {

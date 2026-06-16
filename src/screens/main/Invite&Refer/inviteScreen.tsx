@@ -12,7 +12,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView import removed
 
 import {
   useGetCatalogItemsOfListQuery,
@@ -29,7 +29,6 @@ export default function InviteScreen({ navigation, route }) {
   const { listId } = route.params;
   const { data, isLoading } = useGetCatalogItemsOfListQuery(listId);
   const [publishList, { isLoading: publishing }] = usePublishListMutation();
-  const [title, setTitle] = useState('');
 
   const onPublish = async () => {
     const ids = [listId];
@@ -69,18 +68,18 @@ export default function InviteScreen({ navigation, route }) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingWrap} edges={['top', 'bottom']}>
+      <View style={styles.loadingWrap}>
         <ActivityIndicator size="large" color="#2C3E50" />
         <Text style={styles.loadingText}>Loading items…</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.mainContainer} edges={['top']}>
+    <View style={styles.mainContainer}>
       <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
 
-      {/* Header Container (dark) */}
+      {/* Header Container (dark) - now flush with top */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -109,17 +108,6 @@ export default function InviteScreen({ navigation, route }) {
           <View style={styles.card}>
             <View style={styles.cardTopBar}>
               <Text style={styles.cardHeader}>Your Ranked List</Text>
-            </View>
-
-            <Text style={styles.label}>List Title</Text>
-            <View style={styles.titleInputContainer}>
-              <TextInput
-                value={title}
-                onChangeText={setTitle}
-                style={styles.titleInput}
-                placeholder="Enter list title"
-                placeholderTextColor="#A0A0A0"
-              />
             </View>
 
             <FlatList
@@ -180,7 +168,7 @@ export default function InviteScreen({ navigation, route }) {
           </View>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -193,6 +181,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#2C3E50',
     paddingHorizontal: responsiveScreenWidth(4),
     paddingBottom: responsiveScreenHeight(2),
+    paddingTop: responsiveScreenHeight(5),
+    // No paddingTop – header now starts at the very top
   },
   header: {
     flexDirection: 'row',
@@ -230,7 +220,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: responsiveScreenWidth(4),
-    paddingTop: responsiveScreenHeight(2),
+    // paddingTop removed – now the card sits directly under the header
     paddingBottom: responsiveScreenHeight(2),
   },
   card: {
@@ -244,6 +234,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 3,
+    marginTop: responsiveScreenHeight(2),
   },
   cardTopBar: {
     backgroundColor: '#F0F4F8',
@@ -262,26 +253,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2C3E50',
     fontFamily: 'Quicksand-Bold',
-  },
-  label: {
-    color: '#4A5568',
-    marginBottom: responsiveScreenHeight(0.8),
-    fontSize: responsiveFontSize(1.6),
-    fontFamily: 'Quicksand-Regular',
-  },
-  titleInputContainer: {
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: responsiveScreenWidth(3),
-    backgroundColor: '#FFFFFF',
-    marginBottom: responsiveScreenHeight(2),
-  },
-  titleInput: {
-    fontSize: responsiveFontSize(1.7),
-    color: '#1A202C',
-    paddingVertical: responsiveScreenHeight(1.2),
-    paddingHorizontal: responsiveScreenWidth(3),
-    fontFamily: 'Quicksand-Regular',
   },
   row: {
     flexDirection: 'row',

@@ -28,23 +28,63 @@ const icons = {
 
 const PLACEHOLDER_IMAGE = require('../../../../assets/image/movie3.png');
 
-// Helper: detect if a list is cloned/copied
+// ---------- Avatar color helpers ----------
+const AVATAR_COLORS = [
+  '#FF6B6B',
+  '#4ECDC4',
+  '#45B7D1',
+  '#96CEB4',
+  '#FFEAA7',
+  '#DDA0DD',
+  '#98D8C8',
+  '#F7DC6F',
+  '#BB8FCE',
+  '#85C1E9',
+  '#F8C471',
+  '#82E0AA',
+  '#F1948A',
+  '#85929E',
+  '#73C6B6',
+  '#E59866',
+  '#AF7AC5',
+  '#5DADE2',
+  '#58D68D',
+  '#F4D03F',
+];
+
+function getAvatarColor(identifier: string | number): string {
+  const str = String(identifier);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
+}
+
+function getInitials(name: string): string {
+  if (!name) return '?';
+  const first = name.trim().charAt(0).toUpperCase();
+  return first || '?';
+}
+
+// ---------- Helper: detect cloned list ----------
 function isClonedList(apiItem: any): boolean {
   const title = String(apiItem?.title ?? '').toLowerCase();
   return Boolean(
     apiItem?.is_clone ||
-    apiItem?.is_cloned ||
-    apiItem?.cloned ||
-    apiItem?.parent_id ||
-    apiItem?.parent_list_id ||
-    apiItem?.original_list_id ||
-    apiItem?.copied_from_list_id ||
-    apiItem?.clone_of ||
-    apiItem?.source_list_id ||
-    apiItem?.from_list_id ||
-    title.includes('(copy)') ||
-    title.endsWith(' copy') ||
-    title.includes('copy'),
+      apiItem?.is_cloned ||
+      apiItem?.cloned ||
+      apiItem?.parent_id ||
+      apiItem?.parent_list_id ||
+      apiItem?.original_list_id ||
+      apiItem?.copied_from_list_id ||
+      apiItem?.clone_of ||
+      apiItem?.source_list_id ||
+      apiItem?.from_list_id ||
+      title.includes('(copy)') ||
+      title.endsWith(' copy') ||
+      title.includes('copy'),
   );
 }
 
@@ -76,6 +116,8 @@ export default function Recommend() {
       return {
         id: String(apiItem.id),
         user: apiItem.user?.full_name ?? 'Unknown',
+        userId: apiItem.user?.id ?? apiItem.id, // for color consistency
+        userImage: apiItem.user?.profile_image || null,
         time: formatTimeAgo(apiItem.created_at),
         title: apiItem.title ?? '',
         likes: Number(apiItem.likes_count ?? 0),
@@ -120,32 +162,46 @@ export default function Recommend() {
         data={posts}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={posts.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={
+          posts.length === 0 ? styles.emptyList : undefined
+        }
         ListEmptyComponent={
           <View style={styles.emptyBox}>
             <Text style={styles.emptyText}>No recommendations found</Text>
           </View>
         }
         renderItem={({ item }) => (
-          <PostCard
-            item={item}
-            onLikePress={onLikePress}
-          />
+          <PostCard item={item} onLikePress={onLikePress} />
         )}
       />
     </View>
   );
 }
 
-// ------------------- PostCard Component (no share button) -------------------
+// ------------------- PostCard Component -------------------
 function PostCard({ item, onLikePress }: any) {
+  // Avatar logic
+  const profileImage = item.userImage;
+  const initial = getInitials(item.user);
+  const avatarColor = getAvatarColor(item.userId || item.user);
+
   return (
     <View style={styles.card}>
       <View style={styles.userRow}>
-        <Image
-          source={require('../../../../assets/image/women1.png')}
-          style={styles.avatar}
-        />
+        <View style={styles.avatarContainer}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.avatar} />
+          ) : (
+            <View
+              style={[
+                styles.avatarPlaceholder,
+                { backgroundColor: avatarColor },
+              ]}
+            >
+              <Text style={styles.avatarInitial}>{initial}</Text>
+            </View>
+          )}
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>{item.user}</Text>
           <Text style={styles.time}>{item.time}</Text>
@@ -171,7 +227,6 @@ function PostCard({ item, onLikePress }: any) {
             value={formatNumber(item.likes)}
           />
         </Pressable>
-        {/* Share button removed – no "Copy" option appears */}
       </View>
     </View>
   );
@@ -251,11 +306,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: responsiveScreenHeight(1),
   },
+  avatarContainer: {
+    marginRight: responsiveScreenWidth(3),
+  },
   avatar: {
     width: responsiveScreenWidth(9),
     height: responsiveScreenWidth(9),
     borderRadius: responsiveScreenWidth(4.5),
-    marginRight: responsiveScreenWidth(3),
+  },
+  avatarPlaceholder: {
+    width: responsiveScreenWidth(9),
+    height: responsiveScreenWidth(9),
+    borderRadius: responsiveScreenWidth(4.5),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitial: {
+    fontSize: responsiveScreenFontSize(2.2),
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
   },
   username: {
     fontFamily: 'Quicksand-SemiBold',

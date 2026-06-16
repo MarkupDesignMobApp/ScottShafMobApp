@@ -51,6 +51,8 @@ import {
   useDeleteListMutation,
   useLazyShareListQuery,
   useUpdateListMutation,
+  usePublishListMutation,
+  useUpdateListItemMutation,
 } from '../../../features/auth/authApi';
 
 // Enable LayoutAnimation for Android
@@ -66,18 +68,18 @@ function isClonedList(apiItem: any): boolean {
   const title = String(apiItem?.title ?? '').toLowerCase();
   return Boolean(
     apiItem?.is_clone ||
-    apiItem?.is_cloned ||
-    apiItem?.cloned ||
-    apiItem?.parent_id ||
-    apiItem?.parent_list_id ||
-    apiItem?.original_list_id ||
-    apiItem?.copied_from_list_id ||
-    apiItem?.clone_of ||
-    apiItem?.source_list_id ||
-    apiItem?.from_list_id ||
-    title.includes('(copy)') ||
-    title.endsWith(' copy') ||
-    title.includes('copy'),
+      apiItem?.is_cloned ||
+      apiItem?.cloned ||
+      apiItem?.parent_id ||
+      apiItem?.parent_list_id ||
+      apiItem?.original_list_id ||
+      apiItem?.copied_from_list_id ||
+      apiItem?.clone_of ||
+      apiItem?.source_list_id ||
+      apiItem?.from_list_id ||
+      title.includes('(copy)') ||
+      title.endsWith(' copy') ||
+      title.includes('copy'),
   );
 }
 
@@ -91,6 +93,11 @@ const STATUS_COLORS = {
 const VISIBILITY_COLORS = {
   public: { bg: '#DBEAFE', text: '#1E40AF' },
   private: { bg: '#F3E8FF', text: '#6B21A8' },
+  default: { bg: '#F3F4F6', text: '#374151' },
+};
+
+const INVITED_COLORS = {
+  invited: { bg: '#E0E7FF', text: '#4338CA' },
   default: { bg: '#F3F4F6', text: '#374151' },
 };
 
@@ -112,6 +119,7 @@ const DraggableItemsList = ({
   userId,
   refetch,
   onDragStateChange,
+  onEditItem,
 }) => {
   const [items, setItems] = useState([]);
   const [reorderItems, { isLoading: isReordering }] =
@@ -230,94 +238,104 @@ const DraggableItemsList = ({
           const itemDescription = item.catalog_item?.description || null;
 
           return (
-            <TouchableOpacity
-              onLongPress={drag}
-              disabled={isActive}
-              activeOpacity={0.7}
-              style={[
-                styles.itemRow,
-                isActive && styles.itemRowActive,
-                isDragging && !isActive && styles.itemRowDragging,
-              ]}
-              delayLongPress={150}
-            >
-              <View style={styles.itemHandle}>
-                <View style={styles.indexCircle}>
-                  <Text style={styles.itemIndex}>{index + 1}</Text>
-                </View>
-                <View style={styles.dragHandleIcon}>
-                  <Text style={styles.dragIcon}>⋮⋮</Text>
-                </View>
-              </View>
-
-              <View style={styles.itemThumbnail}>
-                {imageUrl ? (
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={styles.itemImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.itemThumbPlaceholder}>
-                    <Text style={styles.itemPlaceholderIcon}>📦</Text>
+            <View style={styles.itemRowContainer}>
+              <TouchableOpacity
+                onLongPress={drag}
+                disabled={isActive}
+                activeOpacity={0.7}
+                style={[
+                  styles.itemRow,
+                  isActive && styles.itemRowActive,
+                  isDragging && !isActive && styles.itemRowDragging,
+                ]}
+                delayLongPress={150}
+              >
+                <View style={styles.itemHandle}>
+                  <View style={styles.indexCircle}>
+                    <Text style={styles.itemIndex}>{index + 1}</Text>
                   </View>
-                )}
-              </View>
+                  <View style={styles.dragHandleIcon}>
+                    <Text style={styles.dragIcon}>⋮⋮</Text>
+                  </View>
+                </View>
 
-              <View style={styles.itemContent}>
-                <View style={styles.itemHeader}>
-                  <Text style={styles.itemName} numberOfLines={1}>
-                    {itemName}
-                  </Text>
-                  <View style={styles.itemIdContainer}>
-                    <Text style={styles.itemIdLabel}>ID:</Text>
-                    <Text style={styles.itemId}>{item.id}</Text>
-                    <View
-                      style={[
-                        styles.positionBadge,
-                        userPosition === 1
-                          ? styles.positionFirst
-                          : userPosition === 2
+                <View style={styles.itemThumbnail}>
+                  {imageUrl ? (
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.itemThumbPlaceholder}>
+                      <Text style={styles.itemPlaceholderIcon}>📦</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.itemContent}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.itemName} numberOfLines={1}>
+                      {itemName}
+                    </Text>
+                    <View style={styles.itemIdContainer}>
+                      <Text style={styles.itemIdLabel}>ID:</Text>
+                      <Text style={styles.itemId}>{item.id}</Text>
+                      <View
+                        style={[
+                          styles.positionBadge,
+                          userPosition === 1
+                            ? styles.positionFirst
+                            : userPosition === 2
                             ? styles.positionSecond
                             : styles.positionOther,
-                      ]}
-                    >
-                      <Text style={styles.positionBadgeText}>
-                        Pos: {userPosition}
+                        ]}
+                      >
+                        <Text style={styles.positionBadgeText}>
+                          Pos: {userPosition}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={styles.itemBadges}>
+                    {item.custom_item_name && !item.catalog_item && (
+                      <View style={styles.customBadge}>
+                        <Text style={styles.customBadgeText}>Custom</Text>
+                      </View>
+                    )}
+                    {item.catalog_item && (
+                      <View style={styles.catalogBadge}>
+                        <Text style={styles.catalogBadgeText}>Catalog</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {item.custom_text ? (
+                    <View style={styles.itemNoteContainer}>
+                      <Text style={styles.noteIcon}>📝</Text>
+                      <Text style={styles.itemNote} numberOfLines={2}>
+                        {item.custom_text}
                       </Text>
                     </View>
-                  </View>
-                </View>
-
-                <View style={styles.itemBadges}>
-                  {item.custom_item_name && !item.catalog_item && (
-                    <View style={styles.customBadge}>
-                      <Text style={styles.customBadgeText}>Custom</Text>
-                    </View>
-                  )}
-                  {item.catalog_item && (
-                    <View style={styles.catalogBadge}>
-                      <Text style={styles.catalogBadgeText}>Catalog</Text>
-                    </View>
+                  ) : (
+                    itemDescription && (
+                      <Text style={styles.itemDescription} numberOfLines={1}>
+                        {itemDescription}
+                      </Text>
+                    )
                   )}
                 </View>
+              </TouchableOpacity>
 
-                {item.custom_text ? (
-                  <View style={styles.itemNoteContainer}>
-                    <Text style={styles.noteIcon}>📝</Text>
-                    <Text style={styles.itemNote} numberOfLines={2}>
-                      {item.custom_text}
-                    </Text>
-                  </View>
-                ) : (
-                  itemDescription && (
-                    <Text style={styles.itemDescription} numberOfLines={1}>
-                      {itemDescription}
-                    </Text>
-                  )
-                )}
-              </View>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.itemEditButton}
+                onPress={() => onEditItem && onEditItem(item)}
+                hitSlop={10}
+              >
+                <Text style={styles.itemEditIcon}>✏️</Text>
+              </TouchableOpacity>
+            </View>
           );
         }}
         onDragBegin={handleDragBegin}
@@ -338,11 +356,16 @@ const DraggableItemsList = ({
 export default function MyListScreen({ navigation }) {
   const { data, isLoading, isFetching, refetch } = useGetListsQuery();
   const { data: userProfile } = useGetUserProfileQuery();
-  const userId = userProfile?.id;
+
+  // ✅ CORRECT userId extraction (safe optional chaining)
+  const userId = userProfile?.data?.user?.id;
+
   const [cloneList, { isLoading: cloneLoading }] = useCloneListMutation();
   const [deleteList] = useDeleteListMutation();
   const [getShareLink] = useLazyShareListQuery();
   const [updateList, { isLoading: isUpdating }] = useUpdateListMutation();
+  const [publishList] = usePublishListMutation();
+  const [updateListItem] = useUpdateListItemMutation();
 
   const [lists, setLists] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
@@ -361,13 +384,19 @@ export default function MyListScreen({ navigation }) {
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const actionBtnRefs = useRef<Record<string, View | null>>({});
 
-  // Edit modal state
+  // Edit list modal state
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingList, setEditingList] = useState<any>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editCategoryId, setEditCategoryId] = useState('');
   const [editListSize, setEditListSize] = useState('');
   const [editIsGroup, setEditIsGroup] = useState(false);
+
+  // Edit item modal state
+  const [editItemModalVisible, setEditItemModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editItemName, setEditItemName] = useState('');
+  const [editItemText, setEditItemText] = useState('');
 
   const closeMenu = useCallback(() => {
     setOpenMenuId(null);
@@ -396,7 +425,8 @@ export default function MyListScreen({ navigation }) {
     [openMenuId, closeMenu],
   );
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
+    Dimensions.get('window');
 
   const menuPositionStyle = useMemo(() => {
     if (!menuLayout) return { top: 0, left: 0 };
@@ -529,6 +559,40 @@ export default function MyListScreen({ navigation }) {
     }
   };
 
+  const openEditItemModal = (item: any) => {
+    setEditingItem(item);
+    setEditItemName(item.custom_item_name || item.catalog_item?.name || '');
+    setEditItemText(item.custom_text || '');
+    setEditItemModalVisible(true);
+  };
+
+  const handleUpdateItemSubmit = async () => {
+    Keyboard.dismiss();
+    if (!editItemName.trim()) {
+      Alert.alert('Error', 'Item name is required');
+      return;
+    }
+    try {
+      await updateListItem({
+        listId: editingItem.list_id,
+        itemId: editingItem.id,
+        custom_item_name: editItemName.trim(),
+        custom_text: editItemText.trim() || null,
+      }).unwrap();
+      Alert.alert('Success', 'Item updated successfully');
+      setEditItemModalVisible(false);
+      await refetch();
+      if (editingList) {
+        const updatedList = lists.find(l => l.id === editingList.id);
+        if (updatedList) {
+          setEditingList({ ...updatedList, items: updatedList.items });
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to update item');
+    }
+  };
+
   const handleDelete = async list => {
     closeMenu();
     Alert.alert(
@@ -600,6 +664,28 @@ export default function MyListScreen({ navigation }) {
     }
   };
 
+  const handlePublish = async list => {
+    closeMenu();
+    setActionLoadingId(list.id);
+    try {
+      if (list.status === 'published') {
+        await updateList({
+          listId: list.id,
+          data: { status: 'draft' },
+        }).unwrap();
+        Alert.alert('Success', 'List unpublished successfully');
+      } else {
+        await publishList({ list_ids: [list.id] }).unwrap();
+        Alert.alert('Success', 'List published successfully');
+      }
+      await refetch();
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to update status');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   const getListThumbnail = useCallback(items => {
     if (!items?.length) return null;
     const catalogItem = items.find(item => item?.catalog_item?.image_url);
@@ -658,9 +744,16 @@ export default function MyListScreen({ navigation }) {
                 )}
               </View>
 
+              {/* ---------- DEBUG: Show user_id for all lists ---------- */}
+
               <View style={styles.badgeRow}>
                 <Badge label={item.status} colorMap={STATUS_COLORS} />
                 <Badge label={item.visibility} colorMap={VISIBILITY_COLORS} />
+
+                {/* ✅ Show "Invited" ONLY when you are NOT the owner */}
+                {userId && String(item.user_id) !== String(userId) && (
+                  <Badge label="Invited" colorMap={INVITED_COLORS} />
+                )}
               </View>
 
               <View style={styles.progressContainer}>
@@ -693,10 +786,10 @@ export default function MyListScreen({ navigation }) {
                 📅{' '}
                 {item.created_at
                   ? new Date(item.created_at).toLocaleDateString('en-US', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })
                   : ''}
               </Text>
             </View>
@@ -754,7 +847,7 @@ export default function MyListScreen({ navigation }) {
               <View style={styles.itemsHeader}>
                 <Text style={styles.itemsHeaderTitle}>List Items</Text>
                 <Text style={styles.itemsHeaderSubtitle}>
-                  Long press ⋮⋮ to reorder
+                  Long press ⋮⋮ to reorder · Tap ✏️ to edit
                 </Text>
               </View>
               <DraggableItemsList
@@ -763,6 +856,7 @@ export default function MyListScreen({ navigation }) {
                 userId={userId}
                 refetch={refetch}
                 onDragStateChange={handleDragStateChange}
+                onEditItem={openEditItemModal}
               />
             </View>
           )}
@@ -780,6 +874,7 @@ export default function MyListScreen({ navigation }) {
       actionLoadingId,
       openDotsMenu,
       closeMenu,
+      openEditItemModal,
     ],
   );
 
@@ -896,8 +991,8 @@ export default function MyListScreen({ navigation }) {
                 {searchText
                   ? 'Try a different search term'
                   : activeTab === 'original'
-                    ? 'Create your first list to get started'
-                    : 'Clone an original list to see it here'}
+                  ? 'Create your first list to get started'
+                  : 'Clone an original list to see it here'}
               </Text>
               {!searchText && activeTab === 'original' && (
                 <TouchableOpacity
@@ -916,7 +1011,7 @@ export default function MyListScreen({ navigation }) {
         </NestableScrollContainer>
       </SafeAreaProvider>
 
-      {/* Dots menu modal */}
+      {/* DOTS MENU MODAL */}
       <Modal
         visible={isMenuVisible}
         transparent
@@ -924,7 +1019,10 @@ export default function MyListScreen({ navigation }) {
         onRequestClose={closeMenu}
       >
         <View style={styles.menuBackdropContainer}>
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeMenu} />
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={closeMenu}
+          />
           {menuLayout && (
             <View style={[styles.floatingMenu, menuPositionStyle]}>
               <Pressable
@@ -948,6 +1046,25 @@ export default function MyListScreen({ navigation }) {
               >
                 <Text style={styles.optionMenuText}>Edit</Text>
               </Pressable>
+
+              {(() => {
+                const currentItem = lists.find(l => l.id === openMenuId);
+                if (!currentItem) return null;
+                const isPublished = currentItem.status === 'published';
+                return (
+                  <Pressable
+                    style={styles.optionMenuItem}
+                    onPress={() => {
+                      if (currentItem) handlePublish(currentItem);
+                      else closeMenu();
+                    }}
+                  >
+                    <Text style={styles.optionMenuText}>
+                      {isPublished ? 'Unpublish' : 'Publish'}
+                    </Text>
+                  </Pressable>
+                );
+              })()}
 
               {lists.find(l => l.id === openMenuId)?.canClone &&
                 activeTab === 'original' && (
@@ -982,7 +1099,7 @@ export default function MyListScreen({ navigation }) {
         </View>
       </Modal>
 
-      {/* Edit Modal */}
+      {/* EDIT LIST MODAL (with items list) */}
       <Modal
         visible={editModalVisible}
         transparent
@@ -996,7 +1113,7 @@ export default function MyListScreen({ navigation }) {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
             >
-              <TouchableWithoutFeedback onPress={() => { }}>
+              <TouchableWithoutFeedback onPress={() => {}}>
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeaderRow}>
                     <Text style={styles.modalTitle}>Edit List</Text>
@@ -1013,6 +1130,7 @@ export default function MyListScreen({ navigation }) {
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.modalScrollContent}
+                    style={styles.modalScrollView}
                   >
                     <Text style={styles.modalLabel}>Title</Text>
                     <TextInput
@@ -1020,18 +1138,6 @@ export default function MyListScreen({ navigation }) {
                       value={editTitle}
                       onChangeText={setEditTitle}
                       placeholder="Enter title"
-                      placeholderTextColor="#999"
-                      returnKeyType="done"
-                      onSubmitEditing={Keyboard.dismiss}
-                    />
-
-                    <Text style={styles.modalLabel}>Category ID</Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={editCategoryId}
-                      onChangeText={setEditCategoryId}
-                      keyboardType="numeric"
-                      placeholder="e.g., 5"
                       placeholderTextColor="#999"
                       returnKeyType="done"
                       onSubmitEditing={Keyboard.dismiss}
@@ -1049,35 +1155,156 @@ export default function MyListScreen({ navigation }) {
                       onSubmitEditing={Keyboard.dismiss}
                     />
 
-                    <View style={styles.modalSwitchRow}>
-                      <Text style={styles.modalLabel}>Group List</Text>
-                      <Switch
-                        value={editIsGroup}
-                        onValueChange={setEditIsGroup}
-                        trackColor={{ false: '#ccc', true: '#3B82F6' }}
-                      />
-                    </View>
+                    {/* ITEMS SECTION */}
+                    <View style={styles.itemsSection}>
+                      <View style={styles.itemsSectionHeader}>
+                        <Text style={styles.itemsSectionTitle}>Items</Text>
+                        <TouchableOpacity
+                          style={styles.addItemButton}
+                          onPress={() => {
+                            Alert.alert(
+                              'Add Item',
+                              'You can integrate your add-item API here.',
+                            );
+                          }}
+                        >
+                          <Text style={styles.addItemButtonText}>+ Add</Text>
+                        </TouchableOpacity>
+                      </View>
 
-                    <View style={styles.modalButtons}>
-                      <TouchableOpacity
-                        style={[styles.modalButton, styles.modalCancelButton]}
-                        onPress={() => setEditModalVisible(false)}
-                      >
-                        <Text style={styles.modalCancelText}>Cancel</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.modalButton, styles.modalUpdateButton]}
-                        onPress={handleUpdateSubmit}
-                        disabled={isUpdating}
-                      >
-                        {isUpdating ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          <Text style={styles.modalUpdateText}>Update</Text>
-                        )}
-                      </TouchableOpacity>
+                      {editingList?.items?.length > 0 ? (
+                        editingList.items.map((item: any) => (
+                          <View key={item.id} style={styles.modalItemRow}>
+                            <View style={styles.modalItemInfo}>
+                              <Text style={styles.modalItemName}>
+                                {item.custom_item_name ||
+                                  item.catalog_item?.name ||
+                                  'Unnamed'}
+                              </Text>
+                              {item.custom_text && (
+                                <Text
+                                  style={styles.modalItemText}
+                                  numberOfLines={1}
+                                >
+                                  {item.custom_text}
+                                </Text>
+                              )}
+                            </View>
+                            <TouchableOpacity
+                              style={styles.modalItemEditBtn}
+                              onPress={() => openEditItemModal(item)}
+                            >
+                              <Text style={styles.modalItemEditIcon}>✏️</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))
+                      ) : (
+                        <Text style={styles.noItemsText}>
+                          No items in this list
+                        </Text>
+                      )}
                     </View>
                   </ScrollView>
+
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalCancelButton]}
+                      onPress={() => setEditModalVisible(false)}
+                    >
+                      <Text style={styles.modalCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalUpdateButton]}
+                      onPress={handleUpdateSubmit}
+                      disabled={isUpdating}
+                    >
+                      {isUpdating ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Text style={styles.modalUpdateText}>Update</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* EDIT ITEM MODAL */}
+      <Modal
+        visible={editItemModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditItemModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              style={styles.modalKeyboardWrapper}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+            >
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeaderRow}>
+                    <Text style={styles.modalTitle}>Edit Item</Text>
+                    <Pressable
+                      onPress={() => setEditItemModalVisible(false)}
+                      style={styles.modalCloseBtn}
+                      hitSlop={10}
+                    >
+                      <Text style={styles.modalCloseText}>✕</Text>
+                    </Pressable>
+                  </View>
+
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.modalScrollContent}
+                    style={styles.modalScrollView}
+                  >
+                    <Text style={styles.modalLabel}>Item Name</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editItemName}
+                      onChangeText={setEditItemName}
+                      placeholder="Enter item name"
+                      placeholderTextColor="#999"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
+
+                    <Text style={styles.modalLabel}>Item Text (optional)</Text>
+                    <TextInput
+                      style={[styles.modalInput, styles.modalTextArea]}
+                      value={editItemText}
+                      onChangeText={setEditItemText}
+                      placeholder="Additional text"
+                      placeholderTextColor="#999"
+                      multiline
+                      numberOfLines={3}
+                      textAlignVertical="top"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
+                  </ScrollView>
+
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalCancelButton]}
+                      onPress={() => setEditItemModalVisible(false)}
+                    >
+                      <Text style={styles.modalCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalUpdateButton]}
+                      onPress={handleUpdateItemSubmit}
+                    >
+                      <Text style={styles.modalUpdateText}>Update</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
@@ -1090,6 +1317,65 @@ export default function MyListScreen({ navigation }) {
 
 // ------------------- STYLES -------------------
 export const styles = StyleSheet.create({
+  itemsSection: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 12,
+  },
+  itemsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  itemsSectionTitle: {
+    fontSize: responsiveScreenFontSize(1.8),
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  addItemButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  addItemButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: responsiveScreenFontSize(1.4),
+  },
+  modalItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 6,
+  },
+  modalItemInfo: {
+    flex: 1,
+  },
+  modalItemName: {
+    fontSize: responsiveScreenFontSize(1.6),
+    fontWeight: '500',
+    color: '#111827',
+  },
+  modalItemText: {
+    fontSize: responsiveScreenFontSize(1.3),
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  modalItemEditBtn: {
+    padding: 6,
+  },
+  modalItemEditIcon: {
+    fontSize: 18,
+    color: '#3B82F6',
+  },
+
   header: {
     backgroundColor: '#1A2B3C',
     paddingHorizontal: responsiveScreenWidth(4),
@@ -1108,6 +1394,25 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: responsiveScreenHeight(1.5),
+  },
+  itemRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  itemEditButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 4,
+  },
+  itemEditIcon: {
+    fontSize: 18,
+    color: '#3B82F6',
+  },
+  modalTextArea: {
+    height: 100,
+    textAlignVertical: 'top',
+    paddingTop: 12,
   },
   headerTitle: {
     fontSize: responsiveScreenFontSize(2.4),
@@ -1664,7 +1969,7 @@ export const styles = StyleSheet.create({
     padding: 20,
     width: '100%',
     maxWidth: 420,
-    maxHeight: '85%',
+    maxHeight: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

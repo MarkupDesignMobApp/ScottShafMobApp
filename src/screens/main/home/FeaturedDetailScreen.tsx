@@ -213,10 +213,8 @@ export default function FeaturedDetailScreen() {
         />
         <View style={styles.imageOverlay} />
 
-        {/* Premium Position Badge */}
-        <View style={styles.positionBadge}>
-          <Text style={styles.positionBadgeText}>#{index + 1}</Text>
-        </View>
+   
+      
 
         {/* Catalog Indicator */}
         {item.catalog_item_id && (

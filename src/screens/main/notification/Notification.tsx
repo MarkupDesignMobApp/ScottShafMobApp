@@ -29,6 +29,31 @@ import {
 } from 'react-native-responsive-dimensions';
 import { useFocusEffect } from '@react-navigation/native';
 
+// ---------- Helper: avatar color from name or ID ----------
+const AVATAR_COLORS = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+  '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+  '#F8C471', '#82E0AA', '#F1948A', '#85929E', '#73C6B6',
+  '#E59866', '#AF7AC5', '#5DADE2', '#58D68D', '#F4D03F',
+];
+
+function getAvatarColor(identifier: string | number): string {
+  const str = String(identifier);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
+}
+
+function getInitials(name: string): string {
+  if (!name) return '?';
+  // Take first character of first name, or just first character of the whole name
+  const first = name.trim().charAt(0).toUpperCase();
+  return first || '?';
+}
+
 export default function Notification({ navigation }: any) {
   const { data: Notify, isLoading, refetch } = useGetNotificationsQuery();
   const [acceptNotification] = useAcceptNotificationMutation();
@@ -230,10 +255,11 @@ export default function Notification({ navigation }: any) {
               const declineState = getButtonState(item);
               const showButtons = item.can_respond === true;
 
-              // Profile image fallback
-              const profileImage = item.sender?.profile_image
-                ? { uri: item.sender.profile_image }
-                : require('../../../../assets/image/women1.png');
+              // --- Avatar logic ---
+              const senderName = item.sender?.name || item.sender?.full_name || '';
+              const profileImage = item.sender?.profile_image;
+              const initial = getInitials(senderName);
+              const avatarColor = getAvatarColor(senderName || item.sender?.id || item.id);
 
               return (
                 <TouchableOpacity
@@ -244,7 +270,13 @@ export default function Notification({ navigation }: any) {
                   <View style={[styles.card, unread && styles.cardUnread]}>
                     <View style={styles.row}>
                       <View style={styles.avatar}>
-                        <Image source={profileImage} style={styles.avatarImg} />
+                        {profileImage ? (
+                          <Image source={{ uri: profileImage }} style={styles.avatarImg} />
+                        ) : (
+                          <View style={[styles.avatarPlaceholder, { backgroundColor: avatarColor }]}>
+                            <Text style={styles.avatarInitial}>{initial}</Text>
+                          </View>
+                        )}
                       </View>
 
                       <View style={styles.content}>
@@ -268,12 +300,12 @@ export default function Notification({ navigation }: any) {
                                 styles.acceptBtn,
                                 (acceptState.active ||
                                   selectedAction[item.id] === 'accept') &&
-                                  styles.acceptBtnActive,
+                                styles.acceptBtnActive,
                               ]}
                               onPress={() => handleAccept(item)}
                             >
                               {isActionLoading &&
-                              selectedAction[item.id] === 'accept' ? (
+                                selectedAction[item.id] === 'accept' ? (
                                 <ActivityIndicator size="small" color="#fff" />
                               ) : (
                                 <Text
@@ -281,7 +313,7 @@ export default function Notification({ navigation }: any) {
                                     styles.actionBtnText,
                                     (acceptState.active ||
                                       selectedAction[item.id] === 'accept') &&
-                                      styles.actionBtnTextActive,
+                                    styles.actionBtnTextActive,
                                   ]}
                                 >
                                   {acceptState.label ||
@@ -304,14 +336,14 @@ export default function Notification({ navigation }: any) {
                               onPress={() => handleDecline(item)}
                             >
                               {isActionLoading &&
-                              selectedAction[item.id] === 'decline' ? (
+                                selectedAction[item.id] === 'decline' ? (
                                 <ActivityIndicator size="small" color="#fff" />
                               ) : (
                                 <Text
                                   style={[
                                     styles.actionBtnText,
                                     declineState.active &&
-                                      styles.actionBtnTextActive,
+                                    styles.actionBtnTextActive,
                                   ]}
                                 >
                                   {declineState.label || 'Decline'}
@@ -444,9 +476,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   avatar: {
-    width: wp(12),
-    height: wp(12),
-    borderRadius: wp(6),
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(4),
     backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
@@ -457,6 +489,19 @@ const styles = StyleSheet.create({
     width: wp(12),
     height: wp(12),
     resizeMode: 'cover',
+  },
+  avatarPlaceholder: {
+    width: wp(12),
+    height: wp(12),
+    borderRadius: wp(6),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitial: {
+    fontSize: fp(1.75),
+    fontWeight: '400',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
   },
   content: {
     flex: 1,

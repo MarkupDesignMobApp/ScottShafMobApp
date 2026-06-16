@@ -9,18 +9,16 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
-  Platform,
+  RefreshControl,
 } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
 
 import { styles } from './styles';
-
-import SearchBar from '../../../components/ui/SearchBar/SearchBar';
 import Button from '../../../components/ui/SocialButton/Button';
-
 import ImageCarousel2 from './MyCarousel2';
 import Recommend from './Recommend';
 import FeaturedListsPreview from '../feature/FeaturedListsPreview';
@@ -29,6 +27,7 @@ import {
   useGetUserProfileQuery,
   useGetUserInterestsQuery,
 } from '../../../features/auth/authApi';
+import { baseApi } from '../../../app/api';
 import { MainStackParamList } from '../../../navigation/types/navigation';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -45,16 +44,27 @@ interface HintStep {
 }
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
+  const dispatch = useDispatch();
+
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [selectedInterestId, setSelectedInterestId] = useState<number | null>(
     null,
   );
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const { data: profileData } = useGetUserProfileQuery();
-  const { data: interestsData, isLoading: interestsLoading } =
-    useGetUserInterestsQuery();
+  const {
+    data: profileData,
+    refetch: refetchProfile,
+  } = useGetUserProfileQuery();
+
+  const {
+    data: interestsData,
+    isLoading: interestsLoading,
+    refetch: refetchInterests,
+  } = useGetUserInterestsQuery();
 
   const safeInterestsData = Array.isArray(interestsData) ? interestsData : [];
 
@@ -148,9 +158,31 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     [],
   );
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+
+    try {
+      // Properly dispatch resetApiState
+      dispatch(baseApi.util.resetApiState());
+
+      // Reset local UI state too
+      setActiveIndex(0);
+      setSelectedInterestId(null);
+
+      // Refetch active queries
+      await Promise.all([refetchProfile(), refetchInterests()]);
+
+      // Force child re-render if needed
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [dispatch, refetchProfile, refetchInterests]);
+
   const currentHint = hintSteps[currentStep];
 
-  // Main content of the screen
   const MainContent = () => (
     <SafeAreaProvider>
       <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
@@ -196,8 +228,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           style={styles.innercontainer}
         >
           <View style={styles.topSection}>
-
-
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -242,6 +272,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContainer}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
             >
               <View style={styles.createCard}>
                 <Text style={styles.createTitle}>Create Your First List</Text>
@@ -268,6 +301,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </View>
 
               <FeaturedListsPreview
+                key={refreshKey}
                 interestId={selectedInterestId}
                 navigation={navigation}
               />
@@ -285,7 +319,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     </SafeAreaProvider>
   );
 
-  // Separate Onboarding Modal component with its OWN SafeAreaProvider
   const OnboardingModal = () => (
     <Modal
       visible={showOnboarding}
@@ -294,7 +327,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       statusBarTranslucent={true}
       onRequestClose={handleSkip}
     >
-      {/* CRITICAL FIX: iOS needs its own SafeAreaProvider inside the Modal */}
       <SafeAreaProvider>
         <View
           style={{
@@ -316,6 +348,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <Text style={{ fontSize: 48, marginBottom: 16 }}>
               {currentHint.emoji}
             </Text>
+
             <Text
               style={{
                 fontSize: 24,
@@ -327,6 +360,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             >
               {currentHint.title}
             </Text>
+
             <Text
               style={{
                 fontSize: 16,
@@ -339,7 +373,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               {currentHint.description}
             </Text>
 
-            {/* Progress indicator */}
             <View
               style={{
                 flexDirection: 'row',

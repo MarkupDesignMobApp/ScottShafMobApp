@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../types/navigation';
 import { TabNavigator, DrawerNavigator } from '../index';
+
 import {
   Notification,
   Privacy,
@@ -14,6 +15,7 @@ import {
   ListPublishedScreen,
   FeaturedDetailScreen,
   FeaturedLists,
+  Bookmark,
 } from '../../screens/index';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -39,9 +41,11 @@ export default function MainNavigator() {
         component={ListPublishedScreen}
       />
       <Stack.Screen name="ProfileEdit" component={Editprofile} />
+      
       <Stack.Screen name="FeaturedDetail" component={FeaturedDetailScreen} />
       <Stack.Screen name="Feature" component={FeaturedLists} />
-      {/* <Stack.Screen name="Bookmark" component={Bookmark} /> */}
+      
+
     </Stack.Navigator>
   );
 }
