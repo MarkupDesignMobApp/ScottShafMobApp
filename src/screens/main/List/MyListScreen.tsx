@@ -53,6 +53,7 @@ import {
   useUpdateListMutation,
   usePublishListMutation,
   useUpdateListItemMutation,
+  useAddListItemMutation,
 } from '../../../features/auth/authApi';
 
 // Enable LayoutAnimation for Android
@@ -68,18 +69,18 @@ function isClonedList(apiItem: any): boolean {
   const title = String(apiItem?.title ?? '').toLowerCase();
   return Boolean(
     apiItem?.is_clone ||
-      apiItem?.is_cloned ||
-      apiItem?.cloned ||
-      apiItem?.parent_id ||
-      apiItem?.parent_list_id ||
-      apiItem?.original_list_id ||
-      apiItem?.copied_from_list_id ||
-      apiItem?.clone_of ||
-      apiItem?.source_list_id ||
-      apiItem?.from_list_id ||
-      title.includes('(copy)') ||
-      title.endsWith(' copy') ||
-      title.includes('copy'),
+    apiItem?.is_cloned ||
+    apiItem?.cloned ||
+    apiItem?.parent_id ||
+    apiItem?.parent_list_id ||
+    apiItem?.original_list_id ||
+    apiItem?.copied_from_list_id ||
+    apiItem?.clone_of ||
+    apiItem?.source_list_id ||
+    apiItem?.from_list_id ||
+    title.includes('(copy)') ||
+    title.endsWith(' copy') ||
+    title.includes('copy'),
   );
 }
 
@@ -287,8 +288,8 @@ const DraggableItemsList = ({
                           userPosition === 1
                             ? styles.positionFirst
                             : userPosition === 2
-                            ? styles.positionSecond
-                            : styles.positionOther,
+                              ? styles.positionSecond
+                              : styles.positionOther,
                         ]}
                       >
                         <Text style={styles.positionBadgeText}>
@@ -357,7 +358,6 @@ export default function MyListScreen({ navigation }) {
   const { data, isLoading, isFetching, refetch } = useGetListsQuery();
   const { data: userProfile } = useGetUserProfileQuery();
 
-  // ✅ CORRECT userId extraction (safe optional chaining)
   const userId = userProfile?.data?.user?.id;
 
   const [cloneList, { isLoading: cloneLoading }] = useCloneListMutation();
@@ -366,6 +366,7 @@ export default function MyListScreen({ navigation }) {
   const [updateList, { isLoading: isUpdating }] = useUpdateListMutation();
   const [publishList] = usePublishListMutation();
   const [updateListItem] = useUpdateListItemMutation();
+  const [addListItem, { isLoading: isAddingItem }] = useAddListItemMutation();
 
   const [lists, setLists] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
@@ -389,7 +390,6 @@ export default function MyListScreen({ navigation }) {
   const [editingList, setEditingList] = useState<any>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editCategoryId, setEditCategoryId] = useState('');
-  const [editListSize, setEditListSize] = useState('');
   const [editIsGroup, setEditIsGroup] = useState(false);
 
   // Edit item modal state
@@ -398,11 +398,33 @@ export default function MyListScreen({ navigation }) {
   const [editItemName, setEditItemName] = useState('');
   const [editItemText, setEditItemText] = useState('');
 
+  // Add item modal state
+  const [addItemModalVisible, setAddItemModalVisible] = useState(false);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemText, setNewItemText] = useState('');
+
   const closeMenu = useCallback(() => {
     setOpenMenuId(null);
     setMenuLayout(null);
   }, []);
+  const openAddItemModal = () => {
+    Keyboard.dismiss();
+    setNewItemName('');
+    setNewItemText('');
 
+
+    setEditModalVisible(false);
+
+    setTimeout(() => {
+      setAddItemModalVisible(true);
+    }, 250);
+  };
+  const closeAddItemModal = () => {
+    setAddItemModalVisible(false);
+    setTimeout(() => {
+      setEditModalVisible(true);
+    }, 250);
+  };
   const openDotsMenu = useCallback(
     (item: any) => {
       if (openMenuId === item.id) {
@@ -516,7 +538,6 @@ export default function MyListScreen({ navigation }) {
     setEditingList(list);
     setEditTitle(list.title || '');
     setEditCategoryId(String(list.category_id || ''));
-    setEditListSize(String(list.list_size || ''));
     setEditIsGroup(
       list.is_group === true || list.is_group === 'true' || list.is_group === 1,
     );
@@ -532,20 +553,14 @@ export default function MyListScreen({ navigation }) {
       return;
     }
     const parsedCategoryId = parseInt(editCategoryId, 10);
-    const parsedListSize = parseInt(editListSize, 10);
     if (isNaN(parsedCategoryId) || parsedCategoryId <= 0) {
       Alert.alert('Error', 'Valid Category ID is required');
-      return;
-    }
-    if (isNaN(parsedListSize) || parsedListSize < 0) {
-      Alert.alert('Error', 'Valid List Size is required');
       return;
     }
 
     const payload = {
       title: editTitle.trim(),
       category_id: parsedCategoryId,
-      list_size: parsedListSize,
       is_group: editIsGroup,
     };
 
@@ -560,10 +575,18 @@ export default function MyListScreen({ navigation }) {
   };
 
   const openEditItemModal = (item: any) => {
+    Keyboard.dismiss();
+
     setEditingItem(item);
     setEditItemName(item.custom_item_name || item.catalog_item?.name || '');
     setEditItemText(item.custom_text || '');
-    setEditItemModalVisible(true);
+
+    // Close parent modal first
+    setEditModalVisible(false);
+
+    setTimeout(() => {
+      setEditItemModalVisible(true);
+    }, 250);
   };
 
   const handleUpdateItemSubmit = async () => {
@@ -590,6 +613,57 @@ export default function MyListScreen({ navigation }) {
       }
     } catch (error: any) {
       Alert.alert('Error', error?.data?.message || 'Failed to update item');
+    }
+  };
+
+  // ✅ UPDATED: handleAddItemSubmit with immediate refetch and editingList update
+  const handleAddItemSubmit = async () => {
+    Keyboard.dismiss();
+
+    if (!newItemName.trim()) {
+      Alert.alert('Error', 'Item name is required');
+      return;
+    }
+
+    if (!editingList) {
+      Alert.alert('Error', 'No list selected');
+      return;
+    }
+
+    try {
+      const result = await addListItem({
+        listId: editingList.id,
+        custom_item_name: newItemName.trim(),
+        custom_text: newItemText.trim() || undefined,
+      }).unwrap();
+
+      const newItem = result?.data?.[0];
+      const itemId = newItem?.id ?? '?';
+
+      Alert.alert(
+        'Success',
+        `Item "${newItemName.trim()}" added (ID: ${itemId})`,
+      );
+
+      setAddItemModalVisible(false);
+      setTimeout(() => {
+        setEditModalVisible(true);
+      }, 250);
+      // 🔁 Immediately refetch the GET /lists API
+      const refetchResult = await refetch();
+
+      // 🔄 Update editingList with fresh data so the modal shows the new item instantly
+      if (refetchResult.isSuccess && refetchResult.data) {
+        const updatedData = refetchResult.data; // array of lists
+        const updatedList = updatedData.find(
+          (l: any) => l.id === editingList.id,
+        );
+        if (updatedList) {
+          setEditingList(updatedList);
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to add item');
     }
   };
 
@@ -744,13 +818,10 @@ export default function MyListScreen({ navigation }) {
                 )}
               </View>
 
-              {/* ---------- DEBUG: Show user_id for all lists ---------- */}
-
               <View style={styles.badgeRow}>
                 <Badge label={item.status} colorMap={STATUS_COLORS} />
                 <Badge label={item.visibility} colorMap={VISIBILITY_COLORS} />
 
-                {/* ✅ Show "Invited" ONLY when you are NOT the owner */}
                 {userId && String(item.user_id) !== String(userId) && (
                   <Badge label="Invited" colorMap={INVITED_COLORS} />
                 )}
@@ -786,10 +857,10 @@ export default function MyListScreen({ navigation }) {
                 📅{' '}
                 {item.created_at
                   ? new Date(item.created_at).toLocaleDateString('en-US', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                    })
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })
                   : ''}
               </Text>
             </View>
@@ -991,8 +1062,8 @@ export default function MyListScreen({ navigation }) {
                 {searchText
                   ? 'Try a different search term'
                   : activeTab === 'original'
-                  ? 'Create your first list to get started'
-                  : 'Clone an original list to see it here'}
+                    ? 'Create your first list to get started'
+                    : 'Clone an original list to see it here'}
               </Text>
               {!searchText && activeTab === 'original' && (
                 <TouchableOpacity
@@ -1113,7 +1184,7 @@ export default function MyListScreen({ navigation }) {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
             >
-              <TouchableWithoutFeedback onPress={() => {}}>
+              <TouchableWithoutFeedback onPress={() => { }}>
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeaderRow}>
                     <Text style={styles.modalTitle}>Edit List</Text>
@@ -1143,30 +1214,13 @@ export default function MyListScreen({ navigation }) {
                       onSubmitEditing={Keyboard.dismiss}
                     />
 
-                    <Text style={styles.modalLabel}>List Size</Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={editListSize}
-                      onChangeText={setEditListSize}
-                      keyboardType="numeric"
-                      placeholder="Number of items"
-                      placeholderTextColor="#999"
-                      returnKeyType="done"
-                      onSubmitEditing={Keyboard.dismiss}
-                    />
-
                     {/* ITEMS SECTION */}
                     <View style={styles.itemsSection}>
                       <View style={styles.itemsSectionHeader}>
                         <Text style={styles.itemsSectionTitle}>Items</Text>
                         <TouchableOpacity
                           style={styles.addItemButton}
-                          onPress={() => {
-                            Alert.alert(
-                              'Add Item',
-                              'You can integrate your add-item API here.',
-                            );
-                          }}
+                          onPress={openAddItemModal}
                         >
                           <Text style={styles.addItemButtonText}>+ Add</Text>
                         </TouchableOpacity>
@@ -1246,7 +1300,7 @@ export default function MyListScreen({ navigation }) {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
             >
-              <TouchableWithoutFeedback onPress={() => {}}>
+              <TouchableWithoutFeedback onPress={() => { }}>
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeaderRow}>
                     <Text style={styles.modalTitle}>Edit Item</Text>
@@ -1303,6 +1357,91 @@ export default function MyListScreen({ navigation }) {
                       onPress={handleUpdateItemSubmit}
                     >
                       <Text style={styles.modalUpdateText}>Update</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* ADD ITEM MODAL */}
+      <Modal
+        visible={addItemModalVisible}
+        transparent
+        animationType="slide"
+        presentationStyle="overFullScreen"
+        onRequestClose={() => setAddItemModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              style={styles.modalKeyboardWrapper}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+            >
+              <TouchableWithoutFeedback onPress={() => { }}>
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeaderRow}>
+                    <Text style={styles.modalTitle}>Add New Item</Text>
+                    <Pressable
+                      onPress={() => setAddItemModalVisible(false)}
+                      style={styles.modalCloseBtn}
+                      hitSlop={10}
+                    >
+                      <Text style={styles.modalCloseText}>✕</Text>
+                    </Pressable>
+                  </View>
+
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.modalScrollContent}
+                  >
+                    <Text style={styles.modalLabel}>Item Name</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={newItemName}
+                      onChangeText={setNewItemName}
+                      placeholder="Enter item name"
+                      placeholderTextColor="#999"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
+
+                    <Text style={styles.modalLabel}>Item Text (optional)</Text>
+                    <TextInput
+                      style={[styles.modalInput, styles.modalTextArea]}
+                      value={newItemText}
+                      onChangeText={setNewItemText}
+                      placeholder="Additional text"
+                      placeholderTextColor="#999"
+                      multiline
+                      numberOfLines={3}
+                      textAlignVertical="top"
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
+                  </ScrollView>
+
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalCancelButton]}
+                      onPress={() => setAddItemModalVisible(false)}
+                    >
+                      <Text style={styles.modalCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalUpdateButton]}
+                      onPress={handleAddItemSubmit}
+                      disabled={isAddingItem}
+                    >
+                      {isAddingItem ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Text style={styles.modalUpdateText}>Add</Text>
+                      )}
                     </TouchableOpacity>
                   </View>
                 </View>

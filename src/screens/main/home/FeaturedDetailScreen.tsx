@@ -58,7 +58,6 @@ const ItemDetailModal = ({
 }) => {
   if (!item) return null;
 
-
   const handleShare = () => Alert.alert('Share', `Share ${item.name}`);
 
   return (
@@ -85,22 +84,16 @@ const ItemDetailModal = ({
 
             {/* Scrollable Content */}
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-              {/* Hero Image Section */}
+              {/* Hero Image Section – no overlay */}
               <View style={styles.modalImageWrapper}>
                 <Image
+                  resizeMode='contain'
                   source={item.image ? { uri: item.image } : icons.placeholder}
                   style={styles.modalImage}
                   defaultSource={icons.placeholder}
                 />
-                <View style={styles.modalImageGradient} />
 
-                {/* Position Badge */}
-                <View style={styles.modalPositionBadge}>
-                  <Text style={styles.modalPositionNumber}>
-                    #{item.position}
-                  </Text>
-                  <Text style={styles.modalPositionLabel}>Rank</Text>
-                </View>
+
 
                 {/* Close Button */}
                 <TouchableOpacity
@@ -140,8 +133,6 @@ const ItemDetailModal = ({
                   {item.description ||
                     'No description available for this item.'}
                 </Text>
-
-         
               </View>
             </ScrollView>
           </TouchableOpacity>
@@ -213,8 +204,12 @@ export default function FeaturedDetailScreen() {
         />
         <View style={styles.imageOverlay} />
 
-   
-      
+        {/* Position Badge */}
+        {item.position !== undefined && (
+          <View style={styles.positionBadge}>
+            <Text style={styles.positionBadgeText}>#{item.position}</Text>
+          </View>
+        )}
 
         {/* Catalog Indicator */}
         {item.catalog_item_id && (
@@ -624,12 +619,12 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 20,
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.2,
+        shadowRadius: 24,
       },
       android: {
-        elevation: 20,
+        elevation: 24,
       },
     }),
   },
@@ -650,10 +645,6 @@ const styles = StyleSheet.create({
   modalImage: {
     width: '100%',
     height: '100%',
-  },
-  modalImageGradient: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   modalPositionBadge: {
     position: 'absolute',
@@ -681,7 +672,7 @@ const styles = StyleSheet.create({
   modalPositionNumber: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontFamily: 'Quicksans-Bold',
+    fontFamily: 'Quicksand-Bold',
   },
   modalPositionLabel: {
     color: '#FFFFFF',
@@ -742,6 +733,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 30,
     gap: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   modalMetaIcon: {
     width: 16,

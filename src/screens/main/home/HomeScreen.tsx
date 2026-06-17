@@ -449,7 +449,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   return (
     <>
       <MainContent />
-      <OnboardingModal />
+      {/* <OnboardingModal /> */}
     </>
   );
 }

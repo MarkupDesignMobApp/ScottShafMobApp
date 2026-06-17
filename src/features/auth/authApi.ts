@@ -61,7 +61,6 @@ import {
   PublishedLists,
   SUB_CATEGORIES_ENDPOINT,
   SUB_CATEGORY_ITEMS_ENDPOINT,
-  
 } from './endpoints';
 
 /* ================= API ================= */
@@ -286,16 +285,19 @@ export const authApi = baseApi.injectEndpoints({
     addListItem: builder.mutation<
       AddListItemResponse,
       {
-        listId: number | string;
+        listId: number | string; // 👈 camelCase to match API
         custom_item_name: string;
         custom_text?: string;
         position?: number;
       }
     >({
       query: ({ listId, ...body }) => ({
-        url: `/scott-shafer/api/lists/${listId}/items`,
+        url: '/scott-shafer/api/lists/items', 
         method: 'POST',
-        body,
+        body: {
+          ...body,
+          listId,
+        },
       }),
     }),
 
