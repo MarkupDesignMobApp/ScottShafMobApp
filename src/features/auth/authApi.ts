@@ -212,7 +212,14 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['Auth', 'Profile'],
     }),
     requestDataExport: builder.mutation<
-      { success: boolean; message?: string },
+      {
+        success: boolean;
+        message?: string;
+        data?: {
+          status: string;
+          file_path: string;
+        };
+      },
       void
     >({
       query: () => ({
@@ -292,7 +299,7 @@ export const authApi = baseApi.injectEndpoints({
       }
     >({
       query: ({ listId, ...body }) => ({
-        url: '/scott-shafer/api/lists/items', 
+        url: '/scott-shafer/api/lists/items',
         method: 'POST',
         body: {
           ...body,

@@ -31,6 +31,9 @@ import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useRemoveProfilePhotoMutation,
+  useGetAllInterestsQuery,
+  useGetUserInterestsQuery,
+  useSaveUserInterestsMutation,
 } from '../../../features/auth/authApi';
 import Loader from '../../../components/ui/Loader/Loader';
 import { useFocusEffect } from '@react-navigation/native';
@@ -595,6 +598,7 @@ const S = StyleSheet.create({
     fontWeight: '500',
   },
   mItemTxtSel: { color: COLORS.primary, fontWeight: '700' },
+  mItemDisabled: { opacity: 0.6 },
   mCheck: {
     width: 22,
     height: 22,
@@ -612,9 +616,34 @@ const S = StyleSheet.create({
     fontSize: responsiveFontSize(1.7),
     paddingVertical: 32,
   },
+  addedBadge: {
+    backgroundColor: COLORS.success + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  addedBadgeText: {
+    color: COLORS.success,
+    fontSize: responsiveFontSize(1.2),
+    fontWeight: '600',
+  },
+  saveInterestsBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginHorizontal: 24,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  saveInterestsTxt: {
+    color: '#FFF',
+    fontSize: responsiveFontSize(1.8),
+    fontWeight: '700',
+  },
 });
 
-/* ─────────────── PICKER MODAL ─────────────── */
+/* ─────────────── PICKER MODAL (single select) ─────────────── */
 interface PickerModalProps {
   visible: boolean;
   title: string;
@@ -711,6 +740,143 @@ const PickerModal = ({
   );
 };
 
+/* ─────────────── INTEREST MODAL (multi-select with disabled pre-selected) ─────────────── */
+interface InterestModalProps {
+  visible: boolean;
+  allInterests: { id: number; name: string }[];
+  selectedIds: number[];
+  disabledIds: number[];
+  onConfirm: (ids: number[]) => void;
+  onClose: () => void;
+}
+
+const InterestModal = ({
+  visible,
+  allInterests,
+  selectedIds,
+  disabledIds,
+  onConfirm,
+  onClose,
+}: InterestModalProps) => {
+  const [tempSelected, setTempSelected] = useState<number[]>(selectedIds);
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    if (visible) {
+      // Ensure all disabled IDs are included in tempSelected
+      const union = [...new Set([...disabledIds, ...selectedIds])];
+      setTempSelected(union);
+      setQuery('');
+    }
+  }, [visible, selectedIds, disabledIds]);
+
+  const toggleInterest = (id: number) => {
+    if (disabledIds.includes(id)) return;
+    setTempSelected(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id],
+    );
+  };
+
+  const filtered = query.trim()
+    ? allInterests.filter(i =>
+      i.name.toLowerCase().includes(query.toLowerCase()),
+    )
+    : allInterests;
+
+  const handleDone = () => {
+    onConfirm(tempSelected);
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <Pressable style={S.overlay} onPress={onClose}>
+        <Pressable style={S.sheet} onPress={() => { }}>
+          <View style={S.handle} />
+          <View style={S.mHeader}>
+            <Text style={S.mTitle}>Select Interests</Text>
+            <Pressable style={S.mCloseBtn} onPress={onClose}>
+              <Text style={S.mCloseTxt}>✕</Text>
+            </Pressable>
+          </View>
+          <View style={S.searchRow}>
+            <Text style={S.searchIco}>🔍</Text>
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search interests..."
+              placeholderTextColor={COLORS.textMuted}
+              style={S.searchIn}
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery('')}>
+                <Text style={{ color: COLORS.textMuted, fontSize: 16 }}>✕</Text>
+              </Pressable>
+            )}
+          </View>
+          <FlatList
+            data={filtered}
+            keyExtractor={item => item.id.toString()}
+            keyboardShouldPersistTaps="handled"
+            ItemSeparatorComponent={() => <View style={S.mDivider} />}
+            ListEmptyComponent={
+              <Text style={S.noResults}>No interests found</Text>
+            }
+            renderItem={({ item }) => {
+              const isSelected = tempSelected.includes(item.id);
+              const isDisabled = disabledIds.includes(item.id);
+              return (
+                <Pressable
+                  style={[
+                    S.mItem,
+                    isSelected && S.mItemSel,
+                    isDisabled && S.mItemDisabled,
+                  ]}
+                  onPress={() => toggleInterest(item.id)}
+                  disabled={isDisabled}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text
+                      style={[
+                        S.mItemTxt,
+                        isSelected && S.mItemTxtSel,
+                        isDisabled && { color: COLORS.textMuted },
+                      ]}
+                    >
+                      {item.name}
+                    </Text>
+                    {isDisabled && (
+                      <View style={S.addedBadge}>
+                        <Text style={S.addedBadgeText}>Added</Text>
+                      </View>
+                    )}
+                  </View>
+                  {isSelected && (
+                    <View style={S.mCheck}>
+                      <Text style={S.mCheckTxt}>✓</Text>
+                    </View>
+                  )}
+                </Pressable>
+              );
+            }}
+          />
+          <Pressable style={S.saveInterestsBtn} onPress={handleDone}>
+            <Text style={S.saveInterestsTxt}>Done</Text>
+          </Pressable>
+          <View style={S.mFooter} />
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+};
+
 /* ─────────────── FIELD ROW ─────────────── */
 interface FieldRowProps {
   icon: string;
@@ -724,6 +890,7 @@ interface FieldRowProps {
   onPress?: () => void;
   isSelect?: boolean;
   keyboardType?: any;
+  pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only';
 }
 
 const FieldRow = ({
@@ -738,9 +905,10 @@ const FieldRow = ({
   onPress,
   isSelect,
   keyboardType,
+  pointerEvents = 'auto',
 }: FieldRowProps) => {
   const inner = (
-    <View style={[S.row, isLast && S.rowLast]}>
+    <View style={[S.row, isLast && S.rowLast]} pointerEvents={pointerEvents}>
       <View style={S.iconBox}>
         <Text style={S.iconTxt}>{icon}</Text>
       </View>
@@ -798,14 +966,27 @@ export default function EditProfile({ navigation }: any) {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageChanged, setImageChanged] = useState(false);
 
+  // Interest related
+  const [selectedInterestIds, setSelectedInterestIds] = useState<number[]>([]);
+  const [interestModalVisible, setInterestModalVisible] = useState(false);
+
+  // Modals
   const [ageModal, setAgeModal] = useState(false);
   const [budgetModal, setBudgetModal] = useState(false);
   const [countryModal, setCountryModal] = useState(false);
 
+  // API hooks
   const [updateUserProfile, { isLoading: isUpdating }] =
     useUpdateUserProfileMutation();
   const [removeProfilePhotoMutation, { isLoading: isRemovingPhoto }] =
     useRemoveProfilePhotoMutation();
+
+  // We still import saveUserInterests hook but we won't use it for saving here
+  // (we send interests inside the profile update)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [saveUserInterests, { isLoading: isSavingInterests }] =
+    useSaveUserInterestsMutation();
+
   const initialized = useRef(false);
 
   const MAX_WORDS = 200;
@@ -821,38 +1002,48 @@ export default function EditProfile({ navigation }: any) {
   const {
     data: profileResponse,
     isLoading: profileLoading,
-    refetch,
+    refetch: refetchProfile,
   } = useGetUserProfileQuery();
 
-  // Fix: Reset initialization and refetch when screen comes into focus
+  // Fetch all interests and user's interests
+  const { data: allInterests = [], isLoading: interestsLoading } =
+    useGetAllInterestsQuery();
+  const {
+    data: userInterests = [],
+    isLoading: userInterestsLoading,
+    refetch: refetchUserInterests,
+  } = useGetUserInterestsQuery();
+
+  // Build map for quick name lookup
+  const interestMap = useRef<Record<number, string>>({});
+  useEffect(() => {
+    if (allInterests.length) {
+      interestMap.current = allInterests.reduce((acc, item) => {
+        acc[item.id] = item.name;
+        return acc;
+      }, {} as Record<number, string>);
+    }
+  }, [allInterests]);
+
+  // On focus, reset and refetch
   useFocusEffect(
     useCallback(() => {
-      // Reset initialization flag when screen comes into focus
       initialized.current = false;
-
-      // Force refetch to get latest data from server
-      refetch();
-
+      refetchProfile();
+      refetchUserInterests();
       setTimeout(
         () => scrollRef.current?.scrollTo({ y: 0, animated: true }),
         100,
       );
-
-      return () => {
-        // Cleanup when screen loses focus
-        setImageChanged(false);
-      };
-    }, [refetch]),
+      return () => setImageChanged(false);
+    }, [refetchProfile, refetchUserInterests]),
   );
 
-  // Load profile data when available
+  // Load profile data
   useEffect(() => {
-    // Only run if not initialized and we have profile data
     if (!initialized.current && profileResponse?.success) {
       initialized.current = true;
       const u = profileResponse.data.user;
-
-      console.log('Loading profile data - has_dogs:', u.profile?.has_dogs); // Debug log
 
       setName(u.full_name ?? '');
       setEmail(u.email ?? '');
@@ -862,14 +1053,21 @@ export default function EditProfile({ navigation }: any) {
       setBudgetSelect(u.profile?.dining_budget ?? '');
       setBudgetDesc(u.profile?.budget_description ?? '');
 
-      // Fix: Properly handle has_dogs value (string "1" or "0" from API)
       const hasDogsValue = u.profile?.has_dogs;
-      setHasDogs(hasDogsValue === "1" || hasDogsValue === 1);
+      setHasDogs(hasDogsValue === '1' || hasDogsValue === 1);
 
       setProfileImageUrl(u.profile?.profile_image ?? null);
       setImageChanged(false);
     }
   }, [profileResponse]);
+
+  // Load user interests
+  useEffect(() => {
+    if (userInterests.length) {
+      const ids = userInterests.map(i => i.id);
+      setSelectedInterestIds(ids);
+    }
+  }, [userInterests]);
 
   const requestCameraPermission = async () => {
     if (Platform.OS !== 'android') return true;
@@ -884,11 +1082,9 @@ export default function EditProfile({ navigation }: any) {
     return g === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  // Function to upload image immediately
   const uploadImageImmediately = async (imageData: any) => {
     try {
       setIsUploadingImage(true);
-
       const formData = new FormData();
       const imageFile = {
         uri:
@@ -900,16 +1096,12 @@ export default function EditProfile({ navigation }: any) {
       };
       formData.append('profile_image', imageFile as any);
 
-      // Only send the image field for immediate upload
       const result = await updateUserProfile(formData).unwrap();
-
       if (result.success) {
-        // Update the profile image URL with the new one from response
         if (result.data?.profile_image) {
           setProfileImageUrl(result.data.profile_image);
         } else {
-          // Refetch to get updated data
-          await refetch();
+          await refetchProfile();
         }
         setImageChanged(false);
         Alert.alert('Success', 'Profile photo updated successfully');
@@ -924,53 +1116,34 @@ export default function EditProfile({ navigation }: any) {
 
   const openCamera = async () => {
     if (!(await requestCameraPermission())) return;
-
     launchCamera(
-      {
-        mediaType: 'photo',
-        quality: 0.7,
-        includeBase64: false,
-      },
+      { mediaType: 'photo', quality: 0.7, includeBase64: false },
       response => {
         if (response.didCancel || response.errorCode) return;
-
         const asset = response.assets?.[0];
         if (!asset?.uri) return;
-
         const imageData = {
           uri: asset.uri,
           type: asset.type || 'image/jpeg',
           name: asset.fileName || `camera_${Date.now()}.jpg`,
         };
-
-        // Upload immediately
         uploadImageImmediately(imageData);
       },
     );
   };
 
   const openGallery = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        quality: 0.7,
-      },
-      response => {
-        if (response.didCancel || response.errorCode) return;
-
-        const asset = response.assets?.[0];
-        if (!asset?.uri) return;
-
-        const imageData = {
-          uri: asset.uri,
-          type: asset.type || 'image/jpeg',
-          name: asset.fileName || `gallery_${Date.now()}.jpg`,
-        };
-
-        // Upload immediately
-        uploadImageImmediately(imageData);
-      },
-    );
+    launchImageLibrary({ mediaType: 'photo', quality: 0.7 }, response => {
+      if (response.didCancel || response.errorCode) return;
+      const asset = response.assets?.[0];
+      if (!asset?.uri) return;
+      const imageData = {
+        uri: asset.uri,
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || `gallery_${Date.now()}.jpg`,
+      };
+      uploadImageImmediately(imageData);
+    });
   };
 
   const handleRemovePhoto = async () => {
@@ -984,17 +1157,11 @@ export default function EditProfile({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Call the remove profile photo API
               const result = await removeProfilePhotoMutation().unwrap();
-
               if (result.code === 200) {
-                // Update local state
                 setProfileImageUrl(null);
                 setImageChanged(true);
-
-                // Refetch profile data to ensure consistency
-                await refetch();
-
+                await refetchProfile();
                 Alert.alert('Success', 'Profile photo removed successfully');
               } else {
                 throw new Error(result.message || 'Failed to remove photo');
@@ -1005,7 +1172,7 @@ export default function EditProfile({ navigation }: any) {
                 'Error',
                 error?.data?.message ||
                 error?.message ||
-                'Failed to remove profile photo. Please try again.',
+                'Failed to remove profile photo.',
               );
             }
           },
@@ -1020,67 +1187,37 @@ export default function EditProfile({ navigation }: any) {
       setBudgetDesc(text);
   };
 
+  // Save main profile + interests in one call
   const handleSave = async () => {
     try {
       setIsSaving(true);
 
       const formData = new FormData();
-
-      // Add all text fields
       formData.append('age_band', age || '');
       formData.append('city', city || '');
       formData.append('dining_budget', budgetSelect || '');
-      // Send has_dogs as '1' for true, '0' for false
       formData.append('has_dogs', hasDogs ? '1' : '0');
       formData.append('country', country || '');
-
-      console.log('Saving - has_dogs value being sent:', hasDogs ? '1' : '0'); // Debug log
-
-      // Add budget description if it exists
-      if (budgetDesc) {
-        formData.append('budget_description', budgetDesc);
-      }
-
-      // ONLY include profile_image if it was changed during this session
+      if (budgetDesc) formData.append('budget_description', budgetDesc);
       if (imageChanged && profileImageUrl) {
         formData.append('profile_image', profileImageUrl);
-        console.log('Including profile image URL in save');
-      } else if (!imageChanged) {
-        console.log('No image changes, skipping profile_image field');
       }
 
-      console.log('Saving profile with fields:');
-      console.log('- age_band:', age);
-      console.log('- city:', city);
-      console.log('- dining_budget:', budgetSelect);
-      console.log('- has_dogs:', hasDogs ? '1' : '0');
-      console.log('- country:', country);
-      console.log('- budget_description:', budgetDesc);
+      // Append interests as array
+      selectedInterestIds.forEach(id => {
+        formData.append('interests[]', String(id));
+      });
 
-      // Use the RTK Query mutation
       const result = await updateUserProfile(formData).unwrap();
+      await refetchProfile();
+      await refetchUserInterests(); // refresh interest list after update
 
-      console.log('Update successful:', result);
-
-      // Refetch profile to get updated data
-      await refetch();
-
-      // Navigate back after successful update
       navigation.goBack();
-
       setTimeout(() => {
         Alert.alert('Saved!', result.message || 'Profile updated successfully');
       }, 300);
     } catch (err: any) {
-      console.log('❌ Save error details:', err);
-
-      if (err.data) {
-        console.log('Error response data:', err.data);
-      }
-      if (err.status) {
-        console.log('Error status:', err.status);
-      }
-
+      console.log('Save error:', err);
       Alert.alert(
         'Error',
         err?.data?.message ||
@@ -1092,16 +1229,22 @@ export default function EditProfile({ navigation }: any) {
     }
   };
 
-  const wordCount = budgetDesc.trim()
-    ? budgetDesc.trim().split(/\s+/).length
-    : 0;
-  const wordPct = Math.min((wordCount / MAX_WORDS) * 100, 100);
+  // Update local interest selection (called from modal)
+  const handleConfirmInterests = (ids: number[]) => {
+    setSelectedInterestIds(ids);
+  };
 
-  // Determine which image to display
+  // Build display string for selected interests
+  const getInterestDisplay = () => {
+    if (!selectedInterestIds.length) return 'Select your interests';
+    const names = selectedInterestIds
+      .map(id => interestMap.current[id])
+      .filter(Boolean);
+    return names.join(', ');
+  };
+
   const displayImage = () => {
-    if (profileImageUrl) {
-      return { uri: profileImageUrl };
-    }
+    if (profileImageUrl) return { uri: profileImageUrl };
     return require('../../../../assets/image/nophoto.jpg');
   };
 
@@ -1110,7 +1253,12 @@ export default function EditProfile({ navigation }: any) {
     profileLoading ||
     isUpdating ||
     isRemovingPhoto ||
-    isUploadingImage;
+    isUploadingImage ||
+    interestsLoading ||
+    userInterestsLoading;
+
+  // IDs of interests that are already added (disabled in modal)
+  const disabledInterestIds = userInterests.map(i => i.id);
 
   return (
     <SafeAreaView style={S.container}>
@@ -1178,8 +1326,6 @@ export default function EditProfile({ navigation }: any) {
             </View>
             {!!name && <Text style={S.avatarName}>{name}</Text>}
             {!!email && <Text style={S.avatarEmail}>{email}</Text>}
-
-            {/* Show remove photo button if photo exists */}
             {profileImageUrl && (
               <Pressable style={S.removePhotoBtn} onPress={handleRemovePhoto}>
                 <Text style={S.removePhotoTxt}>Remove Photo</Text>
@@ -1241,7 +1387,7 @@ export default function EditProfile({ navigation }: any) {
             />
           </View>
 
-          {/* ── Dining Preferences ── */}
+          {/* ── Budget Preferences ── */}
           <Text style={S.sectionLabel}>Budget Preferences</Text>
           <View style={S.card}>
             <FieldRow
@@ -1264,10 +1410,7 @@ export default function EditProfile({ navigation }: any) {
           <TouchableOpacity
             style={S.toggleCard}
             activeOpacity={0.8}
-            onPress={() => {
-              console.log('Toggling has_dogs from:', hasDogs, 'to:', !hasDogs); // Debug log
-              setHasDogs(p => !p);
-            }}
+            onPress={() => setHasDogs(p => !p)}
           >
             <View style={S.iconBox}>
               <Text style={S.iconTxt}>🐕</Text>
@@ -1292,6 +1435,24 @@ export default function EditProfile({ navigation }: any) {
               />
             </View>
           </TouchableOpacity>
+
+          {/* ── Add Interest Section ── */}
+          <Text style={S.sectionLabel}>Add Interest</Text>
+          <View style={S.card}>
+            <FieldRow
+              icon="⭐"
+              label="Your Interests"
+              value={getInterestDisplay()}
+              placeholder="Select your interests"
+              isSelect
+              isLast
+              onPress={() => {
+                Keyboard.dismiss();
+                setTimeout(() => setInterestModalVisible(true), 150);
+              }}
+              pointerEvents="none"
+            />
+          </View>
         </ScrollView>
 
         {/* ── Save Button ── */}
@@ -1340,6 +1501,16 @@ export default function EditProfile({ navigation }: any) {
           setCountryModal(false);
         }}
         onClose={() => setCountryModal(false)}
+      />
+
+      {/* ── Interest Modal ── */}
+      <InterestModal
+        visible={interestModalVisible}
+        allInterests={allInterests}
+        selectedIds={selectedInterestIds}
+        disabledIds={disabledInterestIds}
+        onConfirm={handleConfirmInterests}
+        onClose={() => setInterestModalVisible(false)}
       />
     </SafeAreaView>
   );

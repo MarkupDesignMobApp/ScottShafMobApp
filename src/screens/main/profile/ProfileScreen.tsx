@@ -56,7 +56,7 @@ export default function ProfileScreen() {
       Alert.alert(
         'Account Deletion Request',
         response?.message ||
-          'Your account deletion request has been submitted successfully. We will process your request and notify you via email once completed.',
+        'Your account deletion request has been submitted successfully. We will process your request and notify you via email once completed.',
         [
           {
             text: 'OK',
@@ -69,26 +69,26 @@ export default function ProfileScreen() {
             },
           },
         ],
-        { cancelable: false },
+        { cancelable: false }
       );
     } catch (error: any) {
       console.error('Delete account error:', error);
       Alert.alert(
         'Deletion Failed',
         error?.data?.message ||
-          error?.message ||
-          'Unable to process your request. Please try again later or contact support.',
-        [{ text: 'OK' }],
+        error?.message ||
+        'Unable to process your request. Please try again later or contact support.',
+        [{ text: 'OK' }]
       );
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const handleDataExport = async () => {
+  const handleDataExport = () => {
     Alert.alert(
-      'Request Data Export',
-      'Your data will be prepared as a ZIP file. This may take a few moments. Do you want to proceed?',
+      'Data Export',
+      'Your data will be prepared as a file. This may take a few moments. Do you want to proceed?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -97,78 +97,78 @@ export default function ProfileScreen() {
             setIsExporting(true);
             try {
               const response = await requestDataExport().unwrap();
-              if (response.success && response.data?.file_path) {
-                const fileUrl = response.data.file_path;
+              const { data, success, message } = response;
+
+              if (!success) {
+                Alert.alert('Export Failed', message || 'Unknown error.');
+                return;
+              }
+
+              if (data?.status === 'completed' && data?.file_path) {
                 Alert.alert(
                   'Export Ready',
-                  'Your data export is ready. Do you want to download it now?',
+                  'Your data export is ready. Would you like to download it now?',
                   [
                     { text: 'Cancel', style: 'cancel' },
                     {
                       text: 'Download',
-                      onPress: async () => {
-                        try {
-                          if (await InAppBrowser.isAvailable()) {
-                            await InAppBrowser.open(fileUrl, {
-                              dismissButtonStyle: 'cancel',
-                              preferredBarTintColor: '#453AA4',
-                              preferredControlTintColor: 'white',
-                              readerMode: false,
-                              showTitle: true,
-                              toolbarColor: '#6200EE',
-                              secondaryToolbarColor: 'black',
-                              enableUrlBarHiding: true,
-                              enableDefaultShare: true,
-                              forceCloseOnRedirection: false,
-                            });
-                          } else {
-                            Alert.alert('Error', 'InAppBrowser not available');
-                          }
-                        } catch (error) {
-                          Alert.alert(
-                            'Error',
-                            'Could not open the download link.',
-                          );
-                        }
-                      },
+                      onPress: () => openInAppBrowser(data.file_path),
                     },
-                    {
-                      text: 'Copy Link',
-                      onPress: () => {
-                        Clipboard.setString(fileUrl);
-                        Alert.alert(
-                          'Link Copied',
-                          'Export link copied to clipboard.',
-                        );
-                      },
-                    },
-                  ],
+                  ]
+                );
+              } else if (data?.status === 'processing') {
+                Alert.alert(
+                  'Export in Progress',
+                  'Your export is being generated. You will be notified when it is ready.'
                 );
               } else {
-                Alert.alert(
-                  'Success',
-                  response.message || 'Data export request completed.',
-                );
+                Alert.alert('Success', message || 'Export completed.');
               }
             } catch (error: any) {
-              console.error('Export error:', error);
               Alert.alert(
                 'Export Failed',
                 error?.data?.message ||
-                  error?.message ||
-                  'Unable to request data export. Please try again later.',
+                error?.message ||
+                'Please try again later.'
               );
             } finally {
               setIsExporting(false);
             }
           },
         },
-      ],
+      ]
     );
   };
 
+  // Helper to open browser with fallback to copy link
+  const openInAppBrowser = async (url: string) => {
+    try {
+      if (await InAppBrowser.isAvailable()) {
+        await InAppBrowser.open(url, {
+          dismissButtonStyle: 'cancel',
+          preferredBarTintColor: '#453AA4',
+          preferredControlTintColor: 'white',
+          readerMode: false,
+          showTitle: true,
+          toolbarColor: '#6200EE',
+          secondaryToolbarColor: 'black',
+          enableUrlBarHiding: true,
+          enableDefaultShare: true,
+          forceCloseOnRedirection: false,
+        });
+      } else {
+        // Fallback: copy link to clipboard
+        Clipboard.setString(url);
+        Alert.alert('Link Copied', 'The download link has been copied to your clipboard.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not open the download link. The link has been copied to your clipboard.');
+      Clipboard.setString(url);
+    }
+  };
+
   const handleSettingPress = (item: any) => {
-    if (item.title === 'Request Data Export') {
+    if (item.title === 'Data Export') {
       handleDataExport();
     } else if (item.action === 'DELETE_ACCOUNT') {
       setDeleteModalVisible(true);
@@ -256,7 +256,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.settingsCard}>
-            {Data.map(item => (
+            {Data.map((item) => (
               <Pressable
                 key={item.id}
                 style={styles.settingItem}
